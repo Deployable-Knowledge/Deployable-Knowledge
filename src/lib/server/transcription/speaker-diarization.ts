@@ -24,7 +24,7 @@ export async function diarizeAudio(samples: Float32Array): Promise<SpeakerTurn[]
 				pyannote: { model: segmentationModel, windowShiftRatio: 0.1 }
 			},
 			embedding: { model: embeddingModel },
-			clustering: { numClusters: -1, threshold: 0.5 },
+			clustering: { numClusters: 0, threshold: 0.5 },
 			minDurationOn: 0.2,
 			minDurationOff: 0.5
 		});

@@ -25,6 +25,7 @@ export function buildTranscriptExtraction(
 ): ExtractionResult {
 	const timeline: TranscriptTimelineEntry[] = [];
 	let previousSpeaker: number | undefined;
+	const speakerLabels = new Map<number, number>();
 	let content = '';
 
 	for (const segment of segments) {
@@ -32,10 +33,15 @@ export function buildTranscriptExtraction(
 		if (!spoken) continue;
 
 		if (content) content += ' ';
-		if (segment.speakerId !== undefined && segment.speakerId !== previousSpeaker) {
-			content += `Speaker ${segment.speakerId + 1}: `;
+		if (segment.speakerId !== undefined) {
+			if (!speakerLabels.has(segment.speakerId)) {
+				speakerLabels.set(segment.speakerId, speakerLabels.size + 1);
+			}
+			if (segment.speakerId !== previousSpeaker) {
+				content += `Speaker ${speakerLabels.get(segment.speakerId)}: `;
+			}
+			previousSpeaker = segment.speakerId;
 		}
-		previousSpeaker = segment.speakerId;
 		const charStart = content.length;
 		content += spoken;
 		timeline.push({

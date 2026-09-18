@@ -13,6 +13,7 @@ export type TranscriptSegment = {
 	startMs: number;
 	endMs: number;
 	text: string;
+	speakerId?: number;
 };
 
 export type TranscriptionResult = {
@@ -33,7 +34,7 @@ export async function transcribeAudio(audioData: Float32Array): Promise<Transcri
 	// Timestamps let the pipeline stitch the 30 second windows of long audio back together
 	const result = await transcriber(audioData, {
 		chunk_length_s: 30,
-		return_timestamps: true,
+		return_timestamps: 'word',
 		stride_length_s: 5
 	});
 

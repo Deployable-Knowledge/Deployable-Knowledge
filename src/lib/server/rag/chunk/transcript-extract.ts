@@ -5,6 +5,8 @@ import {
 	transcribeAudio,
 	type TranscriptSegment
 } from '$lib/server/transcription/transcription-model';
+import { diarizeAudio } from '$lib/server/transcription/speaker-diarization';
+import type { SpeakerTurn } from 'sherpa-onnx-node';
 import type {
 	ExtractionResult,
 	ParsedChunk,
@@ -22,6 +24,7 @@ export function buildTranscriptExtraction(
 	fallbackText = ''
 ): ExtractionResult {
 	const timeline: TranscriptTimelineEntry[] = [];
+	let previousSpeaker: number | undefined;
 	let content = '';
 
 	for (const segment of segments) {
@@ -29,6 +32,10 @@ export function buildTranscriptExtraction(
 		if (!spoken) continue;
 
 		if (content) content += ' ';
+		if (segment.speakerId !== undefined && segment.speakerId !== previousSpeaker) {
+			content += `Speaker ${segment.speakerId + 1}: `;
+		}
+		previousSpeaker = segment.speakerId;
 		const charStart = content.length;
 		content += spoken;
 		timeline.push({
@@ -51,6 +58,25 @@ export function buildTranscriptExtraction(
 	};
 }
 
+function assignSpeakers(words: TranscriptSegment[], turns: SpeakerTurn[]): TranscriptSegment[] {
+	return words.map((word) => {
+		let speakerId: number | undefined;
+		let longestOverlapMs = 0;
+
+		for (const turn of turns) {
+			const overlapMs =
+				Math.min(word.endMs, turn.end * 1000) - Math.max(word.startMs, turn.start * 1000);
+
+			if (overlapMs > longestOverlapMs) {
+				longestOverlapMs = overlapMs;
+				speakerId = turn.speaker;
+			}
+		}
+
+		return speakerId === undefined ? word : { ...word, speakerId };
+	});
+}
+
 export async function extractTranscript(
 	source: Source,
 	onProgress?: (ratio: number, message: string) => void
@@ -60,7 +86,18 @@ export async function extractTranscript(
 	onProgress?.(0.25, 'Transcribing speech');
 	const transcription = await transcribeAudio(audioData);
 
-	return buildTranscriptExtraction(source, transcription.segments, transcription.text);
+	let segments = transcription.segments;
+	if (segments.length > 0) {
+		onProgress?.(0.65, 'Identifying speakers');
+		try {
+			const turns = await diarizeAudio(audioData);
+			segments = assignSpeakers(segments, turns);
+		} catch (error) {
+			console.warn('[Transcription] Speaker diarization unavailable:', error);
+		}
+	}
+
+	return buildTranscriptExtraction(source, segments, transcription.text);
 }
 
 function timeAtChar(timeline: TranscriptTimelineEntry[], charIndex: number): number {

@@ -1,10 +1,10 @@
 import { spawn } from 'node:child_process';
 import ffmpegStaticPath from 'ffmpeg-static';
+import { AUDIO_SAMPLE_RATE } from './audio-types';
 
-const SAMPLE_RATE = 16_000;
 const BYTES_PER_SAMPLE = Float32Array.BYTES_PER_ELEMENT;
 const MAX_AUDIO_SEC = 2 * 60 * 60; // May be lowered in the future to reduce memory usage
-const MAX_DECODE_BYTES = MAX_AUDIO_SEC * SAMPLE_RATE * BYTES_PER_SAMPLE;
+const MAX_DECODE_BYTES = MAX_AUDIO_SEC * AUDIO_SAMPLE_RATE * BYTES_PER_SAMPLE;
 const MAX_ERR_LENGTH = 16_000;
 const DECODE_TIMEOUT_MS = 10 * 60 * 1000;
 
@@ -28,7 +28,7 @@ export function decodeAudioFile(audioPath: string): Promise<Float32Array> {
 				'-ac',
 				'1',
 				'-ar',
-				String(SAMPLE_RATE),
+				String(AUDIO_SAMPLE_RATE),
 				'-c:a',
 				'pcm_f32le',
 				'-f',

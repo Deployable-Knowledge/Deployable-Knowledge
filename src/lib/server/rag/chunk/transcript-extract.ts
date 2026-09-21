@@ -2,9 +2,11 @@
 
 import { decodeAudioFile } from '$lib/server/transcription/audio-decoder';
 import {
-	transcribeAudio,
+	transcribeAudioChunks,
 	type TranscriptSegment
 } from '$lib/server/transcription/transcription-model';
+import { alignTranscription } from '$lib/server/transcription/forced-alignment';
+import { detectSpeechChunks } from '$lib/server/transcription/voice-activity-detection';
 import { diarizeAudio } from '$lib/server/transcription/speaker-diarization';
 import type { SpeakerTurn } from 'sherpa-onnx-node';
 import type {
@@ -66,20 +68,33 @@ export function buildTranscriptExtraction(
 
 function assignSpeakers(words: TranscriptSegment[], turns: SpeakerTurn[]): TranscriptSegment[] {
 	return words.map((word) => {
-		let speakerId: number | undefined;
-		let longestOverlapMs = 0;
+		const overlapBySpeaker = new Map<number, number>();
 
 		for (const turn of turns) {
 			const overlapMs =
 				Math.min(word.endMs, turn.end * 1000) - Math.max(word.startMs, turn.start * 1000);
 
-			if (overlapMs > longestOverlapMs) {
-				longestOverlapMs = overlapMs;
-				speakerId = turn.speaker;
-			}
+			if (overlapMs <= 0) continue;
+
+			overlapBySpeaker.set(turn.speaker, (overlapBySpeaker.get(turn.speaker) ?? 0) + overlapMs);
 		}
 
-		return speakerId === undefined ? word : { ...word, speakerId };
+		let speakerId: number | undefined;
+		let greatestOverlapMs = 0;
+
+		for (const [speaker, overlapMs] of overlapBySpeaker) {
+			if (overlapMs <= greatestOverlapMs) continue;
+
+			speakerId = speaker;
+			greatestOverlapMs = overlapMs;
+		}
+
+		if (speakerId === undefined) return word;
+
+		return {
+			...word,
+			speakerId
+		};
 	});
 }
 
@@ -89,13 +104,32 @@ export async function extractTranscript(
 ): Promise<ExtractionResult> {
 	const audioData = await decodeAudioFile(source.path);
 
+	onProgress?.(0.12, 'Detecting speech');
+	const audioChunks = await detectSpeechChunks(audioData);
+
+	if (audioChunks.length === 0) {
+		return buildTranscriptExtraction(source, [], '');
+	}
+
 	onProgress?.(0.25, 'Transcribing speech');
-	const transcription = await transcribeAudio(audioData);
+	let transcription = await transcribeAudioChunks(audioChunks);
+
+	if (transcription.segments.length > 0) {
+		onProgress?.(0.58, 'Aligning transcript');
+		transcription = await alignTranscription(transcription);
+	}
 
 	let segments = transcription.segments;
+
 	if (segments.length > 0) {
-		onProgress?.(0.65, 'Identifying speakers');
+		onProgress?.(0.72, 'Identifying speakers');
+
 		try {
+			/*
+			 * Keep diarization on the complete original waveform.
+			 * Running it independently on VAD chunks would destroy
+			 * global speaker identity.
+			 */
 			const turns = await diarizeAudio(audioData);
 			segments = assignSpeakers(segments, turns);
 		} catch (error) {

@@ -9,6 +9,9 @@
 	import type { ApiTranscriptResponse } from '$lib/types';
 	import TranscriptChunk from './TranscriptChunk.svelte';
 	import { formatTimestamp } from './timestamp';
+	import Download from '@lucide/svelte/icons/download';
+	import { toast } from 'svelte-sonner';
+	import { TranscriptsService } from '$lib/services';
 
 	interface Props {
 		audioSrc: string;
@@ -32,6 +35,7 @@
 	let followPlayback = $state(false);
 	let pendingSeekMs = $state<number | null>(null);
 	let scrubbing = false;
+	let downloadingTranscript = $state(false);
 
 	const timed = $derived(chunks.some((chunk) => chunk.startMs !== null));
 	const currentMs = $derived(currentTime * 1000);
@@ -143,6 +147,21 @@
 		event.preventDefault();
 	}
 
+	async function downloadTranscript(): Promise<void> {
+		if (downloadingTranscript) return;
+
+		downloadingTranscript = true;
+
+		try {
+			const filename = await TranscriptsService.download(document.id);
+			toast.success(`Downloaded ${filename}`);
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : 'Could not download the transcript.');
+		} finally {
+			downloadingTranscript = false;
+		}
+	}
+
 	function cycleSpeed() {
 		playbackRate = SPEEDS[(SPEEDS.indexOf(playbackRate) + 1) % SPEEDS.length];
 	}
@@ -154,25 +173,37 @@
 >
 	<div class="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
 		<div class="mx-auto grid w-full max-w-4xl gap-5 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-			<header class="grid min-w-0 gap-1 border-b pb-5">
+			<header class="grid min-w-0 gap-1 border-b pb-5"></header>
+			<div class="flex min-w-0 items-center gap-3">
 				<h1
-					class="flex min-w-0 items-center gap-2 text-2xl font-semibold tracking-tight"
+					class="flex min-w-0 flex-1 items-center gap-2 text-2xl font-semibold tracking-tight"
 					id="transcript-page-title"
 				>
 					<AudioLines class="size-5 shrink-0 text-muted-foreground" />
 					<span class="min-w-0 truncate">{document.title}</span>
 				</h1>
-				<p class="m-0 text-xs text-muted-foreground">
-					{chunks.length}
-					{chunks.length === 1 ? 'chunk' : 'chunks'}
-					{#if duration > 0}· {formatTimestamp(duration * 1000)} total{/if}
-					{#if timed}
-						· following chunk {highlightIndex >= 0 ? highlightIndex + 1 : '–'}
-					{:else}
-						· transcribed before timings were recorded, so playback cannot follow along
-					{/if}
-				</p>
-			</header>
+
+				<Button
+					class="shrink-0"
+					disabled={downloadingTranscript}
+					onclick={() => void downloadTranscript()}
+					size="sm"
+					variant="outline"
+				>
+					<Download />
+					{downloadingTranscript ? 'Downloading…' : 'Download .txt'}
+				</Button>
+			</div>
+			<p class="m-0 text-xs text-muted-foreground">
+				{chunks.length}
+				{chunks.length === 1 ? 'chunk' : 'chunks'}
+				{#if duration > 0}· {formatTimestamp(duration * 1000)} total{/if}
+				{#if timed}
+					· following chunk {highlightIndex >= 0 ? highlightIndex + 1 : '–'}
+				{:else}
+					· transcribed before timings were recorded, so playback cannot follow along
+				{/if}
+			</p>
 
 			<div class="grid gap-5">
 				{#each chunks as chunk, index (chunk.id)}

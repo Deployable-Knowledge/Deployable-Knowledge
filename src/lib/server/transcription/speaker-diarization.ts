@@ -2,6 +2,8 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { OfflineSpeakerDiarization, SpeakerTurn } from 'sherpa-onnx-node';
 
+const AUTO_CLUSTER_THRESHOLD = 0.75;
+
 const modelDir = resolve(process.cwd(), 'models', 'diarization');
 const segmentationModel = resolve(modelDir, 'model.onnx');
 const embeddingModel = resolve(
@@ -24,7 +26,10 @@ export async function diarizeAudio(samples: Float32Array): Promise<SpeakerTurn[]
 				pyannote: { model: segmentationModel, windowShiftRatio: 0.1 }
 			},
 			embedding: { model: embeddingModel },
-			clustering: { numClusters: 0, threshold: 0.5 },
+			clustering: {
+				numClusters: 0,
+				threshold: AUTO_CLUSTER_THRESHOLD
+			},
 			minDurationOn: 0.2,
 			minDurationOff: 0.5
 		});

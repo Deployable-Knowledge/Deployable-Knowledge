@@ -19,3 +19,4 @@ export { VulkanDevicesService } from './vulkan-devices.service';
 export { WorkspaceLayoutsService } from './workspace-layouts.service';
 export { DiagnosticsService } from './diagnostics.service';
 export { DesktopWindowService } from './desktop-window.service';
+export { TranscriptsService } from './transcripts.service';

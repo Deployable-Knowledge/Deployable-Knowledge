@@ -8,6 +8,7 @@ import {
 import { alignTranscription } from '$lib/server/transcription/forced-alignment';
 import { detectSpeechChunks } from '$lib/server/transcription/voice-activity-detection';
 import { diarizeAudio } from '$lib/server/transcription/speaker-diarization';
+import { filterHallucinatedTranscription } from '$lib/server/transcription/hallucination-gate';
 import type { SpeakerTurn } from 'sherpa-onnx-node';
 import type {
 	ExtractionResult,
@@ -113,6 +114,7 @@ export async function extractTranscript(
 
 	onProgress?.(0.25, 'Transcribing speech');
 	let transcription = await transcribeAudioChunks(audioChunks);
+	transcription = filterHallucinatedTranscription(transcription);
 
 	if (transcription.segments.length > 0) {
 		onProgress?.(0.58, 'Aligning transcript');

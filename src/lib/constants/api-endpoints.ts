@@ -12,6 +12,10 @@ export const APP_TRANSCRIPTS = {
 		`/transcripts/${segment(id)}?chunk=${segment(String(chunkIndex))}`
 };
 
+export const API_TRANSCRIPTS = {
+	download: (id: string) => `/transcripts/${segment(id)}/download`
+};
+
 export const APP_PREVIEW = {
 	byId: (id: string) => `/preview/${segment(id)}`,
 	chunk: (id: string, chunkIndex: number) =>

@@ -14,25 +14,33 @@ import {
 	type DownloadProgressHandler
 } from '#lib/server/utils/download-progress';
 import { TRANSFORMERS_CACHE_DIR } from '#lib/server/utils/transformers-env';
-import { sampleIndexToMs, type AudioChunk } from './audio-types';
+import { AUDIO_SAMPLE_RATE, sampleIndexToMs, type AudioChunk } from './audio-types';
 
-export const TRANSCRIPTION_MODEL = 'Xenova/whisper-tiny.en';
+export const TRANSCRIPTION_MODEL = 'Xenova/whisper-small.en';
 
 const TRANSCRIPTION_TASK = 'automatic-speech-recognition';
+
+const TRANSCRIPTION_OPTIONS = {
+	cache_dir: TRANSFORMERS_CACHE_DIR,
+	device: 'cpu',
+	dtype: 'q8'
+} as const;
 
 let transcriptionPipeline: Promise<AutomaticSpeechRecognitionPipeline> | undefined;
 
 export function isTranscriptionModelInstalled(): Promise<boolean> {
-	return ModelRegistry.is_pipeline_cached(TRANSCRIPTION_TASK, TRANSCRIPTION_MODEL, {
-		cache_dir: TRANSFORMERS_CACHE_DIR
-	});
+	return ModelRegistry.is_pipeline_cached(
+		TRANSCRIPTION_TASK,
+		TRANSCRIPTION_MODEL,
+		TRANSCRIPTION_OPTIONS
+	);
 }
 
 export async function installTranscriptionModel(
 	onProgress: DownloadProgressHandler
 ): Promise<void> {
 	const transcriber = await pipeline(TRANSCRIPTION_TASK, TRANSCRIPTION_MODEL, {
-		cache_dir: TRANSFORMERS_CACHE_DIR,
+		...TRANSCRIPTION_OPTIONS,
 		progress_callback: transformersProgress(combineFileProgress(onProgress))
 	});
 	await transcriber.dispose();
@@ -58,9 +66,11 @@ export interface TranscriptionResult {
 }
 
 async function getTranscriber(): Promise<AutomaticSpeechRecognitionPipeline> {
-	transcriptionPipeline ??= pipeline(TRANSCRIPTION_TASK, TRANSCRIPTION_MODEL, {
-		cache_dir: TRANSFORMERS_CACHE_DIR
-	}).catch((error) => {
+	transcriptionPipeline ??= pipeline(
+		TRANSCRIPTION_TASK,
+		TRANSCRIPTION_MODEL,
+		TRANSCRIPTION_OPTIONS
+	).catch((error) => {
 		transcriptionPipeline = undefined;
 		throw error;
 	});
@@ -68,24 +78,33 @@ async function getTranscriber(): Promise<AutomaticSpeechRecognitionPipeline> {
 	return transcriptionPipeline;
 }
 
+function decodingOptions(audio: AudioChunk) {
+	const durationSeconds = audio.samples.length / AUDIO_SAMPLE_RATE;
+	const maxNewTokens = Math.min(384, Math.max(32, Math.ceil(durationSeconds * 8)));
+
+	return {
+		do_sample: false,
+		max_new_tokens: maxNewTokens,
+		no_repeat_ngram_size: 4,
+		repetition_penalty: 1.05,
+		return_timestamps: 'word' as const
+	};
+}
+
 async function transcribeChunk(
 	transcriber: AutomaticSpeechRecognitionPipeline,
 	audio: AudioChunk,
 	longForm: boolean
 ): Promise<TranscribedAudioChunk> {
-	let result;
+	const options = decodingOptions(audio);
 
-	if (longForm) {
-		result = await transcriber(audio.samples, {
-			chunk_length_s: 30,
-			return_timestamps: 'word',
-			stride_length_s: 5
-		});
-	} else {
-		result = await transcriber(audio.samples, {
-			return_timestamps: 'word'
-		});
-	}
+	const result = longForm
+		? await transcriber(audio.samples, {
+				...options,
+				chunk_length_s: 30,
+				stride_length_s: 5
+			})
+		: await transcriber(audio.samples, options);
 
 	const sourceStartMs = sampleIndexToMs(audio.startSample);
 	const sourceEndMs = sampleIndexToMs(audio.endSample);

@@ -1,4 +1,4 @@
-import { AutoModelForCTC, AutoProcessor } from '@huggingface/transformers';
+import { AutoModelForCTC, Wav2Vec2Processor } from '@huggingface/transformers';
 import { AUDIO_SAMPLE_RATE, sampleIndexToMs } from './audio-types';
 import type {
 	TranscriptSegment,
@@ -49,8 +49,13 @@ interface LogProbabilityView {
 }
 
 async function loadAlignmentAssets() {
+	/*
+	 * AutoProcessor only reads preprocessor_config.json, which for this model names a feature
+	 * extractor but no processor class, so it would load no tokenizer. Wav2Vec2Processor loads
+	 * both the feature extractor and the CTC tokenizer whose vocabulary the alignment needs.
+	 */
 	const [processor, model] = await Promise.all([
-		AutoProcessor.from_pretrained(ALIGNMENT_MODEL, {
+		Wav2Vec2Processor.from_pretrained(ALIGNMENT_MODEL, {
 			cache_dir: TRANSFORMERS_CACHE_DIR
 		}),
 		AutoModelForCTC.from_pretrained(ALIGNMENT_MODEL, {

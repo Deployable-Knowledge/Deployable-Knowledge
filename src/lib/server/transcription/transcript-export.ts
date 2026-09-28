@@ -73,7 +73,7 @@ export function formatTranscriptExport(transcript: ApiTranscriptResponse): strin
 
 export function transcriptExportFilename(title: string): string {
 	const base = title
-		.replace(/[<>:"/\\|?*\u0000-\u001f]/g, ' ')
+		.replace(/[<>:"/\\|?*\p{Cc}]/gu, ' ')
 		.replace(/\s+/g, ' ')
 		.trim()
 		.replace(/\.+$/, '');

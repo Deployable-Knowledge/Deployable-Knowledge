@@ -9,7 +9,7 @@ import { alignTranscription } from '$lib/server/transcription/forced-alignment';
 import { detectSpeechChunks } from '$lib/server/transcription/voice-activity-detection';
 import { diarizeAudio } from '$lib/server/transcription/speaker-diarization';
 import { filterHallucinatedTranscription } from '$lib/server/transcription/hallucination-gate';
-import type { SpeakerTurn } from 'sherpa-onnx-node';
+import type { SpeakerTurn } from '$lib/server/transcription/speaker-turn';
 import type {
 	ExtractionResult,
 	ParsedChunk,

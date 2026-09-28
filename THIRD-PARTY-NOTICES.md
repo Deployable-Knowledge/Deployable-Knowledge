@@ -147,6 +147,20 @@ By downloading a Gemma model through this application, you agree to those terms.
 - `Xenova/ms-marco-MiniLM-L-6-v2` — alternative cross-encoder reranking. Apache-2.0.
 - `tesseract-ocr/tessdata` `eng.traineddata` (4.1.0) — OCR language data. Apache-2.0.
 
+### Speaker diarization — pyannote Community-1
+
+Speaker diarization runs `pyannote/speaker-diarization-community-1` (pyannoteAI / CNRS, CC BY 4.0)
+through ONNX Runtime. Its assets are placed in `models/community-1/` by hand and are not bundled:
+
+- Segmentation and embedding networks: ONNX conversions published as
+  `FredrikKarlssonSpeech/pyannote-speaker-diarization-onnx` (CC BY 4.0).
+- PLDA parameters (`plda.npz`, `xvec_transform.npz`) from the gated Community-1 repository; accept
+  its access conditions on Hugging Face before downloading.
+
+The diarization pipeline in `src/lib/server/transcription/community-1/` is a TypeScript port of
+pyannote.audio 4.0.7 (MIT, © CNRS and pyannoteAI) and of its VBx clustering, derived from Brno
+University of Technology's VBx (Apache-2.0).
+
 ---
 
 ## 7. Other bundled runtimes

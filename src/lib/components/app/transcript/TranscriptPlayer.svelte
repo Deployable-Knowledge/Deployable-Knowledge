@@ -173,7 +173,7 @@
 >
 	<div class="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
 		<div class="mx-auto grid w-full max-w-4xl gap-5 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-			<header class="grid min-w-0 gap-1 border-b pb-5"></header>
+			<header class="grid min-w-0 gap-1 border-b pb-5">
 			<div class="flex min-w-0 items-center gap-3">
 				<h1
 					class="flex min-w-0 flex-1 items-center gap-2 text-2xl font-semibold tracking-tight"
@@ -204,6 +204,7 @@
 					· transcribed before timings were recorded, so playback cannot follow along
 				{/if}
 			</p>
+			</header>
 
 			<div class="grid gap-5">
 				{#each chunks as chunk, index (chunk.id)}

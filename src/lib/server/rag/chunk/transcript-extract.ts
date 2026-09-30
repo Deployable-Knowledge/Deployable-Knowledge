@@ -1,5 +1,3 @@
-// Speech has no pages, so a whole transcript enters the chunk pipeline as a single text page.
-
 import { decodeAudioFile } from '$lib/server/transcription/audio-decoder';
 import {
 	transcribeAudioChunks,
@@ -67,6 +65,26 @@ export function buildTranscriptExtraction(
 	};
 }
 
+const NEAREST_TURN_MAX_GAP_MS = 500;
+
+function nearestTurnSpeaker(word: TranscriptSegment, turns: SpeakerTurn[]): number | undefined {
+	if (!/[\p{Letter}\p{Number}]/u.test(word.text)) return undefined;
+
+	let speakerId: number | undefined;
+	let smallestGapMs = NEAREST_TURN_MAX_GAP_MS;
+
+	for (const turn of turns) {
+		const gapMs = Math.max(turn.start * 1000 - word.endMs, word.startMs - turn.end * 1000, 0);
+		if (gapMs > smallestGapMs) continue;
+		if (speakerId !== undefined && gapMs === smallestGapMs) continue;
+
+		speakerId = turn.speaker;
+		smallestGapMs = gapMs;
+	}
+
+	return speakerId;
+}
+
 function assignSpeakers(words: TranscriptSegment[], turns: SpeakerTurn[]): TranscriptSegment[] {
 	return words.map((word) => {
 		const overlapBySpeaker = new Map<number, number>();
@@ -90,6 +108,7 @@ function assignSpeakers(words: TranscriptSegment[], turns: SpeakerTurn[]): Trans
 			greatestOverlapMs = overlapMs;
 		}
 
+		speakerId ??= nearestTurnSpeaker(word, turns);
 		if (speakerId === undefined) return word;
 
 		return {

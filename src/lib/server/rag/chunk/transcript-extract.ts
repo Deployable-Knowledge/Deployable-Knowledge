@@ -6,6 +6,7 @@ import {
 import { alignTranscription } from '$lib/server/transcription/forced-alignment';
 import { detectSpeechChunks } from '$lib/server/transcription/voice-activity-detection';
 import { diarizeAudio } from '$lib/server/transcription/speaker-diarization';
+import type { DiarizationStage } from '$lib/server/transcription/community-1/pipeline';
 import { filterHallucinatedTranscription } from '$lib/server/transcription/hallucination-gate';
 import type { SpeakerTurn } from '$lib/server/transcription/speaker-turn';
 import type {
@@ -118,6 +119,19 @@ function assignSpeakers(words: TranscriptSegment[], turns: SpeakerTurn[]): Trans
 	});
 }
 
+// Share of speaker identification each stage takes, where it starts, and how it's described
+const DIARIZATION_STAGES: Record<
+	DiarizationStage,
+	{ start: number; share: number; label: string }
+> = {
+	segmentation: { start: 0, share: 0.1, label: 'finding who speaks when' },
+	embeddings: { start: 0.1, share: 0.75, label: 'recognizing voices' },
+	clustering: { start: 0.85, share: 0.1, label: 'grouping voices' },
+	reconstruction: { start: 0.95, share: 0.05, label: 'building speaker turns' }
+};
+const DIARIZATION_PROGRESS_START = 0.72;
+const DIARIZATION_PROGRESS_SPAN = 0.26;
+
 export async function extractTranscript(
 	source: Source,
 	onProgress?: (ratio: number, message: string) => void
@@ -143,15 +157,24 @@ export async function extractTranscript(
 	let segments = transcription.segments;
 
 	if (segments.length > 0) {
-		onProgress?.(0.72, 'Identifying speakers');
+		onProgress?.(DIARIZATION_PROGRESS_START, 'Identifying speakers');
 
 		try {
 			/*
 			 * Keep diarization on the complete original waveform.
 			 * Running it independently on VAD chunks would destroy
-			 * global speaker identity.
+			 * global speaker identity. The waveform is handed to the
+			 * diarization worker without copying, so it must be the
+			 * last use of audioData (and of audioChunks, which view it).
 			 */
-			const turns = await diarizeAudio(audioData);
+			const turns = await diarizeAudio(audioData, (stage, fraction) => {
+				const { start, share, label } = DIARIZATION_STAGES[stage];
+				const overall = start + share * fraction;
+				onProgress?.(
+					DIARIZATION_PROGRESS_START + DIARIZATION_PROGRESS_SPAN * overall,
+					`Identifying speakers: ${label}`
+				);
+			});
 			segments = assignSpeakers(segments, turns);
 		} catch (error) {
 			console.warn('[Transcription] Speaker diarization unavailable:', error);

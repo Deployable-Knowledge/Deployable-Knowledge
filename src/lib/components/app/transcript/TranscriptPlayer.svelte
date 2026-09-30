@@ -174,36 +174,36 @@
 	<div class="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
 		<div class="mx-auto grid w-full max-w-4xl gap-5 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
 			<header class="grid min-w-0 gap-1 border-b pb-5">
-			<div class="flex min-w-0 items-center gap-3">
-				<h1
-					class="flex min-w-0 flex-1 items-center gap-2 text-2xl font-semibold tracking-tight"
-					id="transcript-page-title"
-				>
-					<AudioLines class="size-5 shrink-0 text-muted-foreground" />
-					<span class="min-w-0 truncate">{document.title}</span>
-				</h1>
+				<div class="flex min-w-0 items-center gap-3">
+					<h1
+						class="flex min-w-0 flex-1 items-center gap-2 text-2xl font-semibold tracking-tight"
+						id="transcript-page-title"
+					>
+						<AudioLines class="size-5 shrink-0 text-muted-foreground" />
+						<span class="min-w-0 truncate">{document.title}</span>
+					</h1>
 
-				<Button
-					class="shrink-0"
-					disabled={downloadingTranscript}
-					onclick={() => void downloadTranscript()}
-					size="sm"
-					variant="outline"
-				>
-					<Download />
-					{downloadingTranscript ? 'Downloading…' : 'Download .txt'}
-				</Button>
-			</div>
-			<p class="m-0 text-xs text-muted-foreground">
-				{chunks.length}
-				{chunks.length === 1 ? 'chunk' : 'chunks'}
-				{#if duration > 0}· {formatTimestamp(duration * 1000)} total{/if}
-				{#if timed}
-					· following chunk {highlightIndex >= 0 ? highlightIndex + 1 : '–'}
-				{:else}
-					· transcribed before timings were recorded, so playback cannot follow along
-				{/if}
-			</p>
+					<Button
+						class="shrink-0"
+						disabled={downloadingTranscript}
+						onclick={() => void downloadTranscript()}
+						size="sm"
+						variant="outline"
+					>
+						<Download />
+						{downloadingTranscript ? 'Downloading…' : 'Download .txt'}
+					</Button>
+				</div>
+				<p class="m-0 text-xs text-muted-foreground">
+					{chunks.length}
+					{chunks.length === 1 ? 'chunk' : 'chunks'}
+					{#if duration > 0}· {formatTimestamp(duration * 1000)} total{/if}
+					{#if timed}
+						· following chunk {highlightIndex >= 0 ? highlightIndex + 1 : '–'}
+					{:else}
+						· transcribed before timings were recorded, so playback cannot follow along
+					{/if}
+				</p>
 			</header>
 
 			<div class="grid gap-5">

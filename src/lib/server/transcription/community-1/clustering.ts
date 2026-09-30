@@ -4,6 +4,7 @@
  * it is not ported.
  */
 
+import { totalmem } from 'node:os';
 import { agglomerativeClusters } from './ahc';
 import { EMBEDDING_DIMENSION, type PldaModel } from './plda';
 import { FRAMES_PER_CHUNK, LOCAL_SPEAKERS } from './segmentation';
@@ -13,6 +14,22 @@ export const UNASSIGNED = -2;
 
 const MIN_ACTIVE_RATIO = 0.2;
 const MIN_SPEAKER_PRIOR = 1e-7;
+
+// AHC's pairwise distance table grows with the square of the voice samples, lives outside the
+// JavaScript heap, and is not bounded by worker heap limits.
+const MAX_DISTANCE_TABLE_SHARE_OF_RAM = 0.25;
+
+function assertDistanceTableFits(sampleCount: number): void {
+	const bytes = ((sampleCount * (sampleCount - 1)) / 2) * Float64Array.BYTES_PER_ELEMENT;
+	const limit = totalmem() * MAX_DISTANCE_TABLE_SHARE_OF_RAM;
+	if (bytes <= limit) return;
+
+	const gb = (value: number) => (value / 1024 ** 3).toFixed(1);
+	throw new Error(
+		`Too many voice samples (${sampleCount}) to identify speakers: clustering would need ` +
+			`${gb(bytes)} GB, more than the ${gb(limit)} GB allowed on this machine.`
+	);
+}
 
 export interface ClusteringParameters {
 	threshold: number;
@@ -141,6 +158,7 @@ export function clusterEmbeddings(
 			normalized[row * EMBEDDING_DIMENSION + d] = source[d] / norm;
 	});
 
+	assertDistanceTableFits(train.length);
 	const ahcLabels = agglomerativeClusters(
 		normalized,
 		train.length,

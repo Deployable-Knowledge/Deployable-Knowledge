@@ -1,6 +1,7 @@
 package-lock.json
 .svelte-kit/
 build/
+dist-workers/
 release/
 drizzle/
 .claude/

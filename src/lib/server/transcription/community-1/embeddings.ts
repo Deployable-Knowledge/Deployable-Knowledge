@@ -153,7 +153,8 @@ export async function extractEmbeddings(
 	model: EmbeddingModel,
 	samples: Float32Array,
 	activity: Uint8Array,
-	chunkCount: number
+	chunkCount: number,
+	onProgress?: (fraction: number) => void
 ): Promise<Float64Array> {
 	const embeddings = new Float64Array(chunkCount * LOCAL_SPEAKERS * EMBEDDING_DIMENSION);
 	const waveform = new Float32Array(CHUNK_SAMPLES);
@@ -194,6 +195,8 @@ export async function extractEmbeddings(
 				);
 			}
 		}
+
+		onProgress?.((first + batch) / chunkCount);
 	}
 
 	return embeddings;

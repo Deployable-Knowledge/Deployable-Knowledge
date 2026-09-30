@@ -30,6 +30,16 @@ export interface DiarizationIntermediates {
 	timings: Record<string, number>;
 }
 
+export type DiarizationStage = 'segmentation' | 'embeddings' | 'clustering' | 'reconstruction';
+
+/** Reports how far a stage has progressed, as a fraction from 0 to 1. */
+export type DiarizationProgress = (stage: DiarizationStage, fraction: number) => void;
+
+export interface DiarizeOptions {
+	capture?: boolean;
+	onProgress?: DiarizationProgress;
+}
+
 export interface DiarizationOutput {
 	/** Overlap-preserving diarization. */
 	turns: SpeakerTurn[];
@@ -41,7 +51,7 @@ export interface DiarizationOutput {
 export interface Community1Diarizer {
 	embeddingModel: EmbeddingModel;
 	plda: PldaModel;
-	diarize(samples: Float32Array, options?: { capture?: boolean }): Promise<DiarizationOutput>;
+	diarize(samples: Float32Array, options?: DiarizeOptions): Promise<DiarizationOutput>;
 }
 
 export async function createCommunity1Diarizer(): Promise<Community1Diarizer> {
@@ -52,8 +62,9 @@ export async function createCommunity1Diarizer(): Promise<Community1Diarizer> {
 
 	const diarize = async (
 		samples: Float32Array,
-		options: { capture?: boolean } = {}
+		options: DiarizeOptions = {}
 	): Promise<DiarizationOutput> => {
+		const { onProgress } = options;
 		const timings: Record<string, number> = {};
 		let clock = performance.now();
 		const lap = (stage: string) => {
@@ -66,10 +77,17 @@ export async function createCommunity1Diarizer(): Promise<Community1Diarizer> {
 		const activity = decodePowerset(scores, chunkCount);
 		const count = speakerCount(activity, chunkCount);
 		lap('segmentation');
+		onProgress?.('segmentation', 1);
 
 		if (count.every((value) => value === 0)) return { turns: [], exclusiveTurns: [] };
 
-		const embeddings = await extractEmbeddings(embeddingModel, samples, activity, chunkCount);
+		const embeddings = await extractEmbeddings(
+			embeddingModel,
+			samples,
+			activity,
+			chunkCount,
+			(fraction) => onProgress?.('embeddings', fraction)
+		);
 		lap('embeddings');
 
 		const clustering = clusterEmbeddings(
@@ -82,12 +100,14 @@ export async function createCommunity1Diarizer(): Promise<Community1Diarizer> {
 		const hardClusters = Int32Array.from(clustering.hardClusters);
 		unassignInactiveSpeakers(hardClusters, activity, chunkCount);
 		lap('clustering');
+		onProgress?.('clustering', 1);
 
 		const clustered = clusteredSegmentation(activity, hardClusters, chunkCount);
 		const turns = binarizeToTurns(toDiarization(clustered, chunkCount, count));
 		const exclusiveCount = count.map((value) => Math.min(value, 1));
 		const exclusiveTurns = binarizeToTurns(toDiarization(clustered, chunkCount, exclusiveCount));
 		lap('reconstruction');
+		onProgress?.('reconstruction', 1);
 
 		if (!options.capture) return { turns, exclusiveTurns };
 

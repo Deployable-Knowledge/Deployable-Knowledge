@@ -148,7 +148,8 @@ export async function transcribeAudio(audioData: Float32Array): Promise<Transcri
  * Whisper's 30-second input limit, so internal long-form chunking is disabled.
  */
 export async function transcribeAudioChunks(
-	audioChunks: AudioChunk[]
+	audioChunks: AudioChunk[],
+	onChunk?: (completed: number, total: number) => void
 ): Promise<TranscriptionResult> {
 	if (audioChunks.length === 0) {
 		return {
@@ -161,10 +162,11 @@ export async function transcribeAudioChunks(
 	const transcriber = await getTranscriber();
 	const results: TranscribedAudioChunk[] = [];
 
-	for (const audioChunk of audioChunks) {
-		if (audioChunk.samples.length === 0) continue;
-
-		results.push(await transcribeChunk(transcriber, audioChunk, false));
+	for (const [index, audioChunk] of audioChunks.entries()) {
+		if (audioChunk.samples.length > 0) {
+			results.push(await transcribeChunk(transcriber, audioChunk, false));
+		}
+		onChunk?.(index + 1, audioChunks.length);
 	}
 
 	return combineChunkResults(results);

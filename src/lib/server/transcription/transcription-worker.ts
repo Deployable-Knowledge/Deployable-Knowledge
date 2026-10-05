@@ -1,21 +1,24 @@
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { Worker } from 'node:worker_threads';
-import type { DiarizationProgress } from './community-1/pipeline';
-import type { DiarizeReply, DiarizeRequest } from './community-1/worker-protocol';
-import type { SpeakerTurn } from './speaker-turn';
+import type {
+	TranscribedRecording,
+	TranscribeReply,
+	TranscribeRequest,
+	TranscriptionProgress
+} from './transcription-worker-protocol';
 
 const WORKER_PATH = resolve(
 	process.env.DK_APP_ROOT?.trim() || process.cwd(),
 	'dist-workers',
-	'diarization-worker.mjs'
+	'transcription-worker.mjs'
 );
 
 interface PendingJob {
 	id: number;
 	worker: Worker;
-	onProgress?: DiarizationProgress;
-	resolve(turns: SpeakerTurn[]): void;
+	onProgress?: TranscriptionProgress;
+	resolve(recording: TranscribedRecording): void;
 	reject(error: Error): void;
 }
 
@@ -26,12 +29,12 @@ let queue: Promise<unknown> = Promise.resolve();
 
 function startWorker(): Worker {
 	if (!existsSync(WORKER_PATH)) {
-		throw new Error(`The diarization worker has not been built: ${WORKER_PATH} is missing.`);
+		throw new Error(`The transcription worker has not been built: ${WORKER_PATH} is missing.`);
 	}
 
 	const started = new Worker(WORKER_PATH, { execArgv: [] });
 
-	started.on('message', (message: DiarizeReply) => {
+	started.on('message', (message: TranscribeReply) => {
 		const job = pending;
 		if (!job || job.worker !== started || job.id !== message.id) return;
 
@@ -42,8 +45,13 @@ function startWorker(): Worker {
 
 		pending = undefined;
 		started.unref();
-		if (message.type === 'result') job.resolve(message.turns);
-		else job.reject(new Error(message.message));
+		if (message.type === 'error') {
+			job.reject(new Error(message.message));
+			return;
+		}
+
+		const { text, segments, speakerError } = message;
+		job.resolve({ text, segments, speakerError });
 	});
 
 	const fail = (error: Error) => {
@@ -56,18 +64,20 @@ function startWorker(): Worker {
 	};
 	started.on('error', fail);
 	started.on('exit', (code) =>
-		fail(new Error(`The diarization worker stopped (exit code ${code}).`))
+		fail(new Error(`The transcription worker stopped (exit code ${code}).`))
 	);
 
-	// Held open only while a job runs, so an idle worker never keeps the server from exiting
 	started.unref();
 	return started;
 }
 
-function runJob(samples: Float32Array, onProgress?: DiarizationProgress): Promise<SpeakerTurn[]> {
+function runJob(
+	samples: Float32Array,
+	onProgress?: TranscriptionProgress
+): Promise<TranscribedRecording> {
 	return new Promise((resolve, reject) => {
 		worker ??= startWorker();
-		const request: DiarizeRequest = { type: 'diarize', id: nextJobId++, samples };
+		const request: TranscribeRequest = { type: 'transcribe', id: nextJobId++, samples };
 		pending = { id: request.id, worker, onProgress, resolve, reject };
 
 		const transfer = samples.buffer instanceof ArrayBuffer ? [samples.buffer] : [];
@@ -76,10 +86,10 @@ function runJob(samples: Float32Array, onProgress?: DiarizationProgress): Promis
 	});
 }
 
-export function diarizeAudio(
+export function transcribeRecording(
 	samples: Float32Array,
-	onProgress?: DiarizationProgress
-): Promise<SpeakerTurn[]> {
+	onProgress?: TranscriptionProgress
+): Promise<TranscribedRecording> {
 	const job = queue.then(() => runJob(samples, onProgress));
 	queue = job.catch(() => undefined);
 	return job;

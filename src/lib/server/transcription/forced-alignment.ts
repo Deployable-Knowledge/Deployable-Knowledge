@@ -444,7 +444,8 @@ async function alignChunk(
 }
 
 export async function alignTranscription(
-	transcription: TranscriptionResult
+	transcription: TranscriptionResult,
+	onChunk?: (completed: number, total: number) => void
 ): Promise<TranscriptionResult> {
 	if (transcription.chunks.length === 0) {
 		return transcription;
@@ -461,7 +462,7 @@ export async function alignTranscription(
 
 	const alignedChunks: TranscribedAudioChunk[] = [];
 
-	for (const chunk of transcription.chunks) {
+	for (const [index, chunk] of transcription.chunks.entries()) {
 		try {
 			alignedChunks.push({
 				...chunk,
@@ -472,6 +473,7 @@ export async function alignTranscription(
 
 			alignedChunks.push(chunk);
 		}
+		onChunk?.(index + 1, transcription.chunks.length);
 	}
 
 	return {

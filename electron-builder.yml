@@ -12,6 +12,7 @@ publish: null
 
 files:
   - build/**
+  - dist-workers/**
   - drizzle/**
   - electron/*.{cjs,ts}
   - eng.traineddata

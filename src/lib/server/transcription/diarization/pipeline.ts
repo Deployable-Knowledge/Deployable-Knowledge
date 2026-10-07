@@ -1,14 +1,8 @@
-/*
- * pyannote Community-1 speaker diarization (`SpeakerDiarization.apply`, pyannote.audio 4.0.7) on
- * ONNX Runtime, for mono 16 kHz float32 audio with an automatically estimated speaker count.
- */
-
 import { InferenceSession } from 'onnxruntime-node';
 import type { SpeakerTurn } from '../speaker-turn';
-import { loadCommunity1Assets } from './assets';
+import { loadDiarizationModels } from './assets';
 import { clusterEmbeddings } from './clustering';
-import { createEmbeddingModel, extractEmbeddings } from './embeddings';
-import { loadPlda } from './plda';
+import { extractEmbeddings } from './embeddings';
 import {
 	binarizeToTurns,
 	clusteredSegmentation,
@@ -21,15 +15,14 @@ export type DiarizationStage = 'segmentation' | 'embeddings' | 'clustering' | 'r
 
 export type DiarizationProgress = (stage: DiarizationStage, fraction: number) => void;
 
-export interface Community1Diarizer {
+export interface SpeakerDiarizer {
 	diarize(samples: Float32Array, onProgress?: DiarizationProgress): Promise<SpeakerTurn[]>;
 }
 
-export async function createCommunity1Diarizer(): Promise<Community1Diarizer> {
-	const assets = await loadCommunity1Assets();
-	const plda = loadPlda(assets.xvecTransform, assets.plda);
-	const segmentationSession = await InferenceSession.create(assets.segmentation);
-	const embeddingModel = await createEmbeddingModel(assets.embedding);
+export async function createSpeakerDiarizer(): Promise<SpeakerDiarizer> {
+	const models = await loadDiarizationModels();
+	const segmentationSession = await InferenceSession.create(models.segmentation);
+	const embeddingSession = await InferenceSession.create(models.embedding);
 
 	const diarize = async (
 		samples: Float32Array,
@@ -43,14 +36,14 @@ export async function createCommunity1Diarizer(): Promise<Community1Diarizer> {
 		if (count.every((value) => value === 0)) return [];
 
 		const embeddings = await extractEmbeddings(
-			embeddingModel,
+			embeddingSession,
 			samples,
 			activity,
 			chunkCount,
 			(fraction) => onProgress?.('embeddings', fraction)
 		);
 
-		const hardClusters = clusterEmbeddings(embeddings, activity, chunkCount, plda);
+		const hardClusters = clusterEmbeddings(embeddings, activity, chunkCount);
 		onProgress?.('clustering', 1);
 
 		const clustered = clusteredSegmentation(activity, hardClusters, chunkCount);

@@ -26,6 +26,9 @@ app.db
 app.db-*
 
 # runtime data directories
-/models/
+/models/*
+!/models/vad/
+/models/vad/*
+!/models/vad/silero_vad.onnx
 /documents/
 .cache/

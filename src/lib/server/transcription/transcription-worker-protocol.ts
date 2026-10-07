@@ -1,4 +1,4 @@
-import type { DiarizationStage } from './community-1/pipeline';
+import type { DiarizationStage } from './diarization/pipeline';
 import type { TranscriptSegment } from './transcription-model';
 
 export type TranscriptionStage = 'speech' | 'transcription' | 'alignment' | DiarizationStage;

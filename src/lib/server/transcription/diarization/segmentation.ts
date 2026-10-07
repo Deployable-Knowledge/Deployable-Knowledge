@@ -1,8 +1,3 @@
-/*
- * Sliding-window speaker segmentation, as pyannote's `Inference.slide` with the Community-1
- * powerset model: 10 s windows every 1 s, 589 output frames per window, 3 local speakers.
- */
-
 import { Tensor, type InferenceSession } from 'onnxruntime-node';
 import type { SlidingWindow } from './rounding';
 
@@ -67,9 +62,9 @@ export async function runSegmentation(
 		}
 
 		const output = await session.run({
-			waveform: new Tensor('float32', input, [batch, 1, CHUNK_SAMPLES])
+			input_values: new Tensor('float32', input, [batch, 1, CHUNK_SAMPLES])
 		});
-		const batchScores = output.scores;
+		const batchScores = output.logits;
 
 		if (batchScores.dims.join('x') !== `${batch}x${FRAMES_PER_CHUNK}x${POWERSET_CLASSES}`) {
 			throw new Error(`Unexpected segmentation output shape ${batchScores.dims.join('x')}.`);

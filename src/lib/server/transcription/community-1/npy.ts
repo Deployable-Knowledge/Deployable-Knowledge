@@ -1,6 +1,3 @@
-import { inflateRawSync } from 'node:zlib';
-
-/** A numeric NumPy array, widened to float64 and stored in C order. */
 export interface NpyArray {
 	shape: number[];
 	data: Float64Array;
@@ -12,15 +9,10 @@ type TypedArrayReader = (view: DataView, offset: number) => number;
 
 const DTYPE_READERS: Record<string, { bytes: number; read: TypedArrayReader }> = {
 	'<f8': { bytes: 8, read: (view, offset) => view.getFloat64(offset, true) },
-	'<f4': { bytes: 4, read: (view, offset) => view.getFloat32(offset, true) },
-	'<i8': { bytes: 8, read: (view, offset) => Number(view.getBigInt64(offset, true)) },
-	'<i4': { bytes: 4, read: (view, offset) => view.getInt32(offset, true) },
-	'|i1': { bytes: 1, read: (view, offset) => view.getInt8(offset) },
-	'|u1': { bytes: 1, read: (view, offset) => view.getUint8(offset) },
-	'|b1': { bytes: 1, read: (view, offset) => view.getUint8(offset) }
+	'<f4': { bytes: 4, read: (view, offset) => view.getFloat32(offset, true) }
 };
 
-export function parseNpy(bytes: Uint8Array): NpyArray {
+function parseNpy(bytes: Uint8Array): NpyArray {
 	if (NPY_MAGIC.some((value, index) => bytes[index] !== value)) {
 		throw new Error('Not a .npy file.');
 	}
@@ -69,9 +61,7 @@ const EOCD_SIGNATURE = 0x06054b50;
 const CENTRAL_SIGNATURE = 0x02014b50;
 const LOCAL_SIGNATURE = 0x04034b50;
 const ZIP_STORED = 0;
-const ZIP_DEFLATED = 8;
 
-/** Reads every `.npy` member of a NumPy `.npz` archive, keyed by name without extension. */
 export function parseNpz(bytes: Uint8Array): Map<string, NpyArray> {
 	const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 
@@ -116,16 +106,11 @@ export function parseNpz(bytes: Uint8Array): Map<string, NpyArray> {
 			view.getUint16(localOffset + 28, true);
 		const payload = bytes.subarray(dataStart, dataStart + compressedSize);
 
-		let member: Uint8Array;
-		if (method === ZIP_STORED) {
-			member = payload;
-		} else if (method === ZIP_DEFLATED) {
-			member = inflateRawSync(payload);
-		} else {
-			throw new Error(`Unsupported .npz compression method ${method} for ${name}.`);
+		if (method !== ZIP_STORED) {
+			throw new Error(`Compressed .npz member ${name} is not supported.`);
 		}
 
-		arrays.set(name.replace(/\.npy$/, ''), parseNpy(member));
+		arrays.set(name.replace(/\.npy$/, ''), parseNpy(payload));
 	}
 
 	return arrays;

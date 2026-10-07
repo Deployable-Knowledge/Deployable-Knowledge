@@ -13,7 +13,8 @@ import { embedTexts, getActiveEmbedding } from './embedding-model';
 import { putChunkVectors, removeDocumentVectors } from './search/vector-index';
 import type { VectorIndexRow } from './search/vector-store';
 
-const INSERT_BATCH_SIZE = 100;
+const INSERT_BATCH_SIZE = 100; //Can adjust later
+// Embed in bounded slices so a huge document never holds every raw vector at once
 const EMBED_SLICE_SIZE = 256;
 const REFRESH_BATCH_SIZE = 128;
 

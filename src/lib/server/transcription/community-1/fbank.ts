@@ -26,7 +26,6 @@ function melScale(frequency: number): number {
 	return 1127 * Math.log(1 + frequency / 700);
 }
 
-/** Triangular mel weights, `(80 × 256)`; the Nyquist bin always has zero weight. */
 const melBanks = (() => {
 	const banks = new Float64Array(MEL_BINS * FFT_BINS);
 	const melLow = melScale(LOW_FREQUENCY);
@@ -65,7 +64,6 @@ const twiddleSin = Float64Array.from({ length: FFT_SIZE / 2 }, (_, k) =>
 	Math.sin((-2 * Math.PI * k) / FFT_SIZE)
 );
 
-/** In-place iterative radix-2 complex FFT of length 512. */
 function fft(real: Float64Array, imaginary: Float64Array): void {
 	for (let index = 0; index < FFT_SIZE; index++) {
 		const target = bitReversal[index];
@@ -102,7 +100,6 @@ export function countFbankFrames(sampleCount: number): number {
 		: 1 + Math.floor((sampleCount - FRAME_LENGTH) / FRAME_SHIFT);
 }
 
-/** Mean-normalized log mel filterbank, `(frames × 80)`, written into `target`. */
 export function computeFbank(waveform: Float32Array, target: Float32Array): void {
 	const frameCount = countFbankFrames(waveform.length);
 	if (target.length !== frameCount * MEL_BINS) {

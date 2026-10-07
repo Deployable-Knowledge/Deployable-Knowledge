@@ -12,14 +12,13 @@ import { CHUNK_WINDOW, FRAME_WINDOW, FRAMES_PER_CHUNK, LOCAL_SPEAKERS } from './
 const AGGREGATE_EPSILON = 1e-12;
 const BINARIZE_THRESHOLD = 0.5;
 
-/** Aggregated frame-level scores on the global frame grid, `(frames × classes)`. */
-export interface FrameScores {
+interface FrameScores {
 	frames: number;
 	classes: number;
 	data: Float32Array;
 }
 
-export function globalFrameCount(chunkCount: number): number {
+function globalFrameCount(chunkCount: number): number {
 	const end = CHUNK_WINDOW.start + CHUNK_WINDOW.duration + (chunkCount - 1) * CHUNK_WINDOW.step;
 	return closestFrame(end + 0.5 * FRAME_WINDOW.duration, FRAME_WINDOW) + 1;
 }
@@ -68,7 +67,6 @@ function aggregate(
 	return { frames, classes, data: output };
 }
 
-/** Instantaneous number of active speakers per global frame. */
 export function speakerCount(activity: Uint8Array, chunkCount: number): Uint8Array {
 	const perChunk = new Float32Array(chunkCount * FRAMES_PER_CHUNK);
 	for (let frame = 0; frame < perChunk.length; frame++) {
@@ -106,7 +104,6 @@ export function clusteredSegmentation(
 	return { clusters, data };
 }
 
-/** Keeps the `count[t]` most active clusters of each frame (`to_diarization`). */
 export function toDiarization(
 	clustered: { clusters: number; data: Float32Array },
 	chunkCount: number,
@@ -130,7 +127,6 @@ export function toDiarization(
 	return { frames, classes, data: binary };
 }
 
-/** Continuous speaker turns from a discrete diarization (`Binarize`, onset = offset = 0.5). */
 export function binarizeToTurns(diarization: FrameScores): SpeakerTurn[] {
 	const turns: SpeakerTurn[] = [];
 	const middle = (frame: number) =>

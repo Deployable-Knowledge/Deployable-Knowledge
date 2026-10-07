@@ -20,7 +20,6 @@ const LDA_DIMENSION = 128;
 export interface PldaModel {
 	/** Between-speaker covariance diagonal in the PLDA space (`PLDA.phi`). */
 	phi: Float64Array;
-	/** Maps `(count × 256)` embeddings to `(count × 128)` PLDA features. */
 	transform(embeddings: Float64Array, count: number): Float64Array;
 }
 

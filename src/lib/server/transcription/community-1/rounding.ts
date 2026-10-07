@@ -8,14 +8,12 @@ export function roundHalfEven(value: number): number {
 	return floor % 2 === 0 ? floor : floor + 1;
 }
 
-/** Regularly spaced analysis windows, as `pyannote.core.SlidingWindow`. */
 export interface SlidingWindow {
 	start: number;
 	duration: number;
 	step: number;
 }
 
-/** Index of the window whose center is closest to `time`, as `SlidingWindow.closest_frame`. */
 export function closestFrame(time: number, window: SlidingWindow): number {
 	return roundHalfEven((time - window.start - 0.5 * window.duration) / window.step);
 }

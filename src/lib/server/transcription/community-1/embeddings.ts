@@ -24,9 +24,8 @@ const MIN_CLEAN_FRAMES = Math.ceil((FRAMES_PER_CHUNK * MIN_EMBEDDING_SAMPLES) / 
 
 const FBANK_FRAMES = countFbankFrames(CHUNK_SAMPLES);
 
-export interface EmbeddingModel {
+interface EmbeddingModel {
 	session: InferenceSession;
-	/** `seg_1` weight, `(256 × statsDimension)`. */
 	weight: Float32Array;
 	bias: Float32Array;
 	statsDimension: number;
@@ -49,37 +48,12 @@ export async function createEmbeddingModel(modelBytes: Uint8Array): Promise<Embe
 	return { session, weight: weight.data, bias: bias.data, statsDimension: weight.dims[1] };
 }
 
-/** ResNet frame features, `(batch × channels × frames)`, plus the model's own unweighted embedding. */
-export async function runFrameFeatures(
-	model: EmbeddingModel,
-	fbank: Float32Array,
-	batch: number
-): Promise<{ features: Float32Array; channels: number; frames: number; embedding: Float32Array }> {
-	const output = await model.session.run(
-		{ fbank: new Tensor('float32', fbank, [batch, fbank.length / batch / MEL_BINS, MEL_BINS]) },
-		[FRAME_FEATURES_OUTPUT, 'embedding']
-	);
-	const features = output[FRAME_FEATURES_OUTPUT];
-	const [outputBatch, channels, frames] = features.dims;
-
-	if (outputBatch !== batch || channels * 2 !== model.statsDimension) {
-		throw new Error(`Unexpected embedding frame features shape ${features.dims.join('x')}.`);
-	}
-
-	return {
-		features: features.data as Float32Array,
-		channels,
-		frames,
-		embedding: output.embedding.data as Float32Array
-	};
-}
-
 /**
  * Weighted mean/std pooling (`pyannote.audio.models.blocks.pooling._pool`) followed by `seg_1`.
  * `mask` is at segmentation-frame resolution and is resampled by nearest neighbour, as
  * `F.interpolate(mode="nearest")`.
  */
-export function poolEmbedding(
+function poolEmbedding(
 	model: EmbeddingModel,
 	features: Float32Array,
 	channels: number,
@@ -124,10 +98,6 @@ export function poolEmbedding(
 	}
 }
 
-/**
- * Chooses the mask used for local speaker `speaker` of a chunk: its non-overlapped frames when
- * there are enough of them, otherwise all of its frames.
- */
 function speakerMask(activity: Uint8Array, chunkOffset: number, speaker: number): Float32Array {
 	const full = new Float32Array(FRAMES_PER_CHUNK);
 	const clean = new Float32Array(FRAMES_PER_CHUNK);
@@ -148,7 +118,6 @@ function speakerMask(activity: Uint8Array, chunkOffset: number, speaker: number)
 	return cleanFrames > MIN_CLEAN_FRAMES ? clean : full;
 }
 
-/** Embeddings for every (chunk, local speaker) pair, `(chunks × 3 × 256)`. */
 export async function extractEmbeddings(
 	model: EmbeddingModel,
 	samples: Float32Array,
@@ -172,7 +141,17 @@ export async function extractEmbeddings(
 			);
 		}
 
-		const { features, channels, frames } = await runFrameFeatures(model, fbank, batch);
+		const output = await model.session.run(
+			{ fbank: new Tensor('float32', fbank, [batch, FBANK_FRAMES, MEL_BINS]) },
+			[FRAME_FEATURES_OUTPUT]
+		);
+		const [outputBatch, channels, frames] = output[FRAME_FEATURES_OUTPUT].dims;
+		if (outputBatch !== batch || channels * 2 !== model.statsDimension) {
+			throw new Error(
+				`Unexpected embedding frame features shape ${output[FRAME_FEATURES_OUTPUT].dims.join('x')}.`
+			);
+		}
+		const features = output[FRAME_FEATURES_OUTPUT].data as Float32Array;
 		const chunkFeatureSize = channels * frames;
 
 		for (let offset = 0; offset < batch; offset++) {

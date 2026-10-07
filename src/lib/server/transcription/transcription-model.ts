@@ -58,18 +58,9 @@ function decodingOptions(audio: AudioChunk) {
 
 async function transcribeChunk(
 	transcriber: AutomaticSpeechRecognitionPipeline,
-	audio: AudioChunk,
-	longForm: boolean
+	audio: AudioChunk
 ): Promise<TranscribedAudioChunk> {
-	const options = decodingOptions(audio);
-
-	const result = longForm
-		? await transcriber(audio.samples, {
-				...options,
-				chunk_length_s: 30,
-				stride_length_s: 5
-			})
-		: await transcriber(audio.samples, options);
+	const result = await transcriber(audio.samples, decodingOptions(audio));
 
 	const sourceStartMs = sampleIndexToMs(audio.startSample);
 	const sourceEndMs = sampleIndexToMs(audio.endSample);
@@ -126,24 +117,6 @@ function combineChunkResults(chunks: TranscribedAudioChunk[]): TranscriptionResu
 }
 
 /**
- * Preserves the original whole-recording path for the later baseline
- * comparison.
- */
-export async function transcribeAudio(audioData: Float32Array): Promise<TranscriptionResult> {
-	const transcriber = await getTranscriber();
-
-	const audio: AudioChunk = {
-		startSample: 0,
-		endSample: audioData.length,
-		samples: audioData
-	};
-
-	const result = await transcribeChunk(transcriber, audio, true);
-
-	return combineChunkResults([result]);
-}
-
-/**
  * Transcribes VAD-generated chunks. These chunks are already shorter than
  * Whisper's 30-second input limit, so internal long-form chunking is disabled.
  */
@@ -164,7 +137,7 @@ export async function transcribeAudioChunks(
 
 	for (const [index, audioChunk] of audioChunks.entries()) {
 		if (audioChunk.samples.length > 0) {
-			results.push(await transcribeChunk(transcriber, audioChunk, false));
+			results.push(await transcribeChunk(transcriber, audioChunk));
 		}
 		onChunk?.(index + 1, audioChunks.length);
 	}

@@ -64,7 +64,7 @@ async function transcribe({ id, samples }: TranscribeRequest): Promise<void> {
 		if (segments.length > 0) {
 			progress('segmentation', 0);
 			try {
-				const { turns } = await (await loadDiarizer()).diarize(samples, { onProgress: progress });
+				const turns = await (await loadDiarizer()).diarize(samples, progress);
 				segments = assignSpeakers(segments, turns);
 			} catch (error) {
 				speakerError = errorMessage(error);

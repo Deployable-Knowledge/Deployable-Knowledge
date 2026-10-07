@@ -3,9 +3,8 @@
  * initializers and expose an intermediate tensor are understood; everything else is skipped.
  *
  * Field numbers follow onnx.proto: ModelProto.graph = 7; GraphProto.initializer = 5,
- * GraphProto.output = 12; TensorProto.dims = 1, data_type = 2, float_data = 4, name = 8,
- * raw_data = 9, data_location = 14; ValueInfoProto.name = 1, type = 2; TypeProto.tensor_type = 1;
- * TypeProto.Tensor.elem_type = 1.
+ * GraphProto.output = 12; TensorProto.dims = 1, data_type = 2, name = 8, raw_data = 9;
+ * ValueInfoProto.name = 1, type = 2; TypeProto.tensor_type = 1; TypeProto.Tensor.elem_type = 1.
  */
 
 const WIRE_VARINT = 0;
@@ -14,14 +13,11 @@ const WIRE_LENGTH_DELIMITED = 2;
 const WIRE_FIXED32 = 5;
 
 const ONNX_FLOAT = 1;
-const ONNX_EXTERNAL_DATA = 1;
 
 interface WireField {
 	field: number;
 	wireType: number;
-	/** Varint value for wire type 0. */
 	value: number;
-	/** Payload for wire types 1, 2 and 5. */
 	bytes: Uint8Array;
 }
 
@@ -87,7 +83,7 @@ function lengthDelimited(field: number, payload: Uint8Array): Uint8Array {
 	]);
 }
 
-export interface FloatInitializer {
+interface FloatInitializer {
 	dims: number[];
 	data: Float32Array;
 }
@@ -96,53 +92,21 @@ function parseFloatTensor(tensor: Uint8Array, name: string): FloatInitializer {
 	const dims: number[] = [];
 	let dataType = 0;
 	let raw: Uint8Array | undefined;
-	const floats: number[] = [];
 
 	for (const entry of readFields(tensor)) {
 		if (entry.field === 1 && entry.wireType === WIRE_VARINT) dims.push(entry.value);
-		if (entry.field === 1 && entry.wireType === WIRE_LENGTH_DELIMITED) {
-			let offset = 0;
-			while (offset < entry.bytes.length) {
-				const [dim, next] = readVarint(entry.bytes, offset);
-				dims.push(dim);
-				offset = next;
-			}
-		}
 		if (entry.field === 2 && entry.wireType === WIRE_VARINT) dataType = entry.value;
-		if (entry.field === 4 && entry.wireType === WIRE_LENGTH_DELIMITED) {
-			const view = new DataView(entry.bytes.buffer, entry.bytes.byteOffset, entry.bytes.length);
-			for (let offset = 0; offset < entry.bytes.length; offset += 4) {
-				floats.push(view.getFloat32(offset, true));
-			}
-		}
 		if (entry.field === 9 && entry.wireType === WIRE_LENGTH_DELIMITED) raw = entry.bytes;
-		if (entry.field === 14 && entry.value === ONNX_EXTERNAL_DATA) {
-			throw new Error(`ONNX initializer ${name} uses external data, which is not supported.`);
-		}
-	}
-
-	if (dataType !== ONNX_FLOAT) {
-		throw new Error(`ONNX initializer ${name} has data type ${dataType}; expected FLOAT.`);
 	}
 
 	const size = dims.reduce((product, dimension) => product * dimension, 1);
-	let data: Float32Array;
-
-	if (raw) {
-		// Copy so the result is aligned and independent of the model buffer.
-		data = new Float32Array(raw.slice().buffer);
-	} else {
-		data = Float32Array.from(floats);
+	if (dataType !== ONNX_FLOAT || !raw || raw.length !== size * Float32Array.BYTES_PER_ELEMENT) {
+		throw new Error(`ONNX initializer ${name} is not ${dims.join('x')} FLOAT raw data.`);
 	}
 
-	if (data.length !== size) {
-		throw new Error(`ONNX initializer ${name} holds ${data.length} values; expected ${size}.`);
-	}
-
-	return { dims, data };
+	return { dims, data: new Float32Array(raw.slice().buffer) };
 }
 
-/** Reads a FLOAT initializer from an ONNX model by name. */
 export function findFloatInitializer(model: Uint8Array, name: string): FloatInitializer {
 	for (const modelField of readFields(model)) {
 		if (modelField.field !== 7 || modelField.wireType !== WIRE_LENGTH_DELIMITED) continue;
@@ -162,8 +126,6 @@ export function findFloatInitializer(model: Uint8Array, name: string): FloatInit
 }
 
 /**
- * Returns the model with an intermediate FLOAT tensor added as a graph output.
- *
  * Protobuf merges a repeated embedded message when the same field appears again, so appending an
  * encoded `ModelProto { graph { output } }` fragment extends the graph outputs without re-encoding
  * (and possibly losing) any field of the original model.

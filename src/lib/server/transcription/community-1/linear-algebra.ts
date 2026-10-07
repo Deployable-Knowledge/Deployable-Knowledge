@@ -1,4 +1,3 @@
-/** Dense row-major float64 matrix. */
 export interface Matrix {
 	rows: number;
 	cols: number;
@@ -39,7 +38,6 @@ export function multiply(a: Matrix, b: Matrix): Matrix {
 	return out;
 }
 
-/** Gauss–Jordan inverse with partial pivoting. */
 export function invert(a: Matrix): Matrix {
 	const n = a.rows;
 	if (n !== a.cols) throw new Error('Only square matrices can be inverted.');
@@ -84,7 +82,6 @@ export function invert(a: Matrix): Matrix {
 	return inverse;
 }
 
-/** Lower-triangular `L` such that `a = L·Lᵀ` for a symmetric positive-definite `a`. */
 export function cholesky(a: Matrix): Matrix {
 	const n = a.rows;
 	const lower = matrix(n, n);
@@ -106,10 +103,6 @@ export function cholesky(a: Matrix): Matrix {
 	return lower;
 }
 
-/**
- * Eigen-decomposition of a symmetric matrix by cyclic Jacobi rotations.
- * Returns eigenvalues and the matching eigenvectors as the columns of `vectors`.
- */
 export function symmetricEigen(a: Matrix): { values: Float64Array; vectors: Matrix } {
 	const n = a.rows;
 	const work = Float64Array.from(a.data);

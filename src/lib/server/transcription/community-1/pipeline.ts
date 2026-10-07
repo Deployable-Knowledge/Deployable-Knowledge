@@ -6,9 +6,9 @@
 import { InferenceSession } from 'onnxruntime-node';
 import type { SpeakerTurn } from '../speaker-turn';
 import { loadCommunity1Assets } from './assets';
-import { clusterEmbeddings, unassignInactiveSpeakers, type ClusteringResult } from './clustering';
-import { createEmbeddingModel, extractEmbeddings, type EmbeddingModel } from './embeddings';
-import { loadPlda, type PldaModel } from './plda';
+import { clusterEmbeddings } from './clustering';
+import { createEmbeddingModel, extractEmbeddings } from './embeddings';
+import { loadPlda } from './plda';
 import {
 	binarizeToTurns,
 	clusteredSegmentation,
@@ -17,41 +17,12 @@ import {
 } from './reconstruction';
 import { decodePowerset, runSegmentation } from './segmentation';
 
-/** Community-1 `config.yaml` clustering parameters. */
-const CLUSTERING_PARAMETERS = { threshold: 0.6, fa: 0.07, fb: 0.8 };
-
-export interface DiarizationIntermediates {
-	chunkCount: number;
-	segmentationScores: Float32Array;
-	activity: Uint8Array;
-	count: Uint8Array;
-	embeddings: Float64Array;
-	clustering: ClusteringResult;
-	timings: Record<string, number>;
-}
-
 export type DiarizationStage = 'segmentation' | 'embeddings' | 'clustering' | 'reconstruction';
 
-/** Reports how far a stage has progressed, as a fraction from 0 to 1. */
 export type DiarizationProgress = (stage: DiarizationStage, fraction: number) => void;
 
-export interface DiarizeOptions {
-	capture?: boolean;
-	onProgress?: DiarizationProgress;
-}
-
-export interface DiarizationOutput {
-	/** Overlap-preserving diarization. */
-	turns: SpeakerTurn[];
-	/** At most one speaker at a time. */
-	exclusiveTurns: SpeakerTurn[];
-	intermediates?: DiarizationIntermediates;
-}
-
 export interface Community1Diarizer {
-	embeddingModel: EmbeddingModel;
-	plda: PldaModel;
-	diarize(samples: Float32Array, options?: DiarizeOptions): Promise<DiarizationOutput>;
+	diarize(samples: Float32Array, onProgress?: DiarizationProgress): Promise<SpeakerTurn[]>;
 }
 
 export async function createCommunity1Diarizer(): Promise<Community1Diarizer> {
@@ -62,24 +33,14 @@ export async function createCommunity1Diarizer(): Promise<Community1Diarizer> {
 
 	const diarize = async (
 		samples: Float32Array,
-		options: DiarizeOptions = {}
-	): Promise<DiarizationOutput> => {
-		const { onProgress } = options;
-		const timings: Record<string, number> = {};
-		let clock = performance.now();
-		const lap = (stage: string) => {
-			const now = performance.now();
-			timings[stage] = now - clock;
-			clock = now;
-		};
-
+		onProgress?: DiarizationProgress
+	): Promise<SpeakerTurn[]> => {
 		const { chunkCount, scores } = await runSegmentation(segmentationSession, samples);
 		const activity = decodePowerset(scores, chunkCount);
 		const count = speakerCount(activity, chunkCount);
-		lap('segmentation');
 		onProgress?.('segmentation', 1);
 
-		if (count.every((value) => value === 0)) return { turns: [], exclusiveTurns: [] };
+		if (count.every((value) => value === 0)) return [];
 
 		const embeddings = await extractEmbeddings(
 			embeddingModel,
@@ -88,43 +49,16 @@ export async function createCommunity1Diarizer(): Promise<Community1Diarizer> {
 			chunkCount,
 			(fraction) => onProgress?.('embeddings', fraction)
 		);
-		lap('embeddings');
 
-		const clustering = clusterEmbeddings(
-			embeddings,
-			activity,
-			chunkCount,
-			plda,
-			CLUSTERING_PARAMETERS
-		);
-		const hardClusters = Int32Array.from(clustering.hardClusters);
-		unassignInactiveSpeakers(hardClusters, activity, chunkCount);
-		lap('clustering');
+		const hardClusters = clusterEmbeddings(embeddings, activity, chunkCount, plda);
 		onProgress?.('clustering', 1);
 
 		const clustered = clusteredSegmentation(activity, hardClusters, chunkCount);
 		const turns = binarizeToTurns(toDiarization(clustered, chunkCount, count));
-		const exclusiveCount = count.map((value) => Math.min(value, 1));
-		const exclusiveTurns = binarizeToTurns(toDiarization(clustered, chunkCount, exclusiveCount));
-		lap('reconstruction');
 		onProgress?.('reconstruction', 1);
 
-		if (!options.capture) return { turns, exclusiveTurns };
-
-		return {
-			turns,
-			exclusiveTurns,
-			intermediates: {
-				chunkCount,
-				segmentationScores: scores,
-				activity,
-				count,
-				embeddings,
-				clustering: { ...clustering, hardClusters },
-				timings
-			}
-		};
+		return turns;
 	};
 
-	return { embeddingModel, plda, diarize };
+	return { diarize };
 }

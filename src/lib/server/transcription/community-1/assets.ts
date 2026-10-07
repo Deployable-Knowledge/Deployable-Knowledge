@@ -16,7 +16,7 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-export const COMMUNITY1_MODEL_DIR = resolve(process.cwd(), 'models', 'community-1');
+const COMMUNITY1_MODEL_DIR = resolve(process.cwd(), 'models', 'community-1');
 
 const ONNX_SOURCE =
 	'FredrikKarlssonSpeech/pyannote-speaker-diarization-onnx@0a7a3bf63c16c6718a7411a3e3fe01598fc46550';
@@ -46,7 +46,7 @@ const ASSET_FILES = {
 	}
 } as const;
 
-export type Community1Assets = Record<keyof typeof ASSET_FILES, Uint8Array>;
+type Community1Assets = Record<keyof typeof ASSET_FILES, Uint8Array>;
 
 async function readVerifiedAsset(name: keyof typeof ASSET_FILES): Promise<Uint8Array> {
 	const asset = ASSET_FILES[name];

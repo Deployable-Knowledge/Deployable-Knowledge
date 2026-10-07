@@ -5,91 +5,10 @@
  * `np.unique(..., return_inverse=True)` relabeling.
  */
 
-/** Index into a condensed upper-triangular distance matrix, `i < j`. */
 function condensedIndex(n: number, i: number, j: number): number {
 	return n * i - (i * (i + 1)) / 2 + (j - i - 1);
 }
 
-/** Binary min-heap over cluster indices with updatable keys. */
-class IndexedMinHeap {
-	private readonly heap: number[] = [];
-	private readonly position: Int32Array;
-
-	constructor(
-		size: number,
-		private readonly keys: Float64Array
-	) {
-		this.position = new Int32Array(size).fill(-1);
-		for (let index = 0; index < size; index++) {
-			this.position[index] = this.heap.length;
-			this.heap.push(index);
-		}
-		for (let index = (this.heap.length >> 1) - 1; index >= 0; index--) this.siftDown(index);
-	}
-
-	peek(): number {
-		return this.heap[0];
-	}
-
-	remove(index: number): void {
-		const slot = this.position[index];
-		const last = this.heap.pop()!;
-		this.position[index] = -1;
-		if (slot === this.heap.length) return;
-
-		this.heap[slot] = last;
-		this.position[last] = slot;
-		this.siftUp(slot);
-		this.siftDown(this.position[last]);
-	}
-
-	update(index: number, key: number): void {
-		this.keys[index] = key;
-		const slot = this.position[index];
-		if (slot < 0) return;
-		this.siftUp(slot);
-		this.siftDown(this.position[index]);
-	}
-
-	private swap(left: number, right: number): void {
-		[this.heap[left], this.heap[right]] = [this.heap[right], this.heap[left]];
-		this.position[this.heap[left]] = left;
-		this.position[this.heap[right]] = right;
-	}
-
-	private siftUp(slot: number): void {
-		let current = slot;
-		while (current > 0) {
-			const parent = (current - 1) >> 1;
-			if (this.keys[this.heap[parent]] <= this.keys[this.heap[current]]) return;
-			this.swap(parent, current);
-			current = parent;
-		}
-	}
-
-	private siftDown(slot: number): void {
-		let current = slot;
-		for (;;) {
-			const left = 2 * current + 1;
-			const right = left + 1;
-			let smallest = current;
-			if (left < this.heap.length && this.keys[this.heap[left]] < this.keys[this.heap[smallest]]) {
-				smallest = left;
-			}
-			if (
-				right < this.heap.length &&
-				this.keys[this.heap[right]] < this.keys[this.heap[smallest]]
-			) {
-				smallest = right;
-			}
-			if (smallest === current) return;
-			this.swap(current, smallest);
-			current = smallest;
-		}
-	}
-}
-
-/** One merge of the dendrogram, as a row of scipy's linkage matrix `Z`. */
 interface Merge {
 	left: number;
 	right: number;
@@ -129,22 +48,27 @@ function centroidLinkage(points: Float64Array, count: number, dimension: number)
 		minDistance[x] = bestDistance;
 	};
 
+	const closestCluster = (): number => {
+		let best = -1;
+		for (let x = 0; x < count - 1; x++) {
+			if (size[x] > 0 && (best < 0 || minDistance[x] < minDistance[best])) best = x;
+		}
+		return best;
+	};
+
 	for (let x = 0; x < count - 1; x++) findNearest(x);
-	const heap = new IndexedMinHeap(count - 1, minDistance);
 	const merges: Merge[] = [];
 
 	for (let step = 0; step < count - 1; step++) {
-		let x = heap.peek();
+		let x = closestCluster();
 		let y = neighbor[x];
 		while (minDistance[x] !== distances[condensedIndex(count, x, y)]) {
 			findNearest(x);
-			heap.update(x, minDistance[x]);
-			x = heap.peek();
+			x = closestCluster();
 			y = neighbor[x];
 		}
 
 		const distance = minDistance[x];
-		heap.remove(x);
 
 		const sizeX = size[x];
 		const sizeY = size[y];
@@ -180,20 +104,16 @@ function centroidLinkage(points: Float64Array, count: number, dimension: number)
 			const candidate = distances[condensedIndex(count, z, y)];
 			if (candidate < minDistance[z]) {
 				neighbor[z] = y;
-				heap.update(z, candidate);
+				minDistance[z] = candidate;
 			}
 		}
 
-		if (y < count - 1) {
-			findNearest(y);
-			heap.update(y, minDistance[y]);
-		}
+		if (y < count - 1) findNearest(y);
 	}
 
 	return merges;
 }
 
-/** Flat clusters whose maximal inner merge distance is at most `threshold` (`fcluster` "distance"). */
 function cutDendrogram(merges: Merge[], count: number, threshold: number): Int32Array {
 	const maxDistance = new Float64Array(merges.length);
 	merges.forEach((merge, index) => {
@@ -244,7 +164,6 @@ function cutDendrogram(merges: Merge[], count: number, threshold: number): Int32
 	return labels;
 }
 
-/** Zero-based AHC labels for L2-normalized embeddings, `(count × dimension)`. */
 export function agglomerativeClusters(
 	points: Float64Array,
 	count: number,

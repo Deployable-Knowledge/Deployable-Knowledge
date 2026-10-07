@@ -8,11 +8,10 @@ import type { SlidingWindow } from './rounding';
 
 export const SAMPLE_RATE = 16_000;
 export const CHUNK_SAMPLES = 10 * SAMPLE_RATE;
-export const STEP_SAMPLES = SAMPLE_RATE;
+const STEP_SAMPLES = SAMPLE_RATE;
 export const FRAMES_PER_CHUNK = 589;
 export const LOCAL_SPEAKERS = 3;
 
-/** Chunk grid in seconds. */
 export const CHUNK_WINDOW: SlidingWindow = { start: 0, duration: 10, step: 1 };
 
 /** Output frame grid of the segmentation model (its receptive field). */
@@ -32,7 +31,7 @@ const POWERSET_MAPPING: readonly (readonly number[])[] = [
 	[0, 1, 1]
 ];
 
-export function countChunks(sampleCount: number): number {
+function countChunks(sampleCount: number): number {
 	const fullChunks =
 		sampleCount >= CHUNK_SAMPLES ? Math.floor((sampleCount - CHUNK_SAMPLES) / STEP_SAMPLES) + 1 : 0;
 	const hasLastChunk =
@@ -41,7 +40,6 @@ export function countChunks(sampleCount: number): number {
 	return fullChunks + (hasLastChunk ? 1 : 0);
 }
 
-/** Copies chunk `index` into `target`, zero-padding past the end of the audio. */
 export function copyChunk(samples: Float32Array, index: number, target: Float32Array): void {
 	const start = index * STEP_SAMPLES;
 	const available = samples.subarray(start, Math.min(samples.length, start + CHUNK_SAMPLES));
@@ -49,7 +47,6 @@ export function copyChunk(samples: Float32Array, index: number, target: Float32A
 	target.fill(0, available.length);
 }
 
-/** Raw powerset log-probabilities, `(chunks × 589 × 7)`. */
 export async function runSegmentation(
 	session: InferenceSession,
 	samples: Float32Array
@@ -84,7 +81,6 @@ export async function runSegmentation(
 	return { chunkCount, scores };
 }
 
-/** Hard powerset decoding to local-speaker activity, `(chunks × 589 × 3)` of 0/1. */
 export function decodePowerset(scores: Float32Array, chunkCount: number): Uint8Array {
 	const activity = new Uint8Array(chunkCount * FRAMES_PER_CHUNK * LOCAL_SPEAKERS);
 

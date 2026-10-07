@@ -13,6 +13,9 @@ import { clusterVbx } from './vbx';
 export const UNASSIGNED = -2;
 
 const MIN_ACTIVE_RATIO = 0.2;
+const AHC_THRESHOLD = 0.6;
+const VBX_FA = 0.07;
+const VBX_FB = 0.8;
 const MIN_SPEAKER_PRIOR = 1e-7;
 
 // AHC's pairwise distance table grows with the square of the voice samples, lives outside the
@@ -31,24 +34,6 @@ function assertDistanceTableFits(sampleCount: number): void {
 	);
 }
 
-export interface ClusteringParameters {
-	threshold: number;
-	fa: number;
-	fb: number;
-}
-
-export interface ClusteringResult {
-	/** Global cluster of each (chunk, local speaker), `(chunks × 3)`; −2 when unassigned. */
-	hardClusters: Int32Array;
-	/** Intermediate values kept for parity checks. */
-	trainIndices: Int32Array;
-	ahcLabels: Int32Array;
-	pldaFeatures: Float64Array;
-	gamma: Float64Array;
-	pi: Float64Array;
-}
-
-/** Activity summaries per (chunk, local speaker): all active frames and single-speaker frames. */
 function activityTotals(activity: Uint8Array, chunkCount: number) {
 	const active = new Int32Array(chunkCount * LOCAL_SPEAKERS);
 	const clean = new Int32Array(chunkCount * LOCAL_SPEAKERS);
@@ -71,7 +56,6 @@ function activityTotals(activity: Uint8Array, chunkCount: number) {
 	return { active, clean };
 }
 
-/** Maximizing injective assignment of each chunk's 3 local speakers to clusters (`linear_sum_assignment`). */
 function assignChunk(
 	scores: Float64Array,
 	clusters: number,
@@ -115,9 +99,8 @@ export function clusterEmbeddings(
 	embeddings: Float64Array,
 	activity: Uint8Array,
 	chunkCount: number,
-	plda: PldaModel,
-	parameters: ClusteringParameters
-): ClusteringResult {
+	plda: PldaModel
+): Int32Array {
 	const pairs = chunkCount * LOCAL_SPEAKERS;
 	const { active, clean } = activityTotals(activity, chunkCount);
 
@@ -131,19 +114,8 @@ export function clusterEmbeddings(
 		if (embedding.every(Number.isFinite)) train.push(pair);
 	}
 
-	const trainIndices = Int32Array.from(train);
 	const hardClusters = new Int32Array(pairs);
-
-	if (train.length < 2) {
-		return {
-			hardClusters,
-			trainIndices,
-			ahcLabels: new Int32Array(0),
-			pldaFeatures: new Float64Array(0),
-			gamma: new Float64Array(0),
-			pi: new Float64Array(0)
-		};
-	}
+	if (train.length < 2) return hardClusters.map((_, pair) => (active[pair] ? 0 : UNASSIGNED));
 
 	const trainEmbeddings = new Float64Array(train.length * EMBEDDING_DIMENSION);
 	const normalized = new Float64Array(train.length * EMBEDDING_DIMENSION);
@@ -163,18 +135,11 @@ export function clusterEmbeddings(
 		normalized,
 		train.length,
 		EMBEDDING_DIMENSION,
-		parameters.threshold
+		AHC_THRESHOLD
 	);
 	const pldaFeatures = plda.transform(trainEmbeddings, train.length);
-	const { gamma, pi, speakers } = clusterVbx(
-		ahcLabels,
-		pldaFeatures,
-		plda.phi,
-		parameters.fa,
-		parameters.fb
-	);
+	const { gamma, pi, speakers } = clusterVbx(ahcLabels, pldaFeatures, plda.phi, VBX_FA, VBX_FB);
 
-	// Centroids of the speakers VBx kept, weighted by their responsibilities.
 	const kept = Array.from(pi.keys()).filter((speaker) => pi[speaker] > MIN_SPEAKER_PRIOR);
 	const clusters = kept.length;
 	const centroids = new Float64Array(clusters * EMBEDDING_DIMENSION);
@@ -198,7 +163,6 @@ export function clusterEmbeddings(
 		)
 	);
 
-	// soft = 2 − cosine distance = 1 + cosine similarity
 	const soft = new Float64Array(pairs * clusters);
 	let minimum = Infinity;
 	for (let pair = 0; pair < pairs; pair++) {
@@ -238,17 +202,9 @@ export function clusterEmbeddings(
 		);
 	}
 
-	return { hardClusters, trainIndices, ahcLabels, pldaFeatures, gamma, pi };
-}
-
-/** Marks local speakers that never speak within their chunk as unassigned. */
-export function unassignInactiveSpeakers(
-	hardClusters: Int32Array,
-	activity: Uint8Array,
-	chunkCount: number
-): void {
-	const { active } = activityTotals(activity, chunkCount);
-	for (let pair = 0; pair < active.length; pair++) {
+	for (let pair = 0; pair < pairs; pair++) {
 		if (active[pair] === 0) hardClusters[pair] = UNASSIGNED;
 	}
+
+	return hardClusters;
 }

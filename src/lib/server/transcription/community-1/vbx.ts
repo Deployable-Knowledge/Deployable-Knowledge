@@ -3,10 +3,8 @@
  * Apache-2.0): Bayesian clustering of PLDA-space x-vectors without the HMM.
  */
 
-export interface VbxResult {
-	/** Responsibilities, `(count × speakers)`. */
+interface VbxResult {
 	gamma: Float64Array;
-	/** Speaker priors, `(speakers)`. */
 	pi: Float64Array;
 	speakers: number;
 }

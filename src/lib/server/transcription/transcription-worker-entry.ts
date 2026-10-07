@@ -1,5 +1,5 @@
 import { parentPort } from 'node:worker_threads';
-import { createCommunity1Diarizer, type Community1Diarizer } from './community-1/pipeline';
+import { createSpeakerDiarizer, type SpeakerDiarizer } from './diarization/pipeline';
 import { alignTranscription } from './forced-alignment';
 import { filterHallucinatedTranscription } from './hallucination-gate';
 import { assignSpeakers } from './speaker-assignment';
@@ -14,10 +14,10 @@ import { detectSpeechChunks } from './voice-activity-detection';
 if (!parentPort) throw new Error('The transcription worker must run in a worker thread.');
 const port = parentPort;
 
-let diarizer: Promise<Community1Diarizer> | undefined;
+let diarizer: Promise<SpeakerDiarizer> | undefined;
 
-function loadDiarizer(): Promise<Community1Diarizer> {
-	diarizer ??= createCommunity1Diarizer().catch((error: unknown) => {
+function loadDiarizer(): Promise<SpeakerDiarizer> {
+	diarizer ??= createSpeakerDiarizer().catch((error: unknown) => {
 		diarizer = undefined;
 		throw error;
 	});

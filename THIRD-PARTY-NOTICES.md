@@ -140,22 +140,34 @@ By downloading a Gemma model through this application, you agree to those terms.
 ### Other models
 
 - `nomic-ai/nomic-embed-text-v1.5` — embeddings. Apache-2.0.
-- `Xenova/whisper-tiny.en` — audio transcription. ONNX conversion of OpenAI Whisper (MIT).
+- `Xenova/whisper-small.en` — audio transcription. ONNX conversion of OpenAI Whisper (MIT).
+- `Xenova/wav2vec2-base-960h` — word timing alignment. ONNX conversion of Meta's
+  `facebook/wav2vec2-base-960h` (Apache-2.0).
 - `Xenova/ms-marco-MiniLM-L-6-v2` — cross-encoder reranking. Apache-2.0.
 
-### Speaker diarization — pyannote Community-1
+### Voice activity detection — Silero VAD
 
-Speaker diarization runs `pyannote/speaker-diarization-community-1` (pyannoteAI / CNRS, CC BY 4.0)
-through ONNX Runtime. Its assets are placed in `models/community-1/` by hand and are not bundled:
+`models/vad/silero_vad.onnx`, included in this repository and the installer, is Silero VAD
+(snakers4/silero-vad, MIT). It runs through `sherpa-onnx-node` (Apache-2.0).
 
-- Segmentation and embedding networks: ONNX conversions published as
-  `FredrikKarlssonSpeech/pyannote-speaker-diarization-onnx` (CC BY 4.0).
-- PLDA parameters (`plda.npz`, `xvec_transform.npz`) from the gated Community-1 repository; accept
-  its access conditions on Hugging Face before downloading.
+### Speaker diarization — pyannote.audio with SpeechBrain ECAPA-TDNN
 
-The diarization pipeline in `src/lib/server/transcription/community-1/` is a TypeScript port of
-pyannote.audio 4.0.7 (MIT, © CNRS and pyannoteAI) and of its VBx clustering, derived from Brno
-University of Technology's VBx (Apache-2.0).
+Speaker diarization follows pyannote.audio's speaker diarization pipeline (MIT, © CNRS and
+pyannoteAI), using the segmentation and clustering of `pyannote/speaker-diarization-3.1` with
+SpeechBrain speaker embeddings. It runs two networks through ONNX Runtime. Both are downloaded from
+Hugging Face on first use, without an account or access token, into `models/speaker-diarization/`:
+
+- Segmentation: `pyannote/segmentation-3.0` by Hervé Bredin and Alexis Plaquet (MIT, © CNRS),
+  in the ONNX conversion published as `onnx-community/pyannote-segmentation-3.0` (MIT).
+- Speaker embeddings: `speechbrain/spkrec-ecapa-voxceleb` by the SpeechBrain project (Apache-2.0),
+  an ECAPA-TDNN model (Desplanques, Thienpondt and Demuynck, Ghent University – imec) trained on
+  VoxCeleb, in the unmodified ONNX export published as `astrolabos/ecapa-tdnn` (Apache-2.0).
+
+The diarization pipeline in `src/lib/server/transcription/diarization/` is a TypeScript port of
+pyannote.audio 4.0.7 and of SpeechBrain's filterbank features (Apache-2.0). Its clustering threshold
+(0.75) was chosen for the ECAPA embeddings on AMI meeting recordings. Unlike pyannote.audio, small
+speaker groups that sound unlike every larger group are kept as their own speaker instead of being
+merged, so that a person who speaks only briefly is still identified.
 
 ---
 
@@ -167,6 +179,7 @@ University of Technology's VBx (Apache-2.0).
 | `node-llama-cpp`            | 3.19.1  | MIT (bundles llama.cpp — MIT)                             |
 | `onnxruntime-node`          | 1.24.3  | MIT (ONNX Runtime, Microsoft)                             |
 | `@huggingface/transformers` | 4.2.0   | Apache-2.0                                                |
+| `sherpa-onnx-node`          | 1.13.8  | Apache-2.0 (bundles sherpa-onnx native libraries)         |
 | `@libsql/client`            | 0.17.4  | MIT (libSQL, a fork of SQLite — public domain)            |
 | `sharp`                     | 0.35.3  | Apache-2.0 (see §2 for libvips)                           |
 | `exceljs`                   | 4.4.0   | MIT                                                       |

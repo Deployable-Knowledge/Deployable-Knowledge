@@ -1,10 +1,3 @@
-/*
- * Agglomerative initialization used by Community-1's VBx clustering:
- * `scipy.cluster.hierarchy.linkage(method="centroid", metric="euclidean")` (scipy's
- * `fast_linkage`, Müllner's generic algorithm) followed by `fcluster(criterion="distance")` and
- * `np.unique(..., return_inverse=True)` relabeling.
- */
-
 function condensedIndex(n: number, i: number, j: number): number {
 	return n * i - (i * (i + 1)) / 2 + (j - i - 1);
 }

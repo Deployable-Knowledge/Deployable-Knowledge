@@ -12,10 +12,11 @@ const SERVER_ENTRY = join(APP_ROOT, 'electron', 'server.ts');
 const PRELOAD_ENTRY = join(APP_ROOT, 'electron', 'preload.cjs');
 const SERVER_START_TIMEOUT_MS = 120_000;
 
-const SEEDED_RUNTIME_FILES = ['eng.traineddata'];
+const SEEDED_RUNTIME_FILES = ['eng.traineddata', join('models', 'vad', 'silero_vad.onnx')];
 const RUNTIME_DIRECTORIES = [
 	'documents',
 	'models',
+	join('models', 'vad'),
 	join('.cache', 'embeddings'),
 	join('.cache', 'transformersjs'),
 	'logs'

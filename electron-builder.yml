@@ -16,6 +16,7 @@ files:
   - drizzle/**
   - electron/*.{cjs,ts}
   - eng.traineddata
+  - models/vad/silero_vad.onnx
   - LICENSE
   - THIRD-PARTY-NOTICES.md
   - '!node_modules/onnxruntime-node/bin/napi-v6/{darwin,linux}/**'

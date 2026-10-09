@@ -9,13 +9,11 @@ export const LOCAL_SPEAKERS = 3;
 
 export const CHUNK_WINDOW: SlidingWindow = { start: 0, duration: 10, step: 1 };
 
-/** Output frame grid of the segmentation model (its receptive field). */
 export const FRAME_WINDOW: SlidingWindow = { start: 0, duration: 0.0619375, step: 0.016875 };
 
 const POWERSET_CLASSES = 7;
 const SEGMENTATION_BATCH = 32;
 
-/** Local speakers active in each powerset class: {}, {0}, {1}, {2}, {0,1}, {0,2}, {1,2}. */
 const POWERSET_MAPPING: readonly (readonly number[])[] = [
 	[0, 0, 0],
 	[1, 0, 0],

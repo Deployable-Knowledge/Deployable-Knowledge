@@ -1,4 +1,3 @@
-/** Rounds halves to the nearest even integer, matching `np.rint` and Python's `round`. */
 export function roundHalfEven(value: number): number {
 	const floor = Math.floor(value);
 	const fraction = value - floor;

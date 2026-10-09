@@ -1,8 +1,3 @@
-/*
- * Whisper produces the transcript text. Wav2Vec2 forced alignment later
- * refines the word timestamps without changing that text.
- */
-
 import {
 	ModelRegistry,
 	pipeline,
@@ -151,10 +146,6 @@ function combineChunkResults(chunks: TranscribedAudioChunk[]): TranscriptionResu
 	};
 }
 
-/**
- * Transcribes VAD-generated chunks. These chunks are already shorter than
- * Whisper's 30-second input limit, so internal long-form chunking is disabled.
- */
 export async function transcribeAudioChunks(
 	audioChunks: AudioChunk[],
 	onChunk?: (completed: number, total: number) => void

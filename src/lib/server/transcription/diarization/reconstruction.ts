@@ -1,9 +1,3 @@
-/*
- * Global speaker activity from clustered local segmentation: `Inference.aggregate`,
- * `SpeakerDiarizationMixin.speaker_count`, `to_diarization`, `SpeakerDiarization.reconstruct` and
- * `Binarize` (pyannote.audio 4.0.7).
- */
-
 import type { SpeakerTurn } from '../speaker-turn';
 import { UNASSIGNED } from './clustering';
 import { closestFrame, roundHalfEven } from './rounding';
@@ -23,10 +17,6 @@ function globalFrameCount(chunkCount: number): number {
 	return closestFrame(end + 0.5 * FRAME_WINDOW.duration, FRAME_WINDOW) + 1;
 }
 
-/**
- * Overlap-adds per-chunk scores `(chunks × 589 × classes)` onto the global frame grid. NaN marks
- * missing values. Frames no chunk covers become 0.
- */
 function aggregate(
 	scores: Float32Array,
 	chunkCount: number,
@@ -79,7 +69,6 @@ export function speakerCount(activity: Uint8Array, chunkCount: number): Uint8Arr
 	return Uint8Array.from(averaged.data, (value) => roundHalfEven(value));
 }
 
-/** Per-chunk activity of each global cluster, `(chunks × 589 × clusters)`; NaN when absent. */
 export function clusteredSegmentation(
 	activity: Uint8Array,
 	hardClusters: Int32Array,
@@ -119,7 +108,6 @@ export function toDiarization(
 	for (let frame = 0; frame < frames; frame++) {
 		const activation = (label: number) =>
 			label < activations.classes ? activations.data[frame * activations.classes + label] : 0;
-		// Stable sort: ties keep the lower cluster index, as numpy's small-array argsort.
 		const ranked = [...order].sort((left, right) => activation(right) - activation(left));
 		for (let rank = 0; rank < count[frame]; rank++) binary[frame * classes + ranked[rank]] = 1;
 	}

@@ -99,7 +99,7 @@ async function transcribeChunk(
 	};
 }
 
-function combineChunkResults(chunks: TranscribedAudioChunk[]): TranscriptionResult {
+export function combineChunkResults(chunks: TranscribedAudioChunk[]): TranscriptionResult {
 	return {
 		text: chunks
 			.map((chunk) => chunk.text)

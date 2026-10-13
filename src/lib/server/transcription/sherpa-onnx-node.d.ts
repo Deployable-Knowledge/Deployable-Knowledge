@@ -7,12 +7,9 @@ declare module 'sherpa-onnx-node' {
 	export interface Vad {
 		acceptWaveform(samples: Float32Array): void;
 		isEmpty(): boolean;
-		isDetected(): boolean;
-		front(enableExternalBuffer?: boolean): SpeechSegment;
+		front(): SpeechSegment;
 		pop(): void;
 		flush(): void;
-		reset(): void;
-		clear(): void;
 	}
 
 	export interface SileroVadConfig {

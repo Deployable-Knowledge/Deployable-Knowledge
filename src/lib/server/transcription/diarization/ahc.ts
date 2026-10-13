@@ -117,41 +117,20 @@ function cutDendrogram(merges: Merge[], count: number, threshold: number): Int32
 	});
 
 	const labels = new Int32Array(count);
-	const visited = new Uint8Array(2 * count);
-	const stack = [2 * count - 2];
+	const stack: Array<[node: number, label: number]> = [[2 * count - 2, 0]];
 	let clusters = 0;
-	let leader = -1;
 
 	while (stack.length > 0) {
-		const root = stack[stack.length - 1] - count;
-		const { left, right } = merges[root];
-
-		if (leader === -1 && maxDistance[root] <= threshold) {
-			leader = root;
-			clusters++;
-		}
-
-		if (left >= count && !visited[left]) {
-			visited[left] = 1;
-			stack.push(left);
-			continue;
-		}
-		if (right >= count && !visited[right]) {
-			visited[right] = 1;
-			stack.push(right);
+		const [node, inherited] = stack.pop()!;
+		if (node < count) {
+			labels[node] = inherited || ++clusters;
 			continue;
 		}
 
-		if (left < count) {
-			if (leader === -1) clusters++;
-			labels[left] = clusters;
-		}
-		if (right < count) {
-			if (leader === -1) clusters++;
-			labels[right] = clusters;
-		}
-		if (leader === root) leader = -1;
-		stack.pop();
+		const { left, right } = merges[node - count];
+		const label = inherited || (maxDistance[node - count] <= threshold ? ++clusters : 0);
+		for (const child of [right, left]) if (child < count) stack.push([child, label]);
+		for (const child of [right, left]) if (child >= count) stack.push([child, label]);
 	}
 
 	return labels;

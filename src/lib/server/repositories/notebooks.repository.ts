@@ -14,7 +14,7 @@ import {
 	type NotebookWithPages
 } from '#lib/server/database/schema';
 import { hasExactIds } from '#lib/server/utils/reorder';
-import howToGuide from '#lib/server/notebooks/how-to-guide.md?raw';
+import { USER_MANUAL_PAGES, USER_MANUAL_TITLE } from '#lib/server/notebooks/user-manual';
 
 export interface NotebookPageInput {
 	content: string;
@@ -27,27 +27,26 @@ export class NotebooksRepository {
 	static async createDefault(): Promise<string> {
 		const timestamp = new Date().toISOString();
 		const notebookId = randomUUID();
-		const pageId = randomUUID();
-		const notebook: NewNotebook = {
-			id: notebookId,
-			title: 'Notebook 1',
-			activePageId: pageId,
-			sortOrder: 0,
+		const pages: NewNotebookPage[] = USER_MANUAL_PAGES.map((page, sortOrder) => ({
+			id: randomUUID(),
+			notebookId,
+			title: page.title,
+			content: page.content,
+			sortOrder,
 			createdAt: timestamp,
 			updatedAt: timestamp
-		};
-		const page: NewNotebookPage = {
-			id: pageId,
-			notebookId,
-			title: 'Start Here',
-			content: howToGuide,
+		}));
+		const notebook: NewNotebook = {
+			id: notebookId,
+			title: USER_MANUAL_TITLE,
+			activePageId: pages[0].id,
 			sortOrder: 0,
 			createdAt: timestamp,
 			updatedAt: timestamp
 		};
 
 		await db.insert(notebooks).values(notebook);
-		await db.insert(notebookPages).values(page);
+		await db.insert(notebookPages).values(pages);
 		await this.setActive(notebookId);
 		return notebookId;
 	}

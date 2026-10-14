@@ -14,7 +14,7 @@ Tools let the assistant do things during an answer instead of just writing text.
 | **Document search** | Searches your corpus as many times as it needs | "Compare what these reports say about costs." |
 | **Read document chunks** | Reads the text around a passage it found | "Read the section before that quote." |
 | **Corpus details** | Lists the documents in your corpus | "Which documents do I have about safety?" |
-| **Python** | Runs calculations and draws charts; can read your CSV and text files | "Chart the monthly totals in sales.csv." |
+| **Python** | Runs calculations and draws charts using Python libraries; can read your CSV and text files | "Chart the monthly totals in sales.csv." |
 | **Goal tracking** (off by default) | Keeps a checklist for long, multi-step requests | "Summarize each chapter, then write a conclusion." |
 | **Date & time** | Checks today's date instead of guessing | "How many days until the deadline?" |
 

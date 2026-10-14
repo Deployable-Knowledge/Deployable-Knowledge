@@ -8,7 +8,6 @@
 | A file failed to load | Check the type is supported; for synced folders, click **Retry malformed files** |
 | Answers are slow | Use a smaller model, lower **Retrieved chunks**, or set **Reasoning effort** to Low |
 | "Engine disconnected" banner | Wait a moment; the app reconnects automatically |
-| Folder sync isn't available | It needs the desktop app, Chrome or Edge |
 
 **Glossary**
 - **Corpus:** all the documents the assistant can search.

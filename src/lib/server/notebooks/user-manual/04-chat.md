@@ -23,7 +23,7 @@ Click the round icon at the bottom-left of the chat box (**Chat modes**) and tic
 | **Tools** | Lets the model call tools (see **5. Tools**) | Off |
 | **Notebook** | Uses the open notebook instead of the corpus as context | Off |
 
-When **Notebook** is on, **Search** is switched off, because the notebook is the context.
+When **Notebook** is on, **Search** is switched off because the model will exclusively refer to the notebook instead of the loaded documents.
 
 ## Reasoning effort
 The brain icon sets how hard the model thinks: **Low**, **Medium**, **High** or **Extra High**. Higher is slower but more careful.

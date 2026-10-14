@@ -26,7 +26,7 @@ Just type; the page is in Markdown and is formatted as you write. **There is no 
 
 **Markdown cheat sheet**
 
-You can also type the formatting yourself. The symbols hide once your cursor leaves the line; click back into a line to see them again.
+You can also type the formatting yourself. The symbols hide once your cursor leaves the line; click back into a line to see them again. Color and highlighting are not native features of markdown, so typing them in isn't available.
 
 | You type | You get |
 |---|---|

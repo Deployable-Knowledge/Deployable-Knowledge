@@ -14,6 +14,7 @@ import {
 	type NotebookWithPages
 } from '#lib/server/database/schema';
 import { hasExactIds } from '#lib/server/utils/reorder';
+import howToGuide from '#lib/server/notebooks/how-to-guide.md?raw';
 
 export interface NotebookPageInput {
 	content: string;
@@ -38,8 +39,8 @@ export class NotebooksRepository {
 		const page: NewNotebookPage = {
 			id: pageId,
 			notebookId,
-			title: 'Page 1',
-			content: '',
+			title: 'Start Here',
+			content: howToGuide,
 			sortOrder: 0,
 			createdAt: timestamp,
 			updatedAt: timestamp

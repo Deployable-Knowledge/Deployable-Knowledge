@@ -4,3 +4,4 @@ build/
 release/
 drizzle/
 .claude/
+src/lib/server/notebooks/how-to-guide.md

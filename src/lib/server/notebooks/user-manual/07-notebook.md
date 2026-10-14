@@ -24,6 +24,34 @@ Just type; the page is in Markdown and is formatted as you write. **There is no 
 | **Inline code**, **Code block** | Code |
 | **Link** | Insert a link |
 
+**Markdown cheat sheet**
+
+You can also type the formatting yourself. The symbols hide once your cursor leaves the line; click back into a line to see them again.
+
+| You type | You get |
+|---|---|
+| `# Heading` | A large heading. Use `##` or `###` for smaller ones |
+| `**bold**` | **bold** |
+| `*italic*` | *italic* |
+| `~~strikethrough~~` | ~~strikethrough~~ |
+| `` `code` `` | `code` |
+| `- item` | A bulleted list item |
+| `1. item` | A numbered list item |
+| Two spaces, then `- item` | An item nested under the one above |
+| `> text` | A quote |
+| `[text](https://example.com)` | A link |
+| `` ``` `` on its own line before and after | A code block |
+
+To make a table, type rows like this. The second line is what turns it into a table:
+
+```
+| Name | Role |
+|---|---|
+| Ada | Analyst |
+```
+
+> **Good to know:** checkboxes (`- [ ]`), images and horizontal lines (`---`) are shown as plain text. For colored text, use the **Text color** and **Highlight** buttons.
+
 - **Find in page** (Ctrl+F) searches the current page.
 - The counter at the bottom shows how much space is left. A notebook can hold **60,000 characters across all its pages**.
 

@@ -119,6 +119,8 @@ export const API_THEME = '/theme';
 
 export const API_TOOLS = '/tools';
 
+export const API_VULKAN_DEVICES = '/vulkan-devices';
+
 export const API_WORKSPACE_LAYOUTS = {
 	BASE: '/workspace-layouts',
 	REORDER: '/workspace-layouts/reorder',

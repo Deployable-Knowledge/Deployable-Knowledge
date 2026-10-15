@@ -2,6 +2,7 @@ import type { Handle, ServerInit } from '@sveltejs/kit';
 import { getThemeSettings } from '$lib/server/database/app-state';
 import { bootstrapSchema } from '$lib/server/database/bootstrap-schema';
 import { configureDatabase } from '$lib/server/database/database';
+import { applyVulkanDevice } from '$lib/server/providers/vulkan-devices';
 import { refreshStaleEmbeddings } from '$lib/server/rag/embedding';
 
 // The theme lives in the database, so it cannot be read before paint the way a
@@ -24,6 +25,8 @@ export const init: ServerInit = async () => {
 	// before anything touches it.
 	const migrationsFolder = process.env.DK_MIGRATIONS_DIR?.trim();
 	if (migrationsFolder) await bootstrapSchema(migrationsFolder);
+
+	await applyVulkanDevice();
 
 	// Resumes a re-embed that an earlier run left unfinished.
 	refreshStaleEmbeddings();

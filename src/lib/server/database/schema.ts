@@ -35,7 +35,8 @@ export const appState = sqliteTable('app_state', {
 	embeddingModel: text('embedding_model').notNull().default(DEFAULT_EMBEDDING_SETTINGS.model),
 	embeddingDevice: text('embedding_device', { enum: EMBEDDING_DEVICES })
 		.notNull()
-		.default(DEFAULT_EMBEDDING_SETTINGS.device)
+		.default(DEFAULT_EMBEDDING_SETTINGS.device),
+	vulkanDevice: integer('vulkan_device')
 });
 
 // Workspace layout tabs. The snapshot is opaque UI state that is always read and

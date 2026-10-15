@@ -1,0 +1,1 @@
+ALTER TABLE `app_state` ADD `vulkan_device` integer;

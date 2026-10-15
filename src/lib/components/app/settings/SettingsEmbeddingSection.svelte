@@ -21,6 +21,7 @@
 	import { catalogModelCard } from './local-model-catalog';
 	import SettingsFieldGroup from './SettingsFieldGroup.svelte';
 	import SettingsModelCard from './SettingsModelCard.svelte';
+	import SettingsVulkanDeviceField from './SettingsVulkanDeviceField.svelte';
 
 	const DEVICE_LABELS: Record<EmbeddingDevice, string> = {
 		auto: 'Auto',
@@ -37,18 +38,13 @@
 
 	const cards = LOCAL_EMBEDDING_MODELS.map((model) => catalogModelCard(model, null));
 
-	let draftProvider = $state<string | null>(null);
 	let pendingDelete = $state<string | null>(null);
 	let pendingSwitch = $state<Pick<EmbeddingSettings, 'provider' | 'model'> | null>(null);
 
 	const status = $derived(embeddingStore.status);
-	const providerId = $derived(
-		draftProvider ?? status?.settings.provider ?? LOCAL_MODEL_PROVIDER_ID
-	);
+	const providerId = $derived(status?.settings.provider ?? LOCAL_MODEL_PROVIDER_ID);
 	const isLocal = $derived(providerId === LOCAL_MODEL_PROVIDER_ID);
-	const selectedModel = $derived(
-		status?.settings.provider === providerId ? status.settings.model : ''
-	);
+	const selectedModel = $derived(status?.settings.model ?? '');
 	const modelOptions = $derived(
 		isLocal
 			? LOCAL_EMBEDDING_MODELS.map(({ fileName, name }) => ({ value: fileName, label: name }))
@@ -86,17 +82,7 @@
 	async function confirmSwitch(): Promise<void> {
 		if (!pendingSwitch) return;
 		await embeddingStore.update(pendingSwitch);
-		draftProvider = null;
 		pendingSwitch = null;
-	}
-
-	function selectProvider(id: string): void {
-		if (id !== LOCAL_MODEL_PROVIDER_ID) {
-			draftProvider = id;
-			return;
-		}
-		draftProvider = null;
-		requestSwitch(id, LOCAL_EMBEDDING_MODELS[0].fileName);
 	}
 
 	$effect(() => {
@@ -138,28 +124,9 @@
 		<SettingsFieldGroup
 			icon={ScanSearch}
 			title="Embedding model"
-			hint="Changing the model re-embeds existing documents in the background. OpenAI-compatible providers added under Models can serve embeddings too."
+			hint="Changing the model re-embeds existing documents in the background."
 		>
 			<div class="grid items-start gap-4 @2xl:grid-cols-2">
-				<div class="grid gap-2">
-					<Label for="settings-embedding-provider">Provider</Label>
-					<Select.Root
-						disabled={embeddingStore.saving}
-						onValueChange={selectProvider}
-						type="single"
-						value={providerId}
-					>
-						<Select.Trigger class="w-full" id="settings-embedding-provider">
-							<span class="truncate">{providerName(status, providerId)}</span>
-						</Select.Trigger>
-						<Select.Content>
-							{#each status.providers as provider (provider.id)}
-								<Select.Item label={provider.name} value={provider.id} />
-							{/each}
-						</Select.Content>
-					</Select.Root>
-				</div>
-
 				<div class="grid gap-2">
 					<Label for="settings-embedding-model">Model</Label>
 					<Select.Root
@@ -178,6 +145,9 @@
 						</Select.Content>
 					</Select.Root>
 				</div>
+				{#if isLocal}
+					<SettingsVulkanDeviceField />
+				{/if}
 			</div>
 
 			{#if isLocal}

@@ -7,6 +7,7 @@ export { sessionsStore } from './sessions.svelte';
 export { settingsDialogStore } from './settings-dialog.svelte';
 export { settingsStore } from './settings.svelte';
 export { themeStore } from './theme.svelte';
+export { vulkanDevicesStore } from './vulkan-devices.svelte';
 export { workspaceStore } from './workspace.svelte';
 export { desktopWindowStore } from './desktop-window.svelte';
 export { diagnosticsStore } from './diagnostics.svelte';

@@ -78,6 +78,18 @@ export async function setEmbeddingSettings(settings: EmbeddingSettings): Promise
 		.onConflictDoUpdate({ target: appState.id, set: values });
 }
 
+export async function getVulkanDevice(): Promise<number | null> {
+	const state = await db.select().from(appState).where(eq(appState.id, APP_STATE_ID)).get();
+	return state?.vulkanDevice ?? null;
+}
+
+export async function setVulkanDevice(vulkanDevice: number | null): Promise<void> {
+	await db
+		.insert(appState)
+		.values({ id: APP_STATE_ID, vulkanDevice })
+		.onConflictDoUpdate({ target: appState.id, set: { vulkanDevice } });
+}
+
 export async function clearActiveLayoutId(layoutId: string): Promise<void> {
 	await db
 		.update(appState)

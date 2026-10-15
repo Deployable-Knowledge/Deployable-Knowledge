@@ -372,6 +372,21 @@ export interface ApiLocalModelsStatus {
 	gpu: { supported: Exclude<LlamaGpuMode, 'auto' | 'cpu'>[] };
 }
 
+export interface ApiVulkanDevice {
+	index: number;
+	name: string;
+}
+
+export interface ApiVulkanDevicesStatus {
+	devices: ApiVulkanDevice[];
+	selected: number | null;
+	active: number | null;
+}
+
+export interface ApiVulkanDeviceUpdate {
+	device: number | null;
+}
+
 export interface ApiLocalModelDownloadRequest {
 	fileName: string;
 }

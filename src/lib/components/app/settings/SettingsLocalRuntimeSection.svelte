@@ -7,6 +7,7 @@
 	import { localModelsStore, settingsStore } from '$lib/stores';
 	import type { LlamaGpuMode } from '$lib/types';
 	import SettingsFieldGroup from './SettingsFieldGroup.svelte';
+	import SettingsVulkanDeviceField from './SettingsVulkanDeviceField.svelte';
 
 	const GPU_LABELS: Record<LlamaGpuMode, string> = {
 		auto: 'Auto (recommended)',
@@ -38,18 +39,25 @@
 		title="Local runtime"
 		hint="Compute device for models that run in-app. The context window is fitted automatically to available memory, up to the model maximum."
 	>
-		<div class="grid gap-2">
-			<Label for="settings-gpu-mode">Compute device</Label>
-			<Select.Root type="single" value={settingsStore.config.gpuMode} onValueChange={selectGpuMode}>
-				<Select.Trigger id="settings-gpu-mode" class="w-full">
-					<span class="truncate">{GPU_LABELS[settingsStore.config.gpuMode]}</span>
-				</Select.Trigger>
-				<Select.Content>
-					{#each deviceOptions as option (option)}
-						<Select.Item value={option} label={GPU_LABELS[option]} />
-					{/each}
-				</Select.Content>
-			</Select.Root>
+		<div class="grid items-start gap-4 @2xl:grid-cols-2">
+			<div class="grid gap-2">
+				<Label for="settings-gpu-mode">Compute device</Label>
+				<Select.Root
+					type="single"
+					value={settingsStore.config.gpuMode}
+					onValueChange={selectGpuMode}
+				>
+					<Select.Trigger id="settings-gpu-mode" class="w-full">
+						<span class="truncate">{GPU_LABELS[settingsStore.config.gpuMode]}</span>
+					</Select.Trigger>
+					<Select.Content>
+						{#each deviceOptions as option (option)}
+							<Select.Item value={option} label={GPU_LABELS[option]} />
+						{/each}
+					</Select.Content>
+				</Select.Root>
+			</div>
+			<SettingsVulkanDeviceField />
 		</div>
 	</SettingsFieldGroup>
 {/if}

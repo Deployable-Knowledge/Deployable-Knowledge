@@ -50,8 +50,8 @@ export const LOCAL_MODELS: readonly LocalModel[] = [
 		vendor: 'Google',
 		description: 'Meant for high end computers with dedicated GPUs.',
 		icon: 'gemma',
-		repo: 'unsloth/gemma-4-26B-A4B-it-GGUF',
-		fileName: 'gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf',
+		repo: 'bartowski/google_gemma-4-26B-A4B-it-GGUF',
+		fileName: 'google_gemma-4-26B-A4B-it-Q4_K_M.gguf',
 		minRamGiB: 32,
 		license: GEMMA_LICENSE,
 		licenseUrl: GEMMA_LICENSE_URL

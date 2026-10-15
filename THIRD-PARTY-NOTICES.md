@@ -69,7 +69,8 @@ modified version: replace the shared library inside
 of the same soname. The LGPLv3 text is available at <https://www.gnu.org/licenses/lgpl-3.0.html>,
 and libvips source is available from the upstream repository above.
 
-Windows releases carry `@img/sharp-libvips-win32-x64` under the same terms.
+Windows releases carry `@img/sharp-libvips-win32-x64` and Ubuntu releases carry
+`@img/sharp-libvips-linux-x64` under the same terms.
 
 ---
 

@@ -17,17 +17,32 @@ files:
   - eng.traineddata
   - LICENSE
   - THIRD-PARTY-NOTICES.md
-  - '!node_modules/onnxruntime-node/bin/napi-v6/{darwin,linux}/**'
-  - '!node_modules/onnxruntime-node/bin/napi-v6/win32/arm64/**'
 
 win:
   target:
     - target: nsis
       arch:
         - x64
+  files:
+    - '!node_modules/onnxruntime-node/bin/napi-v6/{darwin,linux}/**'
+    - '!node_modules/onnxruntime-node/bin/napi-v6/win32/arm64/**'
 
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
   differentialPackage: false
   artifactName: ${productName}-${version}-windows-x64-setup.${ext}
+
+linux:
+  target:
+    - target: deb
+      arch:
+        - x64
+  category: Utility
+  maintainer: The Deployable Knowledge contributors
+  files:
+    - '!node_modules/onnxruntime-node/bin/napi-v6/{darwin,win32}/**'
+    - '!node_modules/onnxruntime-node/bin/napi-v6/linux/arm64/**'
+
+deb:
+  artifactName: ${productName}-${version}-ubuntu-amd64.${ext}

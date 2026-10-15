@@ -81,6 +81,7 @@ demand, from settings.
 npm run electron         # Run the desktop shell against the Vite dev server
 npm run electron:pack    # Build and package without an installer
 npm run electron:win     # Build the Windows installer
+npm run electron:linux   # Build the Ubuntu .deb package
 ```
 
 The packaged app keeps its database, documents, models, and caches in a per-user data directory

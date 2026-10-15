@@ -10,13 +10,61 @@ permissions:
   contents: write
 
 jobs:
-  windows-installer:
-    name: Windows installer
-    runs-on: windows-latest
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify migrations match the schema
+        run: |
+          npx drizzle-kit generate --name ci-drift-check < /dev/null
+          if [ -n "$(git status --porcelain -- drizzle)" ]; then
+            git status --porcelain -- drizzle
+            echo "::error::The schema has changes with no committed migration. Run 'npm run db:generate' and commit drizzle/."
+            exit 1
+          fi
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check types
+        run: npm run check
+
+  installer:
+    name: ${{ matrix.name }} installer
+    needs: verify
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 120
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            runner: windows-latest
+            builder-flag: --win
+            artifact: windows-installer
+            files: release/*.exe
+          - name: Ubuntu
+            runner: ubuntu-latest
+            builder-flag: --linux
+            artifact: ubuntu-installer
+            files: release/*.deb
 
     steps:
       - name: Preserve committed line endings
+        if: runner.os == 'Windows'
         run: |
           git config --global core.autocrlf false
           git config --global core.eol lf
@@ -43,45 +91,39 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Verify migrations match the schema
-        shell: bash
-        run: |
-          npx drizzle-kit generate --name ci-drift-check < /dev/null
-          if [ -n "$(git status --porcelain -- drizzle)" ]; then
-            git status --porcelain -- drizzle
-            echo "::error::The schema has changes with no committed migration. Run 'npm run db:generate' and commit drizzle/."
-            exit 1
-          fi
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Check types
-        run: npm run check
-
       - name: Build application
         run: npm run build
 
       - name: Build installer
-        run: npx electron-builder --win --config.extraMetadata.version=${{ steps.version.outputs.version }}
+        run: npx electron-builder ${{ matrix.builder-flag }} --config.extraMetadata.version=${{ steps.version.outputs.version }}
         env:
-          CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE_BASE64 }}
-          CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+          CSC_LINK: ${{ runner.os == 'Windows' && secrets.WINDOWS_CERTIFICATE_BASE64 || '' }}
+          CSC_KEY_PASSWORD: ${{ runner.os == 'Windows' && secrets.WINDOWS_CERTIFICATE_PASSWORD || '' }}
 
       - uses: actions/upload-artifact@v4
-        if: github.event_name == 'workflow_dispatch'
         with:
-          name: windows-installer
-          path: release/*.exe
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.files }}
           if-no-files-found: error
 
+  publish:
+    name: Publish release
+    needs: installer
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release
+          merge-multiple: true
+
       - name: Publish release
-        if: startsWith(github.ref, 'refs/tags/v')
-        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
           TAG: ${{ github.ref_name }}
           PRERELEASE: ${{ contains(github.ref_name, '-') && '--prerelease' || '' }}
         run: |
-          gh release create "$TAG" release/*.exe --title "$TAG" --generate-notes $PRERELEASE \
-            || gh release upload "$TAG" release/*.exe --clobber
+          gh release create "$TAG" release/* --title "$TAG" --generate-notes $PRERELEASE \
+            || gh release upload "$TAG" release/* --clobber

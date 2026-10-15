@@ -1,57 +1,137 @@
-/*This transcription service runs on the Hugging Face Transformers library using the
-Xenova Whisper Tiny English model. While it handles English audio transcription well, it may not perform 
-as accurately on complex/chaotic audio scenarios. Looking into using larger models*/
-
 import { pipeline, type AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers';
-import { TRANSFORMERS_CACHE_DIR } from '$lib/server/utils/transformers-env';
+import { TRANSFORMERS_CACHE_DIR } from '../utils/transformers-env';
+import { AUDIO_SAMPLE_RATE, sampleIndexToMs, type AudioChunk } from './audio-types';
 
-export const TRANSCRIPTION_MODEL = 'Xenova/whisper-tiny.en';
+export const TRANSCRIPTION_MODEL = 'Xenova/whisper-small.en';
 
 let transcriptionPipeline: Promise<AutomaticSpeechRecognitionPipeline> | undefined;
 
-export type TranscriptSegment = {
+export interface TranscriptSegment {
 	startMs: number;
 	endMs: number;
 	text: string;
-};
+	speakerId?: number;
+}
 
-export type TranscriptionResult = {
+export interface TranscribedAudioChunk {
+	audio: AudioChunk;
 	text: string;
 	segments: TranscriptSegment[];
-};
+}
 
-export async function transcribeAudio(audioData: Float32Array): Promise<TranscriptionResult> {
+export interface TranscriptionResult {
+	text: string;
+	segments: TranscriptSegment[];
+	chunks: TranscribedAudioChunk[];
+}
+
+async function getTranscriber(): Promise<AutomaticSpeechRecognitionPipeline> {
 	transcriptionPipeline ??= pipeline('automatic-speech-recognition', TRANSCRIPTION_MODEL, {
-		cache_dir: TRANSFORMERS_CACHE_DIR
+		cache_dir: TRANSFORMERS_CACHE_DIR,
+		device: 'cpu',
+		dtype: 'q8'
 	}).catch((error) => {
 		transcriptionPipeline = undefined;
 		throw error;
 	});
 
-	const transcriber = await transcriptionPipeline;
+	return transcriptionPipeline;
+}
 
-	// Timestamps let the pipeline stitch the 30 second windows of long audio back together
-	const result = await transcriber(audioData, {
-		chunk_length_s: 30,
-		return_timestamps: true,
-		stride_length_s: 5
-	});
+function decodingOptions(audio: AudioChunk) {
+	const durationSeconds = audio.samples.length / AUDIO_SAMPLE_RATE;
+	const maxNewTokens = Math.min(384, Math.max(32, Math.ceil(durationSeconds * 8)));
+
+	return {
+		do_sample: false,
+		max_new_tokens: maxNewTokens,
+		no_repeat_ngram_size: 4,
+		repetition_penalty: 1.05,
+		return_timestamps: 'word' as const
+	};
+}
+
+async function transcribeChunk(
+	transcriber: AutomaticSpeechRecognitionPipeline,
+	audio: AudioChunk
+): Promise<TranscribedAudioChunk> {
+	const result = await transcriber(audio.samples, decodingOptions(audio));
+
+	const sourceStartMs = sampleIndexToMs(audio.startSample);
+	const sourceEndMs = sampleIndexToMs(audio.endSample);
 
 	const segments = (result.chunks ?? []).flatMap<TranscriptSegment>((segment) => {
 		const text = segment.text?.trim() ?? '';
 		const [start, end] = segment.timestamp ?? [];
+
 		if (!text || typeof start !== 'number') return [];
 
 		const endSeconds = typeof end === 'number' ? Math.max(end, start) : start;
 
+		const startMs = Math.min(
+			sourceEndMs,
+			Math.max(sourceStartMs, sourceStartMs + Math.round(start * 1000))
+		);
+
+		const endMs = Math.min(
+			sourceEndMs,
+			Math.max(startMs, sourceStartMs + Math.round(endSeconds * 1000))
+		);
+
 		return [
 			{
-				startMs: Math.max(0, Math.round(start * 1000)),
-				endMs: Math.max(0, Math.round(endSeconds * 1000)),
+				startMs,
+				endMs,
 				text
 			}
 		];
 	});
 
-	return { text: result.text.trim(), segments };
+	let text = result.text.trim();
+	if (segments.length > 0) {
+		text = segments.map((segment) => segment.text).join(' ');
+	}
+
+	return {
+		audio,
+		text,
+		segments
+	};
+}
+
+export function combineChunkResults(chunks: TranscribedAudioChunk[]): TranscriptionResult {
+	return {
+		text: chunks
+			.map((chunk) => chunk.text)
+			.filter(Boolean)
+			.join(' ')
+			.trim(),
+		segments: chunks.flatMap((chunk) => chunk.segments),
+		chunks
+	};
+}
+
+export async function transcribeAudioChunks(
+	audioChunks: AudioChunk[],
+	onChunk?: (completed: number, total: number) => void
+): Promise<TranscriptionResult> {
+	if (audioChunks.length === 0) {
+		return {
+			text: '',
+			segments: [],
+			chunks: []
+		};
+	}
+
+	const transcriber = await getTranscriber();
+	const results: TranscribedAudioChunk[] = [];
+
+	for (const [index, audioChunk] of audioChunks.entries()) {
+		if (audioChunk.samples.length > 0) {
+			results.push(await transcribeChunk(transcriber, audioChunk));
+		}
+		onChunk?.(index + 1, audioChunks.length);
+	}
+
+	return combineChunkResults(results);
 }

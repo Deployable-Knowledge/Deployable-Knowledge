@@ -1,10 +1,7 @@
-// Speech has no pages, so a whole transcript enters the chunk pipeline as a single text page.
-
 import { decodeAudioFile } from '$lib/server/transcription/audio-decoder';
-import {
-	transcribeAudio,
-	type TranscriptSegment
-} from '$lib/server/transcription/transcription-model';
+import type { TranscriptSegment } from '$lib/server/transcription/transcription-model';
+import { transcribeRecording } from '$lib/server/transcription/transcription-worker';
+import type { TranscriptionStage } from '$lib/server/transcription/transcription-worker-protocol';
 import type {
 	ExtractionResult,
 	ParsedChunk,
@@ -22,6 +19,8 @@ export function buildTranscriptExtraction(
 	fallbackText = ''
 ): ExtractionResult {
 	const timeline: TranscriptTimelineEntry[] = [];
+	let previousSpeaker: number | undefined;
+	const speakerLabels = new Map<number, number>();
 	let content = '';
 
 	for (const segment of segments) {
@@ -29,6 +28,15 @@ export function buildTranscriptExtraction(
 		if (!spoken) continue;
 
 		if (content) content += ' ';
+		if (segment.speakerId !== undefined) {
+			if (!speakerLabels.has(segment.speakerId)) {
+				speakerLabels.set(segment.speakerId, speakerLabels.size + 1);
+			}
+			if (segment.speakerId !== previousSpeaker) {
+				content += `Speaker ${speakerLabels.get(segment.speakerId)}: `;
+			}
+			previousSpeaker = segment.speakerId;
+		}
 		const charStart = content.length;
 		content += spoken;
 		timeline.push({
@@ -51,16 +59,46 @@ export function buildTranscriptExtraction(
 	};
 }
 
+const TRANSCRIPTION_PROGRESS: Record<
+	TranscriptionStage,
+	{ start: number; share: number; message: string }
+> = {
+	speech: { start: 0.12, share: 0.13, message: 'Detecting speech' },
+	transcription: { start: 0.25, share: 0.33, message: 'Transcribing speech' },
+	alignment: { start: 0.58, share: 0.14, message: 'Aligning transcript' },
+	segmentation: {
+		start: 0.72,
+		share: 0.026,
+		message: 'Identifying speakers: finding who speaks when'
+	},
+	embeddings: { start: 0.746, share: 0.195, message: 'Identifying speakers: recognizing voices' },
+	clustering: { start: 0.941, share: 0.026, message: 'Identifying speakers: grouping voices' },
+	reconstruction: {
+		start: 0.967,
+		share: 0.013,
+		message: 'Identifying speakers: building speaker turns'
+	}
+};
+
 export async function extractTranscript(
 	source: Source,
 	onProgress?: (ratio: number, message: string) => void
 ): Promise<ExtractionResult> {
 	const audioData = await decodeAudioFile(source.path);
 
-	onProgress?.(0.25, 'Transcribing speech');
-	const transcription = await transcribeAudio(audioData);
+	const { text, segments, speakerError } = await transcribeRecording(
+		audioData,
+		(stage, fraction) => {
+			const { start, share, message } = TRANSCRIPTION_PROGRESS[stage];
+			onProgress?.(start + share * fraction, message);
+		}
+	);
 
-	return buildTranscriptExtraction(source, transcription.segments, transcription.text);
+	if (speakerError) {
+		console.warn('[Transcription] Speaker diarization unavailable:', speakerError);
+	}
+
+	return buildTranscriptExtraction(source, segments, text);
 }
 
 function timeAtChar(timeline: TranscriptTimelineEntry[], charIndex: number): number {

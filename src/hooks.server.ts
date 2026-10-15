@@ -4,6 +4,7 @@ import { getThemeSettings } from '#lib/server/database/app-state';
 import { bootstrapSchema } from '#lib/server/database/bootstrap-schema';
 import { configureDatabase } from '#lib/server/database/database';
 import { createLogger, initializeLogging } from '#lib/server/logging';
+import { seedDatabase } from '#lib/server/database/seed-database';
 import { applyVulkanDevice } from '#lib/server/providers/vulkan-devices';
 import { refreshStaleEmbeddings } from '#lib/server/rag/embedding';
 
@@ -40,6 +41,8 @@ export const init: ServerInit = async () => {
 	// before anything touches it.
 	const migrationsFolder = process.env.DK_MIGRATIONS_DIR?.trim();
 	if (migrationsFolder) await bootstrapSchema(migrationsFolder);
+
+	await seedDatabase(process.env.DK_SEED_DIR?.trim() || 'seed');
 
 	await applyVulkanDevice();
 

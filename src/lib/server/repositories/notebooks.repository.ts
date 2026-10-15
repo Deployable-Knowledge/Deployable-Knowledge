@@ -14,7 +14,6 @@ import {
 	type NotebookWithPages
 } from '#lib/server/database/schema';
 import { hasExactIds } from '#lib/server/utils/reorder';
-import { USER_MANUAL_PAGES, USER_MANUAL_TITLE } from '#lib/server/notebooks/user-manual';
 
 export interface NotebookPageInput {
 	content: string;
@@ -27,26 +26,27 @@ export class NotebooksRepository {
 	static async createDefault(): Promise<string> {
 		const timestamp = new Date().toISOString();
 		const notebookId = randomUUID();
-		const pages: NewNotebookPage[] = USER_MANUAL_PAGES.map((page, sortOrder) => ({
-			id: randomUUID(),
-			notebookId,
-			title: page.title,
-			content: page.content,
-			sortOrder,
-			createdAt: timestamp,
-			updatedAt: timestamp
-		}));
+		const pageId = randomUUID();
 		const notebook: NewNotebook = {
 			id: notebookId,
-			title: USER_MANUAL_TITLE,
-			activePageId: pages[0].id,
+			title: 'Notebook 1',
+			activePageId: pageId,
+			sortOrder: 0,
+			createdAt: timestamp,
+			updatedAt: timestamp
+		};
+		const page: NewNotebookPage = {
+			id: pageId,
+			notebookId,
+			title: 'Page 1',
+			content: '',
 			sortOrder: 0,
 			createdAt: timestamp,
 			updatedAt: timestamp
 		};
 
 		await db.insert(notebooks).values(notebook);
-		await db.insert(notebookPages).values(pages);
+		await db.insert(notebookPages).values(page);
 		await this.setActive(notebookId);
 		return notebookId;
 	}
@@ -58,6 +58,12 @@ export class NotebooksRepository {
 			.where(eq(notebookState.id, NOTEBOOK_STATE_ID))
 			.limit(1);
 		return state?.activeNotebookId ?? null;
+	}
+
+	static async isUninitialized(): Promise<boolean> {
+		const [notebook] = await db.select({ id: notebooks.id }).from(notebooks).limit(1);
+		const [state] = await db.select({ id: notebookState.id }).from(notebookState).limit(1);
+		return !notebook && !state;
 	}
 
 	static async setActive(notebookId: string | null): Promise<void> {

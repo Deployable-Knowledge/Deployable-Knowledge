@@ -9,15 +9,15 @@ interface Merge {
 }
 
 function centroidLinkage(points: Float64Array, count: number, dimension: number): Merge[] {
-	const distances = new Float64Array((count * (count - 1)) / 2);
+	const distances = new Float32Array((count * (count - 1)) / 2);
+	let pair = 0;
 	for (let i = 0; i < count; i++) {
 		for (let j = i + 1; j < count; j++) {
-			let sum = 0;
-			for (let d = 0; d < dimension; d++) {
-				const delta = points[i * dimension + d] - points[j * dimension + d];
-				sum += delta * delta;
-			}
-			distances[condensedIndex(count, i, j)] = Math.sqrt(sum);
+			let dot = 0;
+			for (let d = 0; d < dimension; d++)
+				dot += points[i * dimension + d] * points[j * dimension + d];
+			// Euclidean distance between unit vectors; points must be L2-normalized.
+			distances[pair++] = Math.sqrt(Math.max(0, 2 - 2 * dot));
 		}
 	}
 

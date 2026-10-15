@@ -3,7 +3,7 @@ import type { SlidingWindow } from './rounding';
 
 export const SAMPLE_RATE = 16_000;
 export const CHUNK_SAMPLES = 10 * SAMPLE_RATE;
-const STEP_SAMPLES = SAMPLE_RATE;
+export const STEP_SAMPLES = SAMPLE_RATE;
 export const FRAMES_PER_CHUNK = 589;
 export const LOCAL_SPEAKERS = 3;
 
@@ -33,7 +33,7 @@ function countChunks(sampleCount: number): number {
 	return fullChunks + (hasLastChunk ? 1 : 0);
 }
 
-export function copyChunk(samples: Float32Array, index: number, target: Float32Array): void {
+function copyChunk(samples: Float32Array, index: number, target: Float32Array): void {
 	const start = index * STEP_SAMPLES;
 	const available = samples.subarray(start, Math.min(samples.length, start + CHUNK_SAMPLES));
 	target.set(available);

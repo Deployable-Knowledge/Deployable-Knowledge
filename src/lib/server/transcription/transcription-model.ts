@@ -47,8 +47,22 @@ function decodingOptions(audio: AudioChunk) {
 		max_new_tokens: maxNewTokens,
 		no_repeat_ngram_size: 4,
 		repetition_penalty: 1.05,
-		return_timestamps: 'word' as const
+		return_timestamps: true
 	};
+}
+
+function splitSegmentIntoWords(text: string, startMs: number, endMs: number): TranscriptSegment[] {
+	const words = text.split(/\s+/).filter(Boolean);
+	const totalCharacters = words.reduce((sum, word) => sum + word.length, 0);
+	const spanMs = endMs - startMs;
+
+	let characters = 0;
+	return words.map((word) => {
+		const wordStartMs = startMs + Math.round((spanMs * characters) / totalCharacters);
+		characters += word.length;
+		const wordEndMs = startMs + Math.round((spanMs * characters) / totalCharacters);
+		return { startMs: wordStartMs, endMs: wordEndMs, text: word };
+	});
 }
 
 async function transcribeChunk(
@@ -66,25 +80,17 @@ async function transcribeChunk(
 
 		if (!text || typeof start !== 'number') return [];
 
-		const endSeconds = typeof end === 'number' ? Math.max(end, start) : start;
-
 		const startMs = Math.min(
 			sourceEndMs,
 			Math.max(sourceStartMs, sourceStartMs + Math.round(start * 1000))
 		);
 
-		const endMs = Math.min(
-			sourceEndMs,
-			Math.max(startMs, sourceStartMs + Math.round(endSeconds * 1000))
-		);
+		let endMs = sourceEndMs;
+		if (typeof end === 'number') {
+			endMs = Math.min(sourceEndMs, Math.max(startMs, sourceStartMs + Math.round(end * 1000)));
+		}
 
-		return [
-			{
-				startMs,
-				endMs,
-				text
-			}
-		];
+		return splitSegmentIntoWords(text, startMs, endMs);
 	});
 
 	let text = result.text.trim();

@@ -38,10 +38,11 @@ function speakerMask(activity: Uint8Array, chunkOffset: number, speaker: number)
 async function embedSignal(
 	session: InferenceSession,
 	signal: Float32Array,
+	features: Float32Array,
 	target: Float64Array
 ): Promise<void> {
 	const output = await session.run({
-		[EMBEDDING_INPUT]: new Tensor('float32', computeFbank(signal), [
+		[EMBEDDING_INPUT]: new Tensor('float32', computeFbank(signal, features), [
 			1,
 			countFbankFrames(signal.length),
 			MEL_BINS
@@ -64,6 +65,7 @@ export async function extractEmbeddings(
 	const embeddings = new Float64Array(chunkCount * LOCAL_SPEAKERS * EMBEDDING_DIMENSION).fill(NaN);
 	const waveform = new Float32Array(CHUNK_SAMPLES);
 	const signal = new Float32Array(CHUNK_SAMPLES);
+	const features = new Float32Array(countFbankFrames(CHUNK_SAMPLES) * MEL_BINS);
 
 	for (let chunk = 0; chunk < chunkCount; chunk++) {
 		copyChunk(samples, chunk, waveform);
@@ -80,6 +82,7 @@ export async function extractEmbeddings(
 			await embedSignal(
 				session,
 				signal.subarray(0, length),
+				features,
 				embeddings.subarray(start, start + EMBEDDING_DIMENSION)
 			);
 		}

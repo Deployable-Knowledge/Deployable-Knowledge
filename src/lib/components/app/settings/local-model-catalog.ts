@@ -1,12 +1,6 @@
 import type { Component } from 'svelte';
+import { MODEL_ICONS } from '$lib/components/app/icons';
 import type { DownloadableModel } from '$lib/constants';
-import GemmaIcon from './icons/GemmaIcon.svelte';
-
-export const LOCAL_MODEL_ICONS: Record<string, Component<{ class?: string }>> = {
-	'gemma-4-E4B-it-Q4_K_M.gguf': GemmaIcon,
-	'gemma-4-E2B-it-Q4_K_M.gguf': GemmaIcon,
-	'gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf': GemmaIcon
-};
 
 export interface LocalModelCardData {
 	fileName: string;
@@ -15,7 +9,6 @@ export interface LocalModelCardData {
 	icon: Component<{ class?: string }> | null;
 	description: string | null;
 	downloadable: boolean;
-	downloadSizeBytes: number | null;
 	minRamGiB: number | null;
 	license: string | null;
 	licenseUrl: string | null;
@@ -29,10 +22,9 @@ export function catalogModelCard(
 		fileName: model.fileName,
 		name: model.name,
 		vendor: model.vendor,
-		icon: LOCAL_MODEL_ICONS[model.fileName] ?? null,
+		icon: MODEL_ICONS[model.icon],
 		description: model.description,
 		downloadable: true,
-		downloadSizeBytes: model.sizeBytes,
 		minRamGiB,
 		license: model.license,
 		licenseUrl: model.licenseUrl

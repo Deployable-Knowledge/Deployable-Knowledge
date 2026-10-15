@@ -54,7 +54,6 @@
 				onDownload={() => void localModelsStore.download(card.fileName)}
 				onUse={() => void localModelsStore.activateModel(card.fileName)}
 				percent={localModelsStore.progress?.percent ?? 0}
-				sizeOnDiskBytes={info?.sizeBytes ?? null}
 			/>
 		{/each}
 	</div>

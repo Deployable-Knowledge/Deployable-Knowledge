@@ -3,7 +3,6 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Progress } from '$lib/components/ui/progress';
-	import { formatBytes } from '$lib/utils';
 	import type { LocalModelCardData } from './local-model-catalog';
 
 	interface Props {
@@ -16,7 +15,6 @@
 		onDownload: () => void;
 		onUse: () => void;
 		percent: number;
-		sizeOnDiskBytes?: number | null;
 	}
 
 	let {
@@ -28,8 +26,7 @@
 		onDelete,
 		onDownload,
 		onUse,
-		percent,
-		sizeOnDiskBytes = null
+		percent
 	}: Props = $props();
 </script>
 
@@ -70,14 +67,10 @@
 		<p class="m-0 text-xs text-muted-foreground">{model.description}</p>
 	{/if}
 
-	{#if model.downloadSizeBytes !== null}
-		<span class="text-xs text-muted-foreground">
-			{formatBytes(model.downloadSizeBytes)} download
-			{#if model.minRamGiB !== null}· needs ~{model.minRamGiB} GiB RAM{/if}
-		</span>
-	{:else if sizeOnDiskBytes}
-		<span class="text-xs text-muted-foreground">{formatBytes(sizeOnDiskBytes)} on disk</span>
-	{/if}
+	<span class="text-xs text-muted-foreground">
+		{#if model.minRamGiB !== null}
+			Needs ~{model.minRamGiB} GiB RAM{/if}
+	</span>
 
 	<div class="mt-auto flex flex-wrap items-center gap-2 pt-1">
 		{#if downloading}

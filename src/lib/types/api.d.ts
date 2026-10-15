@@ -363,7 +363,6 @@ export interface ApiEmbeddingStatus {
 
 export interface ApiLocalModelInfo {
 	fileName: string;
-	sizeBytes: number | null;
 	downloaded: boolean;
 }
 

@@ -7,7 +7,6 @@
 	import { Progress } from '$lib/components/ui/progress';
 	import { LOCAL_MODEL_PROVIDER_ID, LOCAL_MODELS, findLocalModelByFile } from '$lib/constants';
 	import { localModelsStore, settingsDialogStore, settingsStore } from '$lib/stores';
-	import { formatBytes } from '$lib/utils';
 
 	interface Props {
 		disabled?: boolean;
@@ -94,10 +93,7 @@
 						disabled={localModelsStore.downloadingFile !== null}
 						onSelect={() => void localModelsStore.download(model.fileName)}
 					>
-						{@render modelLabel(
-							model.name,
-							`Download ${formatBytes(model.sizeBytes)} · needs ~${model.minRamGiB} GiB RAM`
-						)}
+						{@render modelLabel(model.name, `Needs ~${model.minRamGiB} GiB RAM`)}
 						<Download class="ml-auto" />
 					</DropdownMenu.Item>
 				{/if}

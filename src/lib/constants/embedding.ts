@@ -14,9 +14,9 @@ export const LOCAL_EMBEDDING_MODELS: readonly LocalEmbeddingModel[] = [
 		name: 'Nomic Embed Text v1.5',
 		vendor: 'Nomic AI',
 		description: 'Fast general-purpose English embeddings. Runs on the GPU when one is available.',
+		icon: 'nomic',
 		repo: 'nomic-ai/nomic-embed-text-v1.5-GGUF',
 		fileName: 'nomic-embed-text-v1.5.Q8_0.gguf',
-		sizeBytes: 146_146_432,
 		license: 'Apache 2.0',
 		licenseUrl: 'https://huggingface.co/nomic-ai/nomic-embed-text-v1.5',
 		prefixes: { search_document: 'search_document: ', search_query: 'search_query: ' }

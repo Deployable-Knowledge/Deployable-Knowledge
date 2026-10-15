@@ -18,13 +18,12 @@ export const GET: RequestHandler = async () => {
 
 	const models: ApiLocalModelInfo[] = LOCAL_MODELS.map((model) => ({
 		fileName: model.fileName,
-		sizeBytes: model.sizeBytes,
 		downloaded: downloaded.has(model.fileName)
 	}));
 
 	for (const fileName of files) {
 		if (!findLocalModelByFile(fileName)) {
-			models.push({ fileName, sizeBytes: null, downloaded: true });
+			models.push({ fileName, downloaded: true });
 		}
 	}
 

@@ -64,10 +64,14 @@ const melFilters = (() => {
 	});
 })();
 
-function powerSpectrum(frame: Float64Array, power: Float64Array): void {
-	const real = new Float64Array(INNER * OUTER);
-	const imaginary = new Float64Array(INNER * OUTER);
+const real = new Float64Array(INNER * OUTER);
+const imaginary = new Float64Array(INNER * OUTER);
+const frame = new Float64Array(FFT_SIZE);
+const power = new Float64Array(SPECTRUM_BINS);
+const means = new Float64Array(MEL_BINS);
+let logMelBuffer = new Float64Array(0);
 
+function powerSpectrum(): void {
 	for (let n2 = 0; n2 < INNER; n2++) {
 		for (let k1 = 0; k1 < OUTER; k1++) {
 			let sumReal = 0;
@@ -103,11 +107,14 @@ export function countFbankFrames(sampleCount: number): number {
 	return 1 + Math.floor(sampleCount / HOP);
 }
 
-export function computeFbank(signal: Float32Array): Float32Array {
+export function computeFbank(signal: Float32Array, output: Float32Array): Float32Array {
 	const frameCount = countFbankFrames(signal.length);
-	const logMel = new Float64Array(frameCount * MEL_BINS);
-	const frame = new Float64Array(FFT_SIZE);
-	const power = new Float64Array(SPECTRUM_BINS);
+	const valueCount = frameCount * MEL_BINS;
+	if (output.length < valueCount) {
+		throw new Error(`Fbank output holds ${output.length} values; ${valueCount} are needed.`);
+	}
+	if (logMelBuffer.length < valueCount) logMelBuffer = new Float64Array(valueCount);
+	const logMel = logMelBuffer.subarray(0, valueCount);
 	let maximum = -Infinity;
 
 	for (let frameIndex = 0; frameIndex < frameCount; frameIndex++) {
@@ -117,7 +124,7 @@ export function computeFbank(signal: Float32Array): Float32Array {
 			const sample = index >= 0 && index < signal.length ? signal[index] : 0;
 			frame[n] = sample * window[n];
 		}
-		powerSpectrum(frame, power);
+		powerSpectrum();
 
 		for (let bin = 0; bin < MEL_BINS; bin++) {
 			const { first, weights } = melFilters[bin];
@@ -131,11 +138,15 @@ export function computeFbank(signal: Float32Array): Float32Array {
 	}
 
 	const floor = maximum - DYNAMIC_RANGE_DB;
-	const means = new Float64Array(MEL_BINS);
-	for (let index = 0; index < logMel.length; index++) {
+	means.fill(0);
+	for (let index = 0; index < valueCount; index++) {
 		logMel[index] = Math.max(logMel[index], floor);
 		means[index % MEL_BINS] += logMel[index];
 	}
+	for (let bin = 0; bin < MEL_BINS; bin++) means[bin] /= frameCount;
 
-	return Float32Array.from(logMel, (value, index) => value - means[index % MEL_BINS] / frameCount);
+	for (let index = 0; index < valueCount; index++) {
+		output[index] = logMel[index] - means[index % MEL_BINS];
+	}
+	return output.subarray(0, valueCount);
 }

@@ -2,7 +2,7 @@ export const MEL_BINS = 80;
 
 const SAMPLE_RATE = 16_000;
 const FFT_SIZE = 400;
-const HOP = 160;
+export const FBANK_HOP = 160;
 const PADDING = FFT_SIZE / 2;
 const SPECTRUM_BINS = FFT_SIZE / 2 + 1;
 const OUTER = 16;
@@ -69,7 +69,6 @@ const imaginary = new Float64Array(INNER * OUTER);
 const frame = new Float64Array(FFT_SIZE);
 const power = new Float64Array(SPECTRUM_BINS);
 const means = new Float64Array(MEL_BINS);
-let logMelBuffer = new Float64Array(0);
 
 function powerSpectrum(): void {
 	for (let n2 = 0; n2 < INNER; n2++) {
@@ -104,24 +103,20 @@ function powerSpectrum(): void {
 }
 
 export function countFbankFrames(sampleCount: number): number {
-	return 1 + Math.floor(sampleCount / HOP);
+	return 1 + Math.floor(sampleCount / FBANK_HOP);
 }
 
-export function computeFbank(signal: Float32Array, output: Float32Array): Float32Array {
-	const frameCount = countFbankFrames(signal.length);
-	const valueCount = frameCount * MEL_BINS;
-	if (output.length < valueCount) {
-		throw new Error(`Fbank output holds ${output.length} values; ${valueCount} are needed.`);
-	}
-	if (logMelBuffer.length < valueCount) logMelBuffer = new Float64Array(valueCount);
-	const logMel = logMelBuffer.subarray(0, valueCount);
-	let maximum = -Infinity;
-
+export function computeLogMelFrames(
+	samples: Float32Array,
+	firstFrame: number,
+	frameCount: number,
+	target: Float64Array
+): void {
 	for (let frameIndex = 0; frameIndex < frameCount; frameIndex++) {
-		const start = frameIndex * HOP - PADDING;
+		const start = (firstFrame + frameIndex) * FBANK_HOP - PADDING;
 		for (let n = 0; n < FFT_SIZE; n++) {
 			const index = start + n;
-			const sample = index >= 0 && index < signal.length ? signal[index] : 0;
+			const sample = index >= 0 && index < samples.length ? samples[index] : 0;
 			frame[n] = sample * window[n];
 		}
 		powerSpectrum();
@@ -131,22 +126,35 @@ export function computeFbank(signal: Float32Array, output: Float32Array): Float3
 			let energy = 0;
 			for (let offset = 0; offset < weights.length; offset++)
 				energy += power[first + offset] * weights[offset];
-			const decibels = 10 * Math.log10(Math.max(energy, AMPLITUDE_FLOOR));
-			logMel[frameIndex * MEL_BINS + bin] = decibels;
-			if (decibels > maximum) maximum = decibels;
+			target[frameIndex * MEL_BINS + bin] = 10 * Math.log10(Math.max(energy, AMPLITUDE_FLOOR));
 		}
+	}
+}
+
+export function normalizeFbank(
+	logMel: Float64Array,
+	frameCount: number,
+	output: Float32Array
+): Float32Array {
+	const valueCount = frameCount * MEL_BINS;
+	if (output.length < valueCount) {
+		throw new Error(`Fbank output holds ${output.length} values; ${valueCount} are needed.`);
+	}
+
+	let maximum = -Infinity;
+	for (let index = 0; index < valueCount; index++) {
+		if (logMel[index] > maximum) maximum = logMel[index];
 	}
 
 	const floor = maximum - DYNAMIC_RANGE_DB;
 	means.fill(0);
 	for (let index = 0; index < valueCount; index++) {
-		logMel[index] = Math.max(logMel[index], floor);
-		means[index % MEL_BINS] += logMel[index];
+		means[index % MEL_BINS] += Math.max(logMel[index], floor);
 	}
 	for (let bin = 0; bin < MEL_BINS; bin++) means[bin] /= frameCount;
 
 	for (let index = 0; index < valueCount; index++) {
-		output[index] = logMel[index] - means[index % MEL_BINS];
+		output[index] = Math.max(logMel[index], floor) - means[index % MEL_BINS];
 	}
 	return output.subarray(0, valueCount);
 }

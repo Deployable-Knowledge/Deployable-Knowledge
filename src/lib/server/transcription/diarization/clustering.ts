@@ -14,7 +14,7 @@ const MIN_SPEAKER_SAMPLES = 6;
 const MAX_DISTANCE_TABLE_SHARE_OF_RAM = 0.25;
 
 function assertDistanceTableFits(sampleCount: number): void {
-	const bytes = ((sampleCount * (sampleCount - 1)) / 2) * Float64Array.BYTES_PER_ELEMENT;
+	const bytes = ((sampleCount * (sampleCount - 1)) / 2) * Float32Array.BYTES_PER_ELEMENT;
 	const limit = totalmem() * MAX_DISTANCE_TABLE_SHARE_OF_RAM;
 	if (bytes <= limit) return;
 

@@ -9,23 +9,24 @@
 	import * as DropdownMenu from '#lib/components/ui/dropdown-menu';
 	import { Textarea } from '#lib/components/ui/textarea';
 	import { REASONING_PRESETS, type ReasoningEffort } from '#lib/constants';
+	import type { ChatContextMode } from '#lib/enums';
 	import ChatModeMenu from './ChatModeMenu.svelte';
 	import ChatModelMenu from './ChatModelMenu.svelte';
+	import ChatToolsToggle from './ChatToolsToggle.svelte';
 
 	interface Props {
 		busy?: boolean;
 		draft: string;
-		notebookMode?: boolean;
+		mode: ChatContextMode;
+		onModeChange: (mode: ChatContextMode) => void;
 		onNewChat: () => void;
-		onNotebookModeChange: (enabled: boolean) => void;
 		onReasoningEffortChange: (effort: ReasoningEffort) => void;
-		onSearchChange: (enabled: boolean) => void;
 		onStop: () => void;
 		onSubmit: () => void;
 		onToolsChange: (enabled: boolean) => void;
 		reasoningEffort: ReasoningEffort;
-		searchEnabled?: boolean;
 		searchToolActive?: boolean;
+		toolsAvailable?: boolean;
 		toolsEnabled?: boolean;
 		toolsSupported?: boolean;
 	}
@@ -33,17 +34,16 @@
 	let {
 		busy = false,
 		draft = $bindable(),
-		notebookMode = false,
+		mode,
+		onModeChange,
 		onNewChat,
-		onNotebookModeChange,
 		onReasoningEffortChange,
-		onSearchChange,
 		onStop,
 		onSubmit,
 		onToolsChange,
 		reasoningEffort,
-		searchEnabled = false,
 		searchToolActive = false,
+		toolsAvailable = true,
 		toolsEnabled = false,
 		toolsSupported = true
 	}: Props = $props();
@@ -77,16 +77,13 @@
 		/>
 		<div class="flex items-center justify-between gap-2 px-2.5 pb-2">
 			<div class="flex items-center gap-1">
-				<ChatModeMenu
+				<ChatModeMenu disabled={busy} {mode} {onModeChange} {searchToolActive} />
+				<ChatToolsToggle
+					available={toolsAvailable}
 					disabled={busy}
-					{notebookMode}
-					{onNotebookModeChange}
-					{onSearchChange}
-					{onToolsChange}
-					{searchEnabled}
-					{searchToolActive}
-					{toolsEnabled}
-					{toolsSupported}
+					enabled={toolsEnabled}
+					onToggle={onToolsChange}
+					supported={toolsSupported}
 				/>
 				<ActionIcon
 					class="size-8 rounded-full bg-transparent text-foreground/40 shadow-none hover:bg-transparent hover:text-foreground active:translate-y-0 active:text-foreground dark:text-muted-foreground dark:hover:text-foreground"

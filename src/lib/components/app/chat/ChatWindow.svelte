@@ -9,6 +9,7 @@
 		sessionsStore,
 		settingsStore
 	} from '#lib/stores';
+	import { ChatContextMode } from '#lib/enums';
 	import type { ApiChatMessageRequest, SessionMessage } from '#lib/types';
 	import ChatForm from './ChatForm.svelte';
 	import ChatGoalsBar from './ChatGoalsBar.svelte';
@@ -37,21 +38,22 @@
 
 	let logElement = $state<HTMLDivElement | null>(null);
 	let draft = $state('');
-	let notebookMode = $state(false);
 
 	let notebooksRequested = false;
 	$effect(() => {
-		if (!notebookMode || notebooksRequested) return;
+		if (chatStore.mode !== ChatContextMode.NOTEBOOK || notebooksRequested) return;
 		notebooksRequested = true;
 		void notebooksStore.load();
 	});
 
 	let toolsSupported = $derived(settingsStore.modelToolSupport !== 'unsupported');
-	let effectiveToolsEnabled = $derived(chatStore.toolsEnabled && toolsSupported);
+	let toolsAvailable = $derived(toolsSupported && chatStore.mode !== ChatContextMode.MODEL);
+	let effectiveToolsEnabled = $derived(chatStore.toolsEnabled && toolsAvailable);
 	let searchToolActive = $derived(
-		!notebookMode && effectiveToolsEnabled && settingsStore.config.enabledTools.includes('search')
+		chatStore.mode === ChatContextMode.SEARCH &&
+			effectiveToolsEnabled &&
+			settingsStore.config.enabledTools.includes('search')
 	);
-	let autoSearchEnabled = $derived(!notebookMode && !searchToolActive && chatStore.searchEnabled);
 
 	async function notebookContext(): Promise<string> {
 		await notebooksStore.load();
@@ -102,22 +104,23 @@
 				tools_enabled: effectiveToolsEnabled,
 				enabled_tools: config.enabledTools
 			};
-			const request: ApiChatMessageRequest = notebookMode
-				? {
-						...requestBase,
-						conversational: true,
-						context: await notebookContext(),
-						notebook_id: notebooksStore.activeNotebookId
-					}
-				: {
-						...requestBase,
-						conversational: false,
-						prompt_template_id: config.promptTemplateId,
-						persona: config.persona,
-						document_ids: [...documentsStore.selectedIds],
-						rag_top_k: config.ragTopK,
-						search_enabled: chatStore.searchEnabled
-					};
+			const request: ApiChatMessageRequest =
+				chatStore.mode === ChatContextMode.NOTEBOOK
+					? {
+							...requestBase,
+							conversational: true,
+							context: await notebookContext(),
+							notebook_id: notebooksStore.activeNotebookId
+						}
+					: {
+							...requestBase,
+							conversational: false,
+							prompt_template_id: config.promptTemplateId,
+							persona: config.persona,
+							document_ids: [...documentsStore.selectedIds],
+							rag_top_k: config.ragTopK,
+							search_enabled: chatStore.mode === ChatContextMode.SEARCH
+						};
 			await conversation.sendMessage(request);
 			await sessionsStore.refresh();
 		} catch (error) {
@@ -178,17 +181,16 @@
 		<ChatForm
 			bind:draft
 			busy={chatStore.current.isStreaming}
-			{notebookMode}
+			mode={chatStore.mode}
+			onModeChange={(mode) => (chatStore.mode = mode)}
 			onNewChat={() => void startNewChat()}
-			onNotebookModeChange={(enabled) => (notebookMode = enabled)}
 			onReasoningEffortChange={(effort) => settingsStore.setReasoningEffort(effort)}
-			onSearchChange={(enabled) => (chatStore.searchEnabled = enabled)}
 			onStop={() => chatStore.current.stopGeneration()}
 			onSubmit={() => void send()}
 			onToolsChange={(enabled) => (chatStore.toolsEnabled = enabled)}
 			reasoningEffort={settingsStore.reasoningEffort}
-			searchEnabled={searchToolActive || autoSearchEnabled}
 			{searchToolActive}
+			{toolsAvailable}
 			toolsEnabled={effectiveToolsEnabled}
 			{toolsSupported}
 		/>

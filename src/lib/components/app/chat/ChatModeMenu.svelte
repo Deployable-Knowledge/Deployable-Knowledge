@@ -1,58 +1,42 @@
 <script lang="ts">
 	import BookOpen from '@lucide/svelte/icons/book-open';
-	import EllipsisVertical from '@lucide/svelte/icons/ellipsis-vertical';
+	import Bot from '@lucide/svelte/icons/bot';
 	import Search from '@lucide/svelte/icons/search';
-	import Wrench from '@lucide/svelte/icons/wrench';
 	import { ActionIcon } from '#lib/components/app/actions';
 	import * as DropdownMenu from '#lib/components/ui/dropdown-menu';
+	import { ChatContextMode } from '#lib/enums';
 
 	interface Props {
 		disabled?: boolean;
-		notebookMode: boolean;
-		onNotebookModeChange: (enabled: boolean) => void;
-		onSearchChange: (enabled: boolean) => void;
-		onToolsChange: (enabled: boolean) => void;
-		searchEnabled: boolean;
+		mode: ChatContextMode;
+		onModeChange: (mode: ChatContextMode) => void;
 		searchToolActive: boolean;
-		toolsEnabled: boolean;
-		toolsSupported: boolean;
 	}
 
-	let {
-		disabled = false,
-		notebookMode,
-		onNotebookModeChange,
-		onSearchChange,
-		onToolsChange,
-		searchEnabled,
-		searchToolActive,
-		toolsEnabled,
-		toolsSupported
-	}: Props = $props();
+	let { disabled = false, mode, onModeChange, searchToolActive }: Props = $props();
 
-	let activeModes = $derived(
-		[
-			notebookMode && { icon: BookOpen, name: 'notebook' },
-			toolsEnabled && { icon: Wrench, name: 'tools' },
-			searchEnabled && { icon: Search, name: 'search' }
-		].filter((mode) => mode !== false)
-	);
-
-	let TriggerIcon = $derived(activeModes[0]?.icon ?? EllipsisVertical);
-
-	let searchDescription = $derived.by(() => {
-		if (notebookMode) return 'Not used in notebook mode';
-		if (searchToolActive) return 'Handled by the search tool';
-		return 'Search documents before replying';
+	let modes = $derived({
+		[ChatContextMode.NOTEBOOK]: {
+			icon: BookOpen,
+			title: 'Notebook',
+			description: 'Use the notebook as context'
+		},
+		[ChatContextMode.SEARCH]: {
+			icon: Search,
+			title: 'Search',
+			description: searchToolActive
+				? 'Handled by the search tool'
+				: 'Search documents before replying'
+		},
+		[ChatContextMode.MODEL]: {
+			icon: Bot,
+			title: 'Model',
+			description: 'Reply from the model only, without documents or tools'
+		}
 	});
-</script>
 
-{#snippet modeLabel(title: string, description: string)}
-	<span class="grid min-w-0 gap-0.5">
-		<span class="font-medium">{title}</span>
-		<span class="text-[11px] text-muted-foreground">{description}</span>
-	</span>
-{/snippet}
+	let TriggerIcon = $derived(modes[mode].icon);
+</script>
 
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger {disabled}>
@@ -60,9 +44,7 @@
 			<ActionIcon
 				class="size-8 rounded-full bg-transparent text-foreground/40 shadow-none hover:bg-transparent hover:text-foreground active:translate-y-0 aria-expanded:text-foreground dark:text-muted-foreground dark:hover:text-foreground dark:aria-expanded:text-foreground"
 				{disabled}
-				label={activeModes.length
-					? `Chat modes: ${activeModes.map((mode) => mode.name).join(', ')}`
-					: 'Chat modes: plain chat'}
+				label={`Chat mode: ${modes[mode].title}`}
 				triggerProps={props}
 				variant="ghost"
 			>
@@ -72,34 +54,19 @@
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content align="start" class="w-64" side="top" sideOffset={8}>
 		<DropdownMenu.Label>Chat modes</DropdownMenu.Label>
-		<DropdownMenu.CheckboxItem
-			checked={notebookMode}
-			closeOnSelect={false}
-			onCheckedChange={onNotebookModeChange}
+		<DropdownMenu.RadioGroup
+			onValueChange={(value) => onModeChange(value as ChatContextMode)}
+			value={mode}
 		>
-			<BookOpen />
-			{@render modeLabel('Notebook', 'Use the notebook as context')}
-		</DropdownMenu.CheckboxItem>
-		<DropdownMenu.CheckboxItem
-			checked={toolsEnabled}
-			closeOnSelect={false}
-			disabled={!toolsSupported}
-			onCheckedChange={onToolsChange}
-		>
-			<Wrench />
-			{@render modeLabel(
-				'Tools',
-				toolsSupported ? 'Let the model call tools' : 'Not supported by this model'
-			)}
-		</DropdownMenu.CheckboxItem>
-		<DropdownMenu.CheckboxItem
-			checked={searchEnabled}
-			closeOnSelect={false}
-			disabled={notebookMode || searchToolActive}
-			onCheckedChange={onSearchChange}
-		>
-			<Search />
-			{@render modeLabel('Search', searchDescription)}
-		</DropdownMenu.CheckboxItem>
+			{#each Object.entries(modes) as [value, { icon: Icon, title, description }] (value)}
+				<DropdownMenu.RadioItem {value}>
+					<Icon class="text-muted-foreground" />
+					<span class="grid min-w-0 gap-0.5">
+						<span class="font-medium">{title}</span>
+						<span class="text-[11px] text-muted-foreground">{description}</span>
+					</span>
+				</DropdownMenu.RadioItem>
+			{/each}
+		</DropdownMenu.RadioGroup>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>

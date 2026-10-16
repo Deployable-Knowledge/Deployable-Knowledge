@@ -261,7 +261,7 @@ function buildTables(state: EditorState): DecorationSet {
 			if (node.name !== 'Table') return;
 			const from = state.doc.lineAt(node.from).from;
 			const to = state.doc.lineAt(node.to).to;
-			if (selection.from < to && selection.to > from) return false;
+			if (selection.from <= to && selection.to >= from) return false;
 			pending.push({
 				from,
 				to,
@@ -291,6 +291,28 @@ const tableField = StateField.define<DecorationSet>({
 	},
 	provide: (field) => EditorView.decorations.from(field)
 });
+
+// Vertical cursor motion skips block widgets entirely, so a rendered table is
+// jumped over and the caret lands on the line beyond it. Stop on the nearest
+// source row of the crossed table instead, which also reveals its markdown.
+function moveIntoTable(view: EditorView, forward: boolean): boolean {
+	const range = view.state.selection.main;
+	if (!range.empty) return false;
+	const { doc } = view.state;
+	const target = view.moveVertically(range, forward);
+	const low = Math.min(range.head, target.head);
+	const high = Math.max(range.head, target.head);
+	const column = range.head - doc.lineAt(range.head).from;
+	let entry = -1;
+	view.state.field(tableField).between(low, high, (from, to) => {
+		const row = doc.lineAt(forward ? from : to);
+		entry = Math.min(row.from + column, row.to);
+		if (forward) return false;
+	});
+	if (entry < 0) return false;
+	view.dispatch({ selection: { anchor: entry }, scrollIntoView: true, userEvent: 'select' });
+	return true;
+}
 
 function collectStyleSpans(
 	state: EditorState,
@@ -432,8 +454,10 @@ const editorTheme = EditorView.theme({
 		borderLeft:
 			'3px solid color-mix(in oklab, var(--color-muted-foreground) 55%, var(--color-border))'
 	},
-	// Table styling itself comes from markdown-content.css, shared with chat
-	'.nb-table': { margin: '0.25rem 0' }
+	// Table styling itself comes from markdown-content.css, shared with chat.
+	// Padding, not margin: CodeMirror's height map ignores widget margins, and
+	// the drift breaks vertical cursor motion below the table.
+	'.nb-table': { padding: '0.25rem 0' }
 });
 
 function linkUrlAt(state: EditorState, pos: number): string | null {
@@ -547,6 +571,8 @@ export function notebookEditorExtensions(hooks: NotebookEditorHooks): Extension 
 				}
 			})),
 			{ key: 'Escape', run: () => hooks.onEscape() },
+			{ key: 'ArrowUp', run: (view) => moveIntoTable(view, false) },
+			{ key: 'ArrowDown', run: (view) => moveIntoTable(view, true) },
 			...historyKeymap,
 			...defaultKeymap
 		])

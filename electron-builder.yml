@@ -15,7 +15,7 @@ files:
   - dist-workers/**
   - drizzle/**
   - electron/*.{cjs,ts}
-  - models/vad/silero_vad.onnx
+  - models/vad/silero_vad_v4.onnx
   - LICENSE
   - THIRD-PARTY-NOTICES.md
 

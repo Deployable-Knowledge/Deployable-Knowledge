@@ -20,7 +20,7 @@ const TRANSCRIPTION_WORKER_BUILD: BuildOptions = {
 	platform: 'node',
 	format: 'esm',
 	target: 'node22',
-	external: ['@huggingface/transformers', 'onnxruntime-node', 'sherpa-onnx-node'],
+	external: ['@huggingface/transformers', 'onnxruntime-node'],
 	sourcemap: true,
 	logLevel: 'warning'
 };

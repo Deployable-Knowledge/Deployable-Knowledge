@@ -25,15 +25,15 @@ const TRANSCRIPTION_WORKER_BUILD: BuildOptions = {
 };
 
 function transcriptionWorker(): Plugin {
-	let serving = false;
+	let buildsWorker = false;
 
 	return {
 		name: 'dk:transcription-worker',
 		configResolved(config) {
-			serving = config.command === 'serve';
+			buildsWorker = config.command === 'build' && Boolean(config.build.ssr);
 		},
 		async buildStart() {
-			if (serving) return;
+			if (!buildsWorker) return;
 			await build(TRANSCRIPTION_WORKER_BUILD);
 		},
 		async configureServer(server) {

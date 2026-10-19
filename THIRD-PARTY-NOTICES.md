@@ -149,8 +149,11 @@ By downloading a Gemma model through this application, you agree to those terms.
 
 ### Voice activity detection — Silero VAD
 
-`models/vad/silero_vad.onnx`, included in this repository and the installer, is Silero VAD
-(snakers4/silero-vad, MIT). It runs through `sherpa-onnx-node` (Apache-2.0).
+`models/vad/silero_vad_v4.onnx`, included in this repository and the installer, is the official
+Silero VAD v4.0 ONNX model (snakers4/silero-vad, MIT, Copyright (c) 2020-present Silero Team). It runs
+through `onnxruntime-node`. The speech-segment logic in
+`src/lib/server/transcription/voice-activity-detection.ts` is a TypeScript port of
+`get_speech_timestamps` from silero-vad 6.2.3 (same license; text in §9).
 
 ### Speaker diarization — pyannote.audio with SpeechBrain ECAPA-TDNN
 
@@ -175,7 +178,7 @@ Developers). Deployable Knowledge is not endorsed by the SciPy developers. The c
 speaker groups that sound unlike every larger group are kept as their own speaker instead of being
 merged, so that a person who speaks only briefly is still identified.
 
-The full license texts for pyannote.audio, SciPy, and SpeechBrain are reproduced in §9.
+The full license texts for pyannote.audio, SciPy, Silero VAD, and SpeechBrain are reproduced in §9.
 
 ---
 
@@ -187,7 +190,6 @@ The full license texts for pyannote.audio, SciPy, and SpeechBrain are reproduced
 | `node-llama-cpp`            | 3.19.1  | MIT (bundles llama.cpp — MIT)                             |
 | `onnxruntime-node`          | 1.30.0  | MIT (ONNX Runtime, Microsoft)                             |
 | `@huggingface/transformers` | 4.3.0   | Apache-2.0                                                |
-| `sherpa-onnx-node`          | 1.13.8  | Apache-2.0 (bundles sherpa-onnx native libraries)         |
 | `@libsql/client`            | 0.17.4  | MIT (libSQL, a fork of SQLite — public domain)            |
 | `sharp`                     | 0.35.5  | Apache-2.0 (see §2 for libvips)                           |
 | `exceljs`                   | 4.4.0   | MIT                                                       |
@@ -294,6 +296,34 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
+
+### Silero VAD — MIT License
+
+Source: <https://github.com/snakers4/silero-vad/blob/v6.2.3/LICENSE> (identical at v4.0)
+
+```text
+MIT License
+
+Copyright (c) 2020-present Silero Team
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ```
 
 ### SpeechBrain — Apache License 2.0

@@ -29,6 +29,6 @@ app.db-*
 /models/*
 !/models/vad/
 /models/vad/*
-!/models/vad/silero_vad.onnx
+!/models/vad/silero_vad_v4.onnx
 /documents/
 .cache/

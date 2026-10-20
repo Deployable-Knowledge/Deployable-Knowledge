@@ -38,7 +38,9 @@ export function insertNotebookCitationsTable(
 	text: string,
 	sources: readonly NotebookSourceItem[]
 ): string {
-	const rows = extractRows(text);
+	const lines = text.split('\n');
+	const section = findCitationsSection(lines);
+	const rows = section ? [...section.rows] : [];
 	const keys = new Set(rows.map(rowKey));
 	for (const source of sources) {
 		const row = tableRow(source);
@@ -48,9 +50,14 @@ export function insertNotebookCitationsTable(
 		rows.push(row);
 	}
 	if (!rows.length) return text;
-	const body = removeTable(text).trimEnd();
 	const table = formatTable([...TABLE_HEADER_ROWS, ...rows].join('\n'), 0).text;
-	return `${body}\n\n${CITATIONS_HEADING}\n\n${table}`;
+	const block = `${CITATIONS_HEADING}\n\n${table}`;
+	if (!section) return [text.trimEnd(), block].filter(Boolean).join('\n\n');
+	let next = section.end;
+	while (next < lines.length && !lines[next].trim()) next++;
+	const before = lines.slice(0, section.start).join('\n').trimEnd();
+	const after = lines.slice(next).join('\n');
+	return [before, block, after].filter(Boolean).join('\n\n');
 }
 
 export function notebookSourceHeading(title: string, href: string, location: string): string {
@@ -67,29 +74,30 @@ function rowKey(row: string): string {
 	return tableRowCells(row).join('\n');
 }
 
-function tableLines(text: string): string[] {
-	return text
-		.split('\n')
-		.map((line) => line.trim())
-		.filter((line) => TABLE_ROW.test(line));
+interface CitationsSection {
+	start: number;
+	end: number;
+	rows: string[];
 }
 
-function citationsStart(text: string): number {
-	const start = text.lastIndexOf(CITATIONS_HEADING);
-	if (start < 0) return -1;
-	const [header] = tableLines(text.slice(start));
-	return header && rowKey(header) === rowKey(TABLE_HEADER_ROWS[0]) ? start : -1;
-}
-
-function extractRows(text: string): string[] {
-	const start = citationsStart(text);
-	if (start < 0) return [];
-	return tableLines(text.slice(start)).slice(TABLE_HEADER_ROWS.length);
-}
-
-function removeTable(text: string): string {
-	const start = citationsStart(text);
-	return start < 0 ? text : text.slice(0, start);
+// The section is the last `## Citations` heading line whose first following
+// non-blank line is the citations table header; it ends at the first line after
+// that table that is not a table row, so content below it is left untouched.
+function findCitationsSection(lines: readonly string[]): CitationsSection | null {
+	for (let start = lines.length - 1; start >= 0; start--) {
+		if (lines[start].trim() !== CITATIONS_HEADING) continue;
+		let header = start + 1;
+		while (header < lines.length && !lines[header].trim()) header++;
+		const headerLine = lines[header]?.trim() ?? '';
+		if (!TABLE_ROW.test(headerLine) || rowKey(headerLine) !== rowKey(TABLE_HEADER_ROWS[0])) {
+			continue;
+		}
+		let end = header;
+		while (end < lines.length && TABLE_ROW.test(lines[end].trim())) end++;
+		const rows = lines.slice(header + TABLE_HEADER_ROWS.length, end).map((line) => line.trim());
+		return { start, end, rows };
+	}
+	return null;
 }
 
 function escapeLabel(value: string): string {

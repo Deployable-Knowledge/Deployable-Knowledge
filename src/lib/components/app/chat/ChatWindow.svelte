@@ -84,6 +84,10 @@
 
 	async function send(): Promise<void> {
 		if (chatStore.current.isStreaming || !draft.trim()) return;
+		if (!settingsStore.config.model) {
+			toast.error('Select a model before sending a message.');
+			return;
+		}
 		const text = draft.trim();
 		draft = '';
 		settingsStore.lastQuery = text;

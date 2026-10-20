@@ -3,6 +3,7 @@
 	import { toast } from 'svelte-sonner';
 	import {
 		ApiError,
+		countNotebookText,
 		createAutosave,
 		pickDirectory,
 		pickFiles,
@@ -15,6 +16,7 @@
 	import * as Dialog from '#lib/components/ui/dialog';
 	import { Input } from '#lib/components/ui/input';
 	import { Label } from '#lib/components/ui/label';
+	import * as Select from '#lib/components/ui/select';
 	import {
 		isNotebookImportFileName,
 		NOTEBOOK_IMPORT_EXTENSIONS,
@@ -91,6 +93,22 @@
 	const pageLimit = $derived(Math.max(0, NOTEBOOK_TEXT_CHARACTER_LIMIT - otherPageCharacters));
 	const characterCount = $derived(otherPageCharacters + notes.length);
 	const charactersRemaining = $derived(Math.max(0, NOTEBOOK_TEXT_CHARACTER_LIMIT - characterCount));
+	const moveDestinations = $derived.by(() => {
+		const pageLength = movePageTarget?.content.length ?? 0;
+		return notebooksStore.notebooks
+			.filter(({ id }) => id !== notebooksStore.activeNotebookId)
+			.map((notebook) => ({
+				id: notebook.id,
+				title: notebook.title,
+				hasRoom: countNotebookText(notebook.pages) + pageLength <= NOTEBOOK_TEXT_CHARACTER_LIMIT
+			}));
+	});
+	const moveDestination = $derived(moveDestinations.find(({ id }) => id === moveDestinationId));
+	const moveDestinationLabel = $derived.by(() => {
+		if (moveDestination) return moveDestination.title;
+		if (!moveDestinations.length) return 'No other notebooks';
+		return 'No notebook has room';
+	});
 	const nearLimit = $derived(characterCount >= NOTEBOOK_TEXT_WARNING_CHARACTER_COUNT);
 	const atLimit = $derived(characterCount >= NOTEBOOK_TEXT_CHARACTER_LIMIT);
 
@@ -141,14 +159,36 @@
 		}
 	});
 
+	async function appendToOpenPage(text: string): Promise<void> {
+		const separator = notes.trim() ? '\n\n' : '';
+		const next = `${notes}${separator}${text}`;
+		if (otherPageCharacters + next.length > NOTEBOOK_TEXT_CHARACTER_LIMIT) {
+			throw new Error(
+				`Notebook text is limited to ${NOTEBOOK_TEXT_CHARACTER_LIMIT.toLocaleString()} characters.`
+			);
+		}
+		notes = next;
+		autosave.schedule();
+		await flushPage();
+	}
+
+	let detachPageEditor = () => {};
+
 	onMount(async () => {
+		detachPageEditor = notebooksStore.attachPageEditor({
+			pageId: () => syncedPageId,
+			append: appendToOpenPage
+		});
 		await notebooksStore.load();
 		if (notebooksStore.error) toast.error(notebooksStore.error);
 		if (!notebooksStore.activeNotebook) view = 'notebooks';
 		else if (!notebooksStore.activePage) view = 'pages';
 	});
 
-	onDestroy(() => autosave.destroy());
+	onDestroy(() => {
+		detachPageEditor();
+		autosave.destroy();
+	});
 
 	function goBack(): void {
 		view = view === 'editor' ? 'pages' : 'notebooks';
@@ -249,13 +289,12 @@
 
 	function openMovePage(page: NotebookPage): void {
 		movePageTarget = page;
-		moveDestinationId =
-			notebooksStore.notebooks.find(({ id }) => id !== notebooksStore.activeNotebookId)?.id ?? '';
+		moveDestinationId = moveDestinations.find(({ hasRoom }) => hasRoom)?.id ?? '';
 	}
 
 	async function movePageToNotebook(): Promise<void> {
 		const notebook = notebooksStore.activeNotebook;
-		if (!notebook || !movePageTarget || !moveDestinationId) return;
+		if (!notebook || !movePageTarget || !moveDestination?.hasRoom) return;
 		await flushPage();
 		try {
 			await notebooksStore.movePage(notebook.id, movePageTarget.id, moveDestinationId);
@@ -597,14 +636,28 @@
 			<Dialog.Title>Move {movePageTarget?.title ?? 'page'}</Dialog.Title>
 			<Dialog.Description>Choose another notebook for this page and its notes.</Dialog.Description>
 		</Dialog.Header>
-		<select class="dk-field h-9 px-3 text-sm" bind:value={moveDestinationId}>
-			{#each notebooksStore.notebooks.filter(({ id }) => id !== notebooksStore.activeNotebookId) as notebook (notebook.id)}
-				<option value={notebook.id}>{notebook.title}</option>
-			{/each}
-		</select>
+		<div class="grid gap-2">
+			<Label for="notebook-move-destination">Destination notebook</Label>
+			<Select.Root type="single" bind:value={moveDestinationId}>
+				<Select.Trigger id="notebook-move-destination" class="w-full min-w-0">
+					<span class="truncate">{moveDestinationLabel}</span>
+				</Select.Trigger>
+				<Select.Content>
+					{#each moveDestinations as destination (destination.id)}
+						<Select.Item
+							value={destination.id}
+							disabled={!destination.hasRoom}
+							label={destination.hasRoom
+								? destination.title
+								: `${destination.title} (not enough room)`}
+						/>
+					{/each}
+				</Select.Content>
+			</Select.Root>
+		</div>
 		<Dialog.Footer>
 			<Button variant="outline" onclick={() => (movePageTarget = null)}>Cancel</Button>
-			<Button disabled={!moveDestinationId} onclick={() => void movePageToNotebook()}
+			<Button disabled={!moveDestination?.hasRoom} onclick={() => void movePageToNotebook()}
 				>Move page</Button
 			>
 		</Dialog.Footer>

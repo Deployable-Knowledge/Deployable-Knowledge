@@ -43,7 +43,10 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 		const characterCount = countNotebookText(
 			pages.map((page) => (page.id === pageId ? { content: body.content ?? '' } : page))
 		);
-		if (characterCount > NOTEBOOK_TEXT_CHARACTER_LIMIT) {
+		if (
+			characterCount > NOTEBOOK_TEXT_CHARACTER_LIMIT &&
+			characterCount > countNotebookText(pages)
+		) {
 			return json(
 				{
 					error: 'Notebook text limit exceeded',

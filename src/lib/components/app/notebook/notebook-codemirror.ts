@@ -674,7 +674,9 @@ export function notebookEditorExtensions(hooks: NotebookEditorHooks): Extension 
 		),
 		EditorState.changeFilter.of(
 			(transaction) =>
-				!transaction.docChanged || transaction.newDoc.length <= hooks.characterLimit()
+				!transaction.docChanged ||
+				transaction.newDoc.length <= hooks.characterLimit() ||
+				transaction.newDoc.length <= transaction.startState.doc.length
 		),
 		keymap.of([
 			{

@@ -6,7 +6,13 @@ import type {
 	NotebookWithPages
 } from '#lib/types';
 
+export interface NotebookPageEditor {
+	pageId(): string | null;
+	append(text: string): Promise<void>;
+}
+
 class NotebooksStore {
+	private pageEditor: NotebookPageEditor | null = null;
 	private _notebooks = $state<NotebookWithPages[]>([]);
 	private _activeNotebookId = $state<string | null>(null);
 	private _sources = $state<NotebookSourceItem[]>([]);
@@ -140,10 +146,21 @@ class NotebooksStore {
 		this.apply(await NotebooksService.updatePage(notebookId, pageId, content));
 	}
 
+	attachPageEditor(editor: NotebookPageEditor): () => void {
+		this.pageEditor = editor;
+		return () => {
+			if (this.pageEditor === editor) this.pageEditor = null;
+		};
+	}
+
 	async appendToActivePage(text: string): Promise<void> {
 		const notebook = this.activeNotebook;
 		const page = this.activePage;
 		if (!notebook || !page) throw new Error('Open a notebook page first.');
+		if (this.pageEditor?.pageId() === page.id) {
+			await this.pageEditor.append(text);
+			return;
+		}
 		const separator = page.content.trim() ? '\n\n' : '';
 		await this.updatePage(notebook.id, page.id, `${page.content}${separator}${text}`);
 	}

@@ -132,7 +132,8 @@ export async function retrieveRagContext({
 	chunkTypes = ['TEXT', 'TABLE', 'IMAGE'],
 	topK = DEFAULT_ASSISTANT_CONFIG.ragTopK,
 	mode = DEFAULT_RETRIEVAL_MODE,
-	confidence
+	confidence,
+	includeLocalOnly
 }: {
 	question: string;
 	documentIds?: string[];
@@ -140,12 +141,14 @@ export async function retrieveRagContext({
 	topK?: number;
 	mode?: RagRetrievalMode;
 	confidence?: SearchConfidence;
+	includeLocalOnly?: boolean;
 }): Promise<RagContextResult> {
 	const searchOptions = {
 		query: question,
 		topK,
 		documentIds,
-		chunkTypes
+		chunkTypes,
+		includeLocalOnly
 	};
 	let scored: ScoredSearchMatch[];
 

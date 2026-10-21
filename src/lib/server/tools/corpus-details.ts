@@ -59,7 +59,12 @@ export const corpusDetailsTool: AgentTool<CorpusDetailsData> = {
 				? context.documentIds
 				: undefined;
 
-		const { total, documents } = await DocumentsRepository.titles({ documentIds, limit, offset });
+		const { total, documents } = await DocumentsRepository.titles({
+			documentIds,
+			includeLocalOnly: context.includeLocalOnly === true,
+			limit,
+			offset
+		});
 
 		const scopeNote = documentIds
 			? 'counts cover only the documents selected for this chat'

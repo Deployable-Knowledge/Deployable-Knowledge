@@ -6,6 +6,7 @@ import type { ApiDocumentIngestProgress, ApiDocumentIngestResult } from '$lib/ty
 import { db } from '$lib/server/database/database';
 import { documentChunks, documents } from '$lib/server/database/schema';
 import { ingestDocument } from '$lib/server/rag/ingest-document';
+import { DocumentsRepository } from '$lib/server/repositories';
 import { fetchYoutubeTranscript } from '$lib/server/youtube/transcript-client';
 import { parseYoutubeVideoId, watchUrl } from '$lib/utils';
 import { handlerForPath, handlerForType } from './source-types';
@@ -36,6 +37,15 @@ export async function existingDocument(
 	return existing ? { ...existing, pageCount: 0, chunkCount: Number(existing.chunkCount) } : null;
 }
 
+async function reuseExisting(
+	sourcePath: string,
+	localOnly: boolean
+): Promise<ApiDocumentIngestResult | null> {
+	const existing = await existingDocument(sourcePath);
+	if (existing && localOnly) await DocumentsRepository.setLocalOnly([existing.documentId], true);
+	return existing;
+}
+
 export function titleFor(name: string): string {
 	return basename(name, extname(name)).trim() || name;
 }
@@ -43,6 +53,7 @@ export function titleFor(name: string): string {
 export async function ingestFileBuffer(
 	originalName: string,
 	buffer: Buffer,
+	localOnly: boolean,
 	onProgress?: (progress: ApiDocumentIngestProgress) => void
 ): Promise<ApiDocumentIngestResult> {
 	const handler = handlerForPath(originalName);
@@ -53,7 +64,7 @@ export async function ingestFileBuffer(
 	await mkdir(DOCUMENTS_DIR, { recursive: true });
 	const contentHash = createHash('sha256').update(buffer).digest('hex');
 	const savedPath = managedPathForHash(contentHash, managedExtensionFor(handler, originalName));
-	const existing = await existingDocument(savedPath);
+	const existing = await reuseExisting(savedPath, localOnly);
 	if (existing) return existing;
 
 	if (handler.convert) {
@@ -66,7 +77,8 @@ export async function ingestFileBuffer(
 				fileName: originalName,
 				filePath: savedPath,
 				title: titleFor(originalName),
-				sourceType: handler.type
+				sourceType: handler.type,
+				localOnly
 			},
 			onProgress
 		);
@@ -83,6 +95,7 @@ const MAX_MANUAL_TITLE_LENGTH = 200;
 export async function ingestTextContent(
 	title: string,
 	content: string,
+	localOnly: boolean,
 	onProgress?: (progress: ApiDocumentIngestProgress) => void
 ): Promise<ApiDocumentIngestResult> {
 	const cleanTitle = title.replace(/\s+/g, ' ').trim().slice(0, MAX_MANUAL_TITLE_LENGTH);
@@ -96,13 +109,13 @@ export async function ingestTextContent(
 	await mkdir(DOCUMENTS_DIR, { recursive: true });
 	const contentHash = createHash('sha256').update(buffer).digest('hex');
 	const savedPath = managedPathForHash(contentHash, '.md');
-	const existing = await existingDocument(savedPath);
+	const existing = await reuseExisting(savedPath, localOnly);
 	if (existing) return existing;
 
 	await writeFile(savedPath, buffer);
 	try {
 		const result = await ingestDocument(
-			{ filePath: savedPath, title: cleanTitle, sourceType: 'TEXT' },
+			{ filePath: savedPath, title: cleanTitle, sourceType: 'TEXT', localOnly },
 			onProgress
 		);
 		await db.update(documents).set({ origin: 'MANUAL' }).where(eq(documents.id, result.documentId));
@@ -115,6 +128,7 @@ export async function ingestTextContent(
 
 export async function ingestYoutubeUrl(
 	url: string,
+	localOnly: boolean,
 	onProgress?: (progress: ApiDocumentIngestProgress) => void
 ): Promise<ApiDocumentIngestResult> {
 	const videoId = parseYoutubeVideoId(url);
@@ -122,13 +136,13 @@ export async function ingestYoutubeUrl(
 
 	const canonicalUrl = watchUrl(videoId);
 
-	const existing = await existingDocument(canonicalUrl);
+	const existing = await reuseExisting(canonicalUrl, localOnly);
 	if (existing) return existing;
 
 	const { title } = await fetchYoutubeTranscript(videoId);
 
 	const result = await ingestDocument(
-		{ filePath: canonicalUrl, title, sourceType: 'YOUTUBE' },
+		{ filePath: canonicalUrl, title, sourceType: 'YOUTUBE', localOnly },
 		onProgress
 	);
 	await db.update(documents).set({ origin: 'MANUAL' }).where(eq(documents.id, result.documentId));

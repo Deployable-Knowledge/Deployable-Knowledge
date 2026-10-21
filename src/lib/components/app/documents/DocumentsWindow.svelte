@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ClipboardPen from '@lucide/svelte/icons/clipboard-pen';
+	import CloudOff from '@lucide/svelte/icons/cloud-off';
 	import FilePlus from '@lucide/svelte/icons/file-plus';
 	import FolderPlus from '@lucide/svelte/icons/folder-plus';
 	import Plus from '@lucide/svelte/icons/plus';
@@ -264,6 +265,23 @@
 		}
 	}
 
+	async function toggleDocumentLocalOnly(document: DocumentRow): Promise<void> {
+		try {
+			await documentsStore.setLocalOnly([document.id], !document.localOnly);
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : String(error));
+		}
+	}
+
+	async function bulkSetLocalOnly(localOnly: boolean): Promise<void> {
+		try {
+			await documentsStore.setLocalOnly([...documentsStore.selectedIds], localOnly);
+			toast.success(localOnly ? 'Documents kept local only' : 'Documents allowed for all models');
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : String(error));
+		}
+	}
+
 	async function bulkSetActivation(active: boolean): Promise<void> {
 		try {
 			await documentsStore.setActivation([...documentsStore.selectedIds], active);
@@ -388,8 +406,10 @@
 			<DocumentBulkActionsBar
 				count={selectedCount}
 				onActivate={() => void bulkSetActivation(true)}
+				onAllowAll={() => void bulkSetLocalOnly(false)}
 				onApplyTag={() => openBulkPicker('add')}
 				onDeactivate={() => void bulkSetActivation(false)}
+				onKeepLocal={() => void bulkSetLocalOnly(true)}
 				onRemoveTag={() => openBulkPicker('remove')}
 			/>
 			<DocumentList
@@ -411,6 +431,7 @@
 				onToggle={(documentId, selected) => documentsStore.setSelection([documentId], selected)}
 				onToggleActive={(document) => void toggleDocumentActive(document)}
 				onToggleGroup={(group, selected) => void documentsStore.selectGroup(group, selected)}
+				onToggleLocalOnly={(document) => void toggleDocumentLocalOnly(document)}
 				onToggleTag={(document, tag) => void toggleDocumentTag(document, tag)}
 				pages={documentsStore.pages}
 				pendingDocuments={documentsStore.pendingDocuments}
@@ -455,6 +476,14 @@
 					<DropdownMenu.Item onclick={() => (youtubeEntryOpen = true)}>
 						<Video /> Add video
 					</DropdownMenu.Item>
+					<DropdownMenu.Separator />
+					<DropdownMenu.CheckboxItem
+						checked={documentsStore.addLocalOnly}
+						closeOnSelect={false}
+						onCheckedChange={(checked) => documentsStore.setAddLocalOnly(checked)}
+					>
+						<CloudOff /> Add as local only
+					</DropdownMenu.CheckboxItem>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
 		</div>

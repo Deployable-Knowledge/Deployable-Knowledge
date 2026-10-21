@@ -1,14 +1,23 @@
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { NOTEBOOK_SOURCE_CONTEXT_CHARACTER_LIMIT, RAG_CHUNK_CHARACTER_LIMIT } from '$lib/constants';
 import { db } from '$lib/server/database/database';
-import { documentChunks, notebookSources } from '$lib/server/database/schema';
+import { documentChunks, documents, notebookSources } from '$lib/server/database/schema';
 
-export async function getNotebookSourceExcerpts(notebookId: string): Promise<string> {
+export async function getNotebookSourceExcerpts(
+	notebookId: string,
+	includeLocalOnly: boolean
+): Promise<string> {
 	const rows = await db
 		.select({ content: documentChunks.content })
 		.from(notebookSources)
 		.innerJoin(documentChunks, eq(documentChunks.id, notebookSources.chunkId))
-		.where(eq(notebookSources.notebookId, notebookId));
+		.innerJoin(documents, eq(documents.id, documentChunks.documentId))
+		.where(
+			and(
+				eq(notebookSources.notebookId, notebookId),
+				includeLocalOnly ? undefined : eq(documents.localOnly, false)
+			)
+		);
 
 	const excerpts: string[] = [];
 	let remaining = NOTEBOOK_SOURCE_CONTEXT_CHARACTER_LIMIT;

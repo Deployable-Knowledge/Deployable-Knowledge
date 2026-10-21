@@ -38,6 +38,7 @@ export async function searchBm25(options: Bm25SearchOptions): Promise<Bm25Search
 
 	// Deactivated documents never surface in retrieval, even when explicitly requested
 	const conditions = ['d.active = 1'];
+	if (!options.includeLocalOnly) conditions.push('d.local_only = 0');
 	const args: (string | number)[] = [match];
 
 	const placeholders = (values: string[]) => values.map(() => '?').join(', ');

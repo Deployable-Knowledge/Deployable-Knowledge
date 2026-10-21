@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
-import { and, asc, count, eq, gt, isNotNull, isNull, ne, or } from 'drizzle-orm';
+import { and, asc, count, eq, gt, isNull, ne, or } from 'drizzle-orm';
+import { LOCAL_MODEL_PROVIDER_ID } from '$lib/constants';
 import { db } from '../database/database';
 import {
 	documentChunks,
@@ -8,6 +9,7 @@ import {
 	type NewDocumentChunk
 } from '../database/schema';
 import { diagnosticEvents } from '../diagnostics/events';
+import { DocumentsRepository } from '../repositories';
 import type { ParsedChunk } from './chunk/parse-shared';
 import { embedTexts, getActiveEmbedding } from './embedding-model';
 import { putChunkVectors, removeDocumentVectors } from './search/vector-index';
@@ -77,6 +79,7 @@ function buildChunkRow(
 
 export async function storeDocumentChunks(
 	chunks: ParsedChunk[],
+	requestedLocalOnly: boolean,
 	onProgress?: (progress: StoreDocumentProgress) => void
 ): Promise<StoreChunksResult> {
 	if (chunks.length === 0) {
@@ -84,9 +87,14 @@ export async function storeDocumentChunks(
 	}
 
 	const now = new Date().toISOString();
-	const documentRow = buildDocumentRow(chunks, now);
+	const baseRow = buildDocumentRow(chunks, now);
+	const localOnly = requestedLocalOnly || (await DocumentsRepository.isLocalOnly(baseRow.id));
+	const documentRow = { ...baseRow, localOnly };
+	const skipEmbedding =
+		documentRow.sourceType === 'CSV' ||
+		(localOnly && (await getActiveEmbedding()).provider.id !== LOCAL_MODEL_PROVIDER_ID);
 	// Embed the final assembled chunks only, so stored vectors match the exact stored content
-	const embeddings = documentRow.sourceType === 'CSV' ? [] : await embedChunks(chunks, onProgress);
+	const embeddings = skipEmbedding ? [] : await embedChunks(chunks, localOnly, onProgress);
 	const chunkRows = chunks.map((chunk, index) =>
 		buildChunkRow(chunk, documentRow.id, embeddings.at(index) ?? null, now)
 	);
@@ -104,6 +112,7 @@ export async function storeDocumentChunks(
 					title: documentRow.title,
 					sourcePath: documentRow.sourcePath,
 					sourceType: documentRow.sourceType,
+					localOnly,
 					updatedAt: documentRow.updatedAt
 				}
 			});
@@ -145,6 +154,7 @@ export async function storeDocumentChunks(
 
 async function embedChunks(
 	chunks: ParsedChunk[],
+	localOnly: boolean,
 	onProgress?: (progress: StoreDocumentProgress) => void
 ): Promise<ChunkEmbedding[]> {
 	const embeddings: ChunkEmbedding[] = [];
@@ -154,7 +164,10 @@ async function embedChunks(
 		const reportProgress = (current: number) =>
 			onProgress?.({ stage: 'embedding', current: offset + current, total: chunks.length });
 
-		const { key, vectors } = await embedTexts(texts, 'search_document', reportProgress);
+		const { key, vectors } = await embedTexts(texts, 'search_document', {
+			onProgress: reportProgress,
+			localOnly
+		});
 		for (const vector of vectors) embeddings.push({ key, vector });
 	}
 
@@ -162,22 +175,26 @@ async function embedChunks(
 }
 
 function staleEmbeddings(key: string) {
+	return or(isNull(documentChunks.embeddingModel), ne(documentChunks.embeddingModel, key));
+}
+
+function staleIndexedEmbeddings(key: string, includeLocalOnly: boolean) {
 	return and(
-		isNotNull(documentChunks.embedding),
-		or(isNull(documentChunks.embeddingModel), ne(documentChunks.embeddingModel, key))
+		staleEmbeddings(key),
+		ne(documents.sourceType, 'CSV'),
+		includeLocalOnly ? undefined : eq(documents.localOnly, false)
 	);
 }
 
-function staleIndexedEmbeddings(key: string) {
-	return and(staleEmbeddings(key), ne(documents.sourceType, 'CSV'));
-}
-
-export async function countStaleEmbeddings(key: string): Promise<number> {
+export async function countStaleEmbeddings(
+	key: string,
+	includeLocalOnly: boolean
+): Promise<number> {
 	const [{ total }] = await db
 		.select({ total: count() })
 		.from(documentChunks)
 		.innerJoin(documents, eq(documents.id, documentChunks.documentId))
-		.where(staleIndexedEmbeddings(key));
+		.where(staleIndexedEmbeddings(key, includeLocalOnly));
 	return total;
 }
 
@@ -185,7 +202,8 @@ async function reembedStaleChunks(): Promise<void> {
 	const { provider, settings, key } = await getActiveEmbedding();
 	if (!(await provider.isInstalled(settings.model))) return;
 
-	const total = await countStaleEmbeddings(key);
+	const includeLocalOnly = provider.id === LOCAL_MODEL_PROVIDER_ID;
+	const total = await countStaleEmbeddings(key, includeLocalOnly);
 	if (total === 0) return;
 
 	const started = Date.now();
@@ -204,7 +222,7 @@ async function reembedStaleChunks(): Promise<void> {
 			})
 			.from(documentChunks)
 			.innerJoin(documents, eq(documents.id, documentChunks.documentId))
-			.where(and(staleIndexedEmbeddings(key), gt(documentChunks.id, lastId)))
+			.where(and(staleIndexedEmbeddings(key, includeLocalOnly), gt(documentChunks.id, lastId)))
 			.orderBy(asc(documentChunks.id))
 			.limit(REFRESH_BATCH_SIZE);
 		if (batch.length === 0) break;
@@ -214,7 +232,8 @@ async function reembedStaleChunks(): Promise<void> {
 
 		const embedded = await embedTexts(
 			batch.map((chunk) => chunk.content),
-			'search_document'
+			'search_document',
+			{ localOnly: includeLocalOnly }
 		);
 		const updated: VectorIndexRow[] = [];
 		// Rows re-ingested while this batch was embedding already have fresh vectors.

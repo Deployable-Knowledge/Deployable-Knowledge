@@ -46,6 +46,7 @@ export async function searchSemantic(options: SearchOptionsBase): Promise<Semant
 
 	// Deactivated documents never surface in retrieval, even when explicitly requested
 	const documentFilters: SQL[] = [eq(documents.active, true)];
+	if (!options.includeLocalOnly) documentFilters.push(eq(documents.localOnly, false));
 	if (documentIds.length > 0) documentFilters.push(inArray(documents.id, documentIds));
 	if (sourcePaths.length > 0) documentFilters.push(inArray(documents.sourcePath, sourcePaths));
 	const allowedRows = await db

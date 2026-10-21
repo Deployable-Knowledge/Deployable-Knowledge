@@ -13,26 +13,30 @@ import type { RequestHandler } from './$types';
 export const POST: RequestHandler = async ({ request }) => {
 	let ingest: IngestTask;
 	if (request.headers.get('content-type')?.includes('multipart/form-data')) {
-		const upload = (await request.formData()).get('file');
+		const form = await request.formData();
+		const upload = form.get('file');
 		if (!(upload instanceof File)) throw error(400, 'Upload a supported document file.');
 		const name = upload.name || 'document.pdf';
 		const buffer = Buffer.from(await upload.arrayBuffer());
-		ingest = (onProgress) => ingestFileBuffer(name, buffer, onProgress);
+		const localOnly = form.get('localOnly') === 'true';
+		ingest = (onProgress) => ingestFileBuffer(name, buffer, localOnly, onProgress);
 	} else {
 		const body = (await request.json().catch(() => null)) as {
 			text?: unknown;
 			title?: unknown;
 			url?: unknown;
+			localOnly?: unknown;
 		} | null;
+		const localOnly = body?.localOnly === true;
 		if (typeof body?.url === 'string' && body.url.trim()) {
 			const url = body.url;
-			ingest = (onProgress) => ingestYoutubeUrl(url, onProgress);
+			ingest = (onProgress) => ingestYoutubeUrl(url, localOnly, onProgress);
 		} else if (typeof body?.text === 'string') {
 			const title = typeof body.title === 'string' ? body.title : '';
 			if (!title.trim()) throw error(400, 'Give the text a title.');
 			if (!body.text.trim()) throw error(400, 'Provide text to embed.');
 			const text = body.text;
-			ingest = (onProgress) => ingestTextContent(title, text, onProgress);
+			ingest = (onProgress) => ingestTextContent(title, text, localOnly, onProgress);
 		} else {
 			throw error(400, 'Select a file.');
 		}

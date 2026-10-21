@@ -1,6 +1,11 @@
 import { json } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
-import { DEFAULT_ASSISTANT_CONFIG, DEFAULT_PROMPT_TEMPLATE, NEW_CHAT_TITLE } from '$lib/constants';
+import {
+	DEFAULT_ASSISTANT_CONFIG,
+	DEFAULT_PROMPT_TEMPLATE,
+	LOCAL_MODEL_PROVIDER_ID,
+	NEW_CHAT_TITLE
+} from '$lib/constants';
 import { RetrievalMode } from '$lib/enums';
 import type {
 	AgentProgressEvent,
@@ -23,7 +28,7 @@ import { diagnosticEvents } from '$lib/server/diagnostics/events';
 import { getActiveProfile } from '$lib/server/profiles/active-profile';
 import { findProvider } from '$lib/server/providers/registry';
 import type { Provider, ProviderChatOptions } from '$lib/server/providers/provider';
-import { SessionsRepository } from '$lib/server/repositories';
+import { DocumentsRepository, SessionsRepository } from '$lib/server/repositories';
 import { toolRegistry } from '$lib/server/tools';
 import { readGoals } from '$lib/server/tools/goals';
 import type { ToolExecutionContext } from '$lib/server/tools/types';
@@ -47,8 +52,18 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		);
 	}
 
+	const includeLocalOnly = provider.id === LOCAL_MODEL_PROVIDER_ID;
 	const profile = await getActiveProfile();
 	const session = await SessionsRepository.find(params.id);
+	if (session?.localOnly && !includeLocalOnly) {
+		return json(
+			{
+				error:
+					'This chat used local-only documents, so it can only continue with a llama.cpp model. Switch models or start a new chat.'
+			},
+			{ status: 409 }
+		);
+	}
 	if (!session) await SessionsRepository.create(params.id);
 	const history = await SessionsRepository.listMessages(params.id);
 	const shouldGenerateTitle =
@@ -61,9 +76,14 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		Object.values(RetrievalMode).find((mode) => mode === profile?.retrievalMode) ??
 		DEFAULT_ASSISTANT_CONFIG.retrievalMode;
 
-	const toolContext: ToolExecutionContext = body.conversational
-		? { retrievalMode, ragTopK: profile?.ragTopK ?? DEFAULT_ASSISTANT_CONFIG.ragTopK }
-		: { retrievalMode, ragTopK: body.rag_top_k, documentIds: body.document_ids };
+	const ragScope = body.conversational
+		? { ragTopK: profile?.ragTopK ?? DEFAULT_ASSISTANT_CONFIG.ragTopK }
+		: { ragTopK: body.rag_top_k, documentIds: body.document_ids };
+	const toolContext: ToolExecutionContext = { retrievalMode, includeLocalOnly, ...ragScope };
+
+	if (includeLocalOnly && (await DocumentsRepository.hasLocalOnly(toolContext.documentIds))) {
+		await SessionsRepository.markLocalOnly(params.id);
+	}
 
 	const autoSearchEnabled =
 		!body.conversational && body.search_enabled !== false && !toolNames.includes('search');
@@ -123,7 +143,7 @@ export const POST: RequestHandler = async ({ params, request }) => {
 			: null;
 		const chat = { history, userMessage: message, toolNames };
 		const messages = body.conversational
-			? createNotebookMessages({ ...chat, context: await notebookContext(body) })
+			? createNotebookMessages({ ...chat, context: await notebookContext(body, includeLocalOnly) })
 			: createDocumentMessages({
 					...chat,
 					context: autoSearch?.context ?? '',
@@ -217,9 +237,15 @@ async function resolveToolNames(
 	return names;
 }
 
-async function notebookContext(body: ApiNotebookChatMessageRequest): Promise<string> {
-	const sources = body.notebook_id ? await getNotebookSourceExcerpts(body.notebook_id) : '';
-	return [body.context, sources].filter(Boolean).join('\n\n');
+async function notebookContext(
+	body: ApiNotebookChatMessageRequest,
+	includeLocalOnly: boolean
+): Promise<string> {
+	const parts = [body.context];
+	if (body.notebook_id) {
+		parts.push(await getNotebookSourceExcerpts(body.notebook_id, includeLocalOnly));
+	}
+	return parts.filter(Boolean).join('\n\n');
 }
 
 async function promptTemplateSystemPrompt(id: string | null): Promise<string> {

@@ -71,6 +71,7 @@
 		onToggle: (id: string, selected: boolean) => void;
 		onToggleActive: (document: DocumentRow) => void;
 		onToggleGroup: (group: string, selected: boolean) => void;
+		onToggleLocalOnly: (document: DocumentRow) => void;
 		onToggleTag: (document: DocumentRow, tag: string) => void;
 		pages: Record<string, ApiDocumentListResponse>;
 		pendingDocuments: PendingDocument[];
@@ -96,6 +97,7 @@
 		onToggle,
 		onToggleActive,
 		onToggleGroup,
+		onToggleLocalOnly,
 		onToggleTag,
 		pages,
 		pendingDocuments,
@@ -278,6 +280,7 @@
 								onDelete={() => onDeleteDocument(document)}
 								onToggle={(selected) => onToggle(document.id, selected)}
 								onToggleActive={() => onToggleActive(document)}
+								onToggleLocalOnly={() => onToggleLocalOnly(document)}
 								onToggleTag={(tag) => onToggleTag(document, tag)}
 								selected={selectedIds.has(document.id)}
 							/>

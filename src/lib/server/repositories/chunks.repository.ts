@@ -28,7 +28,8 @@ export class ChunksRepository {
 	static async window(
 		documentId: string,
 		start: number,
-		maxCount: number
+		maxCount: number,
+		includeLocalOnly: boolean
 	): Promise<ChunkWindow | null> {
 		const document = await db
 			.select({
@@ -37,7 +38,13 @@ export class ChunksRepository {
 				sourceType: documents.sourceType
 			})
 			.from(documents)
-			.where(and(eq(documents.id, documentId), eq(documents.active, true)))
+			.where(
+				and(
+					eq(documents.id, documentId),
+					eq(documents.active, true),
+					includeLocalOnly ? undefined : eq(documents.localOnly, false)
+				)
+			)
 			.get();
 
 		if (!document) return null;

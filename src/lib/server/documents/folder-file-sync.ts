@@ -4,7 +4,7 @@ import { and, eq } from 'drizzle-orm';
 import type { ApiDocumentIngestProgress, ApiDocumentIngestResult } from '$lib/types';
 import { db } from '$lib/server/database/database';
 import { documents, syncedFiles, type SyncedFile } from '$lib/server/database/schema';
-import { SyncedFoldersRepository } from '$lib/server/repositories';
+import { DocumentsRepository, SyncedFoldersRepository } from '$lib/server/repositories';
 import { ingestDocument } from '$lib/server/rag/ingest-document';
 import { managedPathForHash, titleFor } from './ingest-file';
 import { managedExtensionFor, writeManagedArtifacts } from './managed-artifacts';
@@ -141,7 +141,9 @@ async function ingestSyncedFile(
 							fileName: file.relativePath,
 							filePath: managedPath,
 							title: titleFor(file.relativePath),
-							sourceType: handler.type
+							sourceType: handler.type,
+							localOnly:
+								!!tracked?.documentId && (await DocumentsRepository.isLocalOnly(tracked.documentId))
 						},
 						onProgress
 					)

@@ -1,5 +1,9 @@
 import { setImmediate as yieldEventLoop } from 'node:timers/promises';
-import { DEFAULT_EMBEDDING_SETTINGS, type EmbeddingTask } from '$lib/constants';
+import {
+	DEFAULT_EMBEDDING_SETTINGS,
+	LOCAL_MODEL_PROVIDER_ID,
+	type EmbeddingTask
+} from '$lib/constants';
 import type { EmbeddingSettings } from '$lib/types';
 import { getEmbeddingSettings, setEmbeddingSettings } from '$lib/server/database/app-state';
 import type { EmbeddingProvider } from '$lib/server/embeddings/provider';
@@ -56,9 +60,16 @@ export async function isEmbeddingModelInstalled(): Promise<boolean> {
 export async function embedTexts(
 	texts: string[],
 	task: EmbeddingTask,
-	onProgress?: (current: number, total: number) => void
+	options: {
+		onProgress?: (current: number, total: number) => void;
+		localOnly?: boolean;
+	} = {}
 ): Promise<EmbeddingBatch> {
 	const { provider, settings, key } = await getActiveEmbedding();
+	if (options.localOnly && provider.id !== LOCAL_MODEL_PROVIDER_ID) {
+		throw new Error('Local-only documents can only be embedded with llama.cpp.');
+	}
+	const { onProgress } = options;
 	const vectors: Float32Array[] = [];
 
 	for (let index = 0; index < texts.length; index += EMBEDDING_BATCH_SIZE) {

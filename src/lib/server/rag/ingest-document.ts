@@ -12,6 +12,7 @@ export type IngestDocumentInput = {
 	filePath: string;
 	title?: string;
 	sourceType?: Document['sourceType'];
+	localOnly?: boolean;
 };
 
 export type IngestDocumentResult = {
@@ -23,7 +24,7 @@ export type IngestDocumentResult = {
 };
 
 export async function ingestDocument(
-	{ fileName, filePath, title, sourceType }: IngestDocumentInput,
+	{ fileName, filePath, title, sourceType, localOnly = false }: IngestDocumentInput,
 	onProgress?: (progress: ApiDocumentIngestProgress) => void
 ): Promise<IngestDocumentResult> {
 	const handler = handlerForPath(filePath) ?? (sourceType ? handlerForType(sourceType) : null);
@@ -64,7 +65,7 @@ export async function ingestDocument(
 		report(50, `${action} 0 of ${chunks.length} chunks`);
 
 		let lastMilestone = 0;
-		const stored = await storeDocumentChunks(chunks, ({ stage, current, total }) => {
+		const stored = await storeDocumentChunks(chunks, localOnly, ({ stage, current, total }) => {
 			if (stage !== (shouldEmbed ? 'embedding' : 'storing')) return;
 			const ratio = total > 0 ? current / total : 1;
 			const milestone = Math.floor(ratio * 4);

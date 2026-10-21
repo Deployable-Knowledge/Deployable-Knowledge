@@ -49,6 +49,7 @@ class DocumentsStore {
 	private _tagFilters = $state<string[]>([]);
 	private _mode = $state<DocumentListMode>('all');
 	private _sort = $state<DocumentSortMode>(DEFAULT_DOCUMENT_SORT);
+	private _addLocalOnly = $state(false);
 	private _autotagEntries = $state<ApiDocumentAutotagEntry[]>([]);
 	private _autotagSettled = $state(0);
 	private _autotagTotal = $state(0);
@@ -117,6 +118,14 @@ class DocumentsStore {
 
 	get sort(): DocumentSortMode {
 		return this._sort;
+	}
+
+	get addLocalOnly(): boolean {
+		return this._addLocalOnly;
+	}
+
+	setAddLocalOnly(value: boolean): void {
+		this._addLocalOnly = value;
 	}
 
 	private get filtered(): boolean {
@@ -262,6 +271,11 @@ class DocumentsStore {
 		await this.refresh();
 	}
 
+	async setLocalOnly(documentIds: string[], localOnly: boolean): Promise<void> {
+		await DocumentsService.setLocalOnly({ documentIds, localOnly });
+		await this.refresh();
+	}
+
 	async removeAllDocuments(): Promise<void> {
 		await DocumentsService.removeAllDocuments();
 		this._selectedIds.clear();
@@ -274,12 +288,13 @@ class DocumentsStore {
 			'individual',
 			files.map(({ name }) => name)
 		);
+		const localOnly = this._addLocalOnly;
 		let succeeded = 0;
 		try {
 			for (const [index, file] of files.entries()) {
 				try {
 					const result = await this.ingestPending(entries[index], (onProgress) =>
-						DocumentsService.ingestFile(file, onProgress)
+						DocumentsService.ingestFile(file, localOnly, onProgress)
 					);
 					this._selectedIds.add(result.documentId);
 					succeeded += 1;
@@ -294,14 +309,16 @@ class DocumentsStore {
 	}
 
 	ingestYoutube(url: string): Promise<ApiDocumentIngestResult> {
+		const localOnly = this._addLocalOnly;
 		return this.ingestSingle('manual', url, (onProgress) =>
-			DocumentsService.ingestYoutube(url, onProgress)
+			DocumentsService.ingestYoutube(url, localOnly, onProgress)
 		);
 	}
 
 	ingestText(title: string, text: string): Promise<ApiDocumentIngestResult> {
+		const localOnly = this._addLocalOnly;
 		return this.ingestSingle('manual', title, (onProgress) =>
-			DocumentsService.ingestText(title, text, onProgress)
+			DocumentsService.ingestText(title, text, localOnly, onProgress)
 		);
 	}
 

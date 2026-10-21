@@ -4,6 +4,7 @@ import type { AgentGoal, ApiAgentTool, ToolOutput } from '$lib/types';
 export type ToolExecutionContext = {
 	[key: string]: unknown;
 	documentIds?: string[];
+	includeLocalOnly?: boolean;
 	retrievalMode?: RagRetrievalMode;
 	ragTopK?: number;
 	maxSearchTopK?: number;

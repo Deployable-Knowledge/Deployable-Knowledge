@@ -26,6 +26,10 @@ export class SessionsRepository {
 		await db.update(sessions).set({ title, updatedAt: new Date() }).where(eq(sessions.id, id));
 	}
 
+	static async markLocalOnly(id: string) {
+		await db.update(sessions).set({ localOnly: true }).where(eq(sessions.id, id));
+	}
+
 	static listMessages(sessionId: string) {
 		return db
 			.select()

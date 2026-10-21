@@ -18,6 +18,7 @@ import type {
 	ApiDocumentIngestEvent,
 	ApiDocumentIngestProgress,
 	ApiDocumentIngestResult,
+	ApiDocumentLocalOnlyRequest,
 	ApiDocumentListQuery,
 	ApiDocumentListResponse,
 	ApiDocumentTagAssignmentRequest,
@@ -110,29 +111,36 @@ export class DocumentsService {
 		return apiPatch<{ ok: true }, ApiDocumentActivationRequest>(API_DOCUMENTS.ACTIVATION, value);
 	}
 
+	static setLocalOnly(value: ApiDocumentLocalOnlyRequest) {
+		return apiPatch<{ ok: true }, ApiDocumentLocalOnlyRequest>(API_DOCUMENTS.LOCAL, value);
+	}
+
 	static removeAllDocuments() {
 		return apiDelete<{ removed: number }>(API_DOCUMENTS.BASE);
 	}
 
 	static async ingestFile(
 		file: File,
+		localOnly: boolean,
 		onProgress?: (progress: ApiDocumentIngestProgress) => void,
 		signal?: AbortSignal
 	): Promise<ApiDocumentIngestResult> {
 		const body = new FormData();
 		body.append('file', file, file.name);
+		if (localOnly) body.append('localOnly', 'true');
 		const response = await apiStream(API_DOCUMENTS.BASE, { method: 'POST', body, signal });
 		return this.readIngestStream(response, onProgress, signal);
 	}
 
 	static async ingestYoutube(
 		url: string,
+		localOnly: boolean,
 		onProgress?: (progress: ApiDocumentIngestProgress) => void,
 		signal?: AbortSignal
 	): Promise<ApiDocumentIngestResult> {
 		const response = await apiStream(API_DOCUMENTS.BASE, {
 			method: 'POST',
-			body: JSON.stringify({ url } satisfies ApiDocumentUrlRequest),
+			body: JSON.stringify({ url, localOnly } satisfies ApiDocumentUrlRequest),
 			signal
 		});
 		return this.readIngestStream(response, onProgress, signal);
@@ -141,12 +149,13 @@ export class DocumentsService {
 	static async ingestText(
 		title: string,
 		text: string,
+		localOnly: boolean,
 		onProgress?: (progress: ApiDocumentIngestProgress) => void,
 		signal?: AbortSignal
 	): Promise<ApiDocumentIngestResult> {
 		const response = await apiStream(API_DOCUMENTS.BASE, {
 			method: 'POST',
-			body: JSON.stringify({ title, text } satisfies ApiDocumentTextRequest),
+			body: JSON.stringify({ title, text, localOnly } satisfies ApiDocumentTextRequest),
 			signal
 		});
 		return this.readIngestStream(response, onProgress, signal);

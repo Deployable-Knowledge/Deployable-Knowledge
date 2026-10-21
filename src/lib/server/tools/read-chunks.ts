@@ -102,9 +102,14 @@ export const readChunksTool: AgentTool<ReadChunksData> = {
 			start + DEFAULT_WINDOW_CHUNKS - 1
 		);
 
-		const window = await ChunksRepository.window(documentId, start, end - start + 1);
+		const window = await ChunksRepository.window(
+			documentId,
+			start,
+			end - start + 1,
+			context.includeLocalOnly === true
+		);
 		if (!window) {
-			throw new Error('read_chunks: unknown or inactive document');
+			throw new Error('read_chunks: unknown, inactive, or local-only document');
 		}
 
 		const data: ReadChunksData = {

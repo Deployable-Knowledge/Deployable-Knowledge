@@ -12,6 +12,7 @@ export type SearchOptionsBase = {
 	documentIds?: string[];
 	sourcePaths?: string[];
 	chunkTypes?: SearchChunkType[];
+	includeLocalOnly?: boolean;
 };
 
 // Common fields returned by every chunk search result

@@ -72,6 +72,7 @@ export const sessions = sqliteTable(
 	{
 		id: text('id').primaryKey(),
 		title: text('title').notNull().default(''),
+		localOnly: integer('local_only', { mode: 'boolean' }).notNull().default(false),
 		createdAt: integer('created_at', { mode: 'timestamp' }),
 		updatedAt: integer('updated_at', { mode: 'timestamp' })
 	},
@@ -224,6 +225,7 @@ export const documents = sqliteTable(
 			.notNull()
 			.default('FILE'),
 		active: integer('active', { mode: 'boolean' }).notNull().default(true),
+		localOnly: integer('local_only', { mode: 'boolean' }).notNull().default(false),
 		createdAt: text('created_at').notNull(),
 		updatedAt: text('updated_at').notNull()
 	},

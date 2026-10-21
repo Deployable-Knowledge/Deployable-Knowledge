@@ -70,6 +70,15 @@ function listConditions({
 	return conditions.length ? and(...conditions) : undefined;
 }
 
+type ScopedDocumentsOptions = { documentIds?: string[]; includeLocalOnly?: boolean };
+
+function scopedConditions({ documentIds, includeLocalOnly }: ScopedDocumentsOptions): SQL {
+	const conditions: SQL[] = [eq(documents.active, true)];
+	if (!includeLocalOnly) conditions.push(eq(documents.localOnly, false));
+	if (documentIds?.length) conditions.push(inArray(documents.id, documentIds));
+	return and(...conditions)!;
+}
+
 const chunkTotal = sql`(select count(*) from ${documentChunks} where ${documentChunks.documentId} = ${documents.id})`;
 
 function orderFor(sort: DocumentSortMode | undefined): SQL[] {
@@ -114,6 +123,7 @@ export class DocumentsRepository {
 				createdAt: documents.createdAt,
 				updatedAt: documents.updatedAt,
 				active: documents.active,
+				localOnly: documents.localOnly,
 				folderId: syncedFiles.folderId
 			})
 			.from(documents)
@@ -165,14 +175,12 @@ export class DocumentsRepository {
 	}
 
 	static async titles(
-		options: { documentIds?: string[]; limit?: number; offset?: number } = {}
+		options: ScopedDocumentsOptions & { limit?: number; offset?: number } = {}
 	): Promise<{
 		total: number;
 		documents: Pick<DocumentRow, 'id' | 'title' | 'sourceType' | 'sourcePath'>[];
 	}> {
-		const conditions: SQL[] = [eq(documents.active, true)];
-		if (options.documentIds?.length) conditions.push(inArray(documents.id, options.documentIds));
-		const where = and(...conditions);
+		const where = scopedConditions(options);
 
 		const page = db
 			.select({
@@ -194,11 +202,8 @@ export class DocumentsRepository {
 	}
 
 	static async files(
-		options: { documentIds?: string[] } = {}
+		options: ScopedDocumentsOptions = {}
 	): Promise<Pick<DocumentRow, 'id' | 'title' | 'sourceType' | 'sourcePath'>[]> {
-		const conditions: SQL[] = [eq(documents.active, true)];
-		if (options.documentIds?.length) conditions.push(inArray(documents.id, options.documentIds));
-
 		return db
 			.select({
 				id: documents.id,
@@ -207,8 +212,32 @@ export class DocumentsRepository {
 				sourcePath: documents.sourcePath
 			})
 			.from(documents)
-			.where(and(...conditions))
+			.where(scopedConditions(options))
 			.orderBy(asc(sql`${documents.title} COLLATE NOCASE`), asc(documents.id));
+	}
+
+	static async hasLocalOnly(documentIds?: string[]): Promise<boolean> {
+		const conditions: SQL[] = [eq(documents.active, true), eq(documents.localOnly, true)];
+		if (documentIds?.length) conditions.push(inArray(documents.id, documentIds));
+		const [row] = await db
+			.select({ id: documents.id })
+			.from(documents)
+			.where(and(...conditions))
+			.limit(1);
+		return row !== undefined;
+	}
+
+	static async isLocalOnly(documentId: string): Promise<boolean> {
+		const [row] = await db
+			.select({ localOnly: documents.localOnly })
+			.from(documents)
+			.where(eq(documents.id, documentId))
+			.limit(1);
+		return row?.localOnly ?? false;
+	}
+
+	static async setLocalOnly(documentIds: string[], localOnly: boolean): Promise<void> {
+		await db.update(documents).set({ localOnly }).where(inArray(documents.id, documentIds));
 	}
 
 	static async transcript(documentId: string): Promise<ApiTranscriptResponse | null> {

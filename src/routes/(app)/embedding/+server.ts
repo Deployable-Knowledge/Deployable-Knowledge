@@ -31,7 +31,7 @@ async function embeddingStatus(): Promise<ApiEmbeddingStatus> {
 		localModels,
 		ready: await provider.isInstalled(settings.model),
 		backend: provider.backend(),
-		pendingChunks: await countStaleEmbeddings(key)
+		pendingChunks: await countStaleEmbeddings(key, provider.id === LOCAL_MODEL_PROVIDER_ID)
 	};
 }
 

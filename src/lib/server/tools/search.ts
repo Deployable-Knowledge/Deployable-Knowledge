@@ -110,12 +110,13 @@ export const searchTool: AgentTool<SearchToolData> = {
 			DEFAULT_ASSISTANT_CONFIG.ragTopK
 		);
 		const documentIds = context.documentIds;
+		const includeLocalOnly = context.includeLocalOnly === true;
 		const confidence = SEARCH_CONFIDENCE_LEVELS.includes(args.confidence as SearchConfidence)
 			? (args.confidence as SearchConfidence)
 			: undefined;
 
 		if (mode === 'all') {
-			const data = await searchAllMethods({ query, topK, documentIds });
+			const data = await searchAllMethods({ query, topK, documentIds, includeLocalOnly });
 
 			const positions = await getChunkPositions(data.hybrid);
 			const sources = buildSources(data.hybrid, positions);
@@ -129,7 +130,8 @@ export const searchTool: AgentTool<SearchToolData> = {
 			documentIds,
 			mode,
 			topK,
-			confidence
+			confidence,
+			includeLocalOnly
 		});
 		let emptyMessage = 'No relevant document chunks found.';
 		if (confidence && confidence !== 'low') {

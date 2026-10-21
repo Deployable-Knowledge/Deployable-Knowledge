@@ -375,7 +375,11 @@ async function documentFilesInScope(
 			? context.documentIds
 			: undefined;
 	const documentsRoot = resolve(DOCUMENTS_DIR);
-	const documentFiles = (await DocumentsRepository.files({ documentIds })).flatMap((document) => {
+	const scoped = await DocumentsRepository.files({
+		documentIds,
+		includeLocalOnly: context.includeLocalOnly === true
+	});
+	const documentFiles = scoped.flatMap((document) => {
 		const path = resolve(document.sourcePath);
 		if (dirname(path) !== documentsRoot) return [];
 		return [basename(path)];

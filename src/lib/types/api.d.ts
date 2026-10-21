@@ -56,13 +56,20 @@ export interface ApiDocumentActivationRequest {
 	documentIds?: string[];
 }
 
+export interface ApiDocumentLocalOnlyRequest {
+	localOnly: boolean;
+	documentIds: string[];
+}
+
 export interface ApiDocumentTextRequest {
 	title: string;
 	text: string;
+	localOnly: boolean;
 }
 
 export interface ApiDocumentUrlRequest {
 	url: string;
+	localOnly: boolean;
 }
 
 export interface ApiDocumentIngestProgress {
@@ -112,7 +119,15 @@ export type ApiDocumentAutotagEvent =
 
 export type DocumentRow = Pick<
 	Document,
-	'id' | 'title' | 'sourcePath' | 'sourceType' | 'origin' | 'createdAt' | 'updatedAt' | 'active'
+	| 'id'
+	| 'title'
+	| 'sourcePath'
+	| 'sourceType'
+	| 'origin'
+	| 'createdAt'
+	| 'updatedAt'
+	| 'active'
+	| 'localOnly'
 > & {
 	chunkCount: number;
 	folderId: string | null;

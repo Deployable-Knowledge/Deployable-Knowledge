@@ -1,5 +1,7 @@
 <script lang="ts">
 	import AudioLines from '@lucide/svelte/icons/audio-lines';
+	import Cloud from '@lucide/svelte/icons/cloud';
+	import CloudOff from '@lucide/svelte/icons/cloud-off';
 	import FileSpreadsheet from '@lucide/svelte/icons/file-spreadsheet';
 	import FileText from '@lucide/svelte/icons/file-text';
 	import Power from '@lucide/svelte/icons/power';
@@ -9,6 +11,7 @@
 	import WandSparkles from '@lucide/svelte/icons/wand-sparkles';
 	import { ActionIcon } from '$lib/components/app/actions';
 	import { Checkbox } from '$lib/components/ui/checkbox';
+	import { cn } from '$lib/components/ui/utils';
 	import { documentViewerHref } from '$lib/constants';
 	import type { DocumentRow } from '$lib/types';
 	import DocumentTagChip from './DocumentTagChip.svelte';
@@ -22,6 +25,7 @@
 		onDelete: () => void;
 		onToggle: (selected: boolean) => void;
 		onToggleActive: () => void;
+		onToggleLocalOnly: () => void;
 		onToggleTag: (tag: string) => void;
 		selected?: boolean;
 		tags: string[];
@@ -35,6 +39,7 @@
 		onDelete,
 		onToggle,
 		onToggleActive,
+		onToggleLocalOnly,
 		onToggleTag,
 		selected = false,
 		tags
@@ -79,8 +84,37 @@
 			{#if !document.active}
 				<span class="shrink-0 text-xs text-muted-foreground">· inactive</span>
 			{/if}
+			{#if document.localOnly}
+				<span class="shrink-0 text-xs text-muted-foreground">· local only</span>
+			{/if}
 			<ActionIcon
-				class="ml-auto border-0 bg-transparent shadow-none"
+				class={cn(
+					'ml-auto border-0 bg-transparent shadow-none',
+					document.active ? 'text-success' : 'text-destructive'
+				)}
+				disabled={busy}
+				label={document.active ? `Deactivate ${document.title}` : `Activate ${document.title}`}
+				size="icon-sm"
+				variant="ghost"
+				onclick={onToggleActive}
+			>
+				{#if document.active}<Power />{:else}<PowerOff />{/if}
+			</ActionIcon>
+			<ActionIcon
+				class={cn(
+					'border-0 bg-transparent shadow-none',
+					document.localOnly ? 'text-local' : 'text-cloud'
+				)}
+				disabled={busy}
+				label={`${document.localOnly ? 'Allow all models' : 'Keep local only'}: ${document.title}`}
+				size="icon-sm"
+				variant="ghost"
+				onclick={onToggleLocalOnly}
+			>
+				{#if document.localOnly}<CloudOff />{:else}<Cloud />{/if}
+			</ActionIcon>
+			<ActionIcon
+				class="border-0 bg-transparent shadow-none"
 				disabled={busy || document.chunkCount === 0}
 				label={`Autotag ${document.title}`}
 				size="icon-sm"
@@ -88,16 +122,6 @@
 				onclick={onAutotag}
 			>
 				<WandSparkles />
-			</ActionIcon>
-			<ActionIcon
-				class="border-0 bg-transparent shadow-none"
-				disabled={busy}
-				label={document.active ? `Deactivate ${document.title}` : `Activate ${document.title}`}
-				size="icon-sm"
-				variant="ghost"
-				onclick={onToggleActive}
-			>
-				{#if document.active}<PowerOff />{:else}<Power />{/if}
 			</ActionIcon>
 			<ActionIcon
 				class="border-0 bg-transparent shadow-none hover:text-destructive"

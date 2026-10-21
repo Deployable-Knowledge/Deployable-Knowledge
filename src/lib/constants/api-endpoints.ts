@@ -43,6 +43,7 @@ export const API_DOCUMENTS = {
 	FOLDERS: '/documents/folders',
 	IDS: '/documents/ids',
 	LIST: '/documents/list',
+	LOCAL: '/documents/local',
 	TAGS: '/documents/tags',
 	byId: (id: string) => `/documents/${segment(id)}`,
 	folder: (id: string) => `/documents/folders/${segment(id)}`,

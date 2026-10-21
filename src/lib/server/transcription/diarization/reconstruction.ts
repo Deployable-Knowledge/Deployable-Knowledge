@@ -17,20 +17,19 @@ function globalFrameCount(chunkCount: number): number {
 	return closestFrame(end + 0.5 * FRAME_WINDOW.duration, FRAME_WINDOW) + 1;
 }
 
-function aggregate(
-	scores: Float32Array,
-	chunkCount: number,
-	classes: number,
-	skipAverage: boolean
-): FrameScores {
+function chunkStartFrame(chunk: number): number {
+	const chunkStart = CHUNK_WINDOW.start + chunk * CHUNK_WINDOW.step;
+	return closestFrame(chunkStart + 0.5 * FRAME_WINDOW.duration, FRAME_WINDOW);
+}
+
+function aggregate(scores: Float32Array, chunkCount: number, classes: number): FrameScores {
 	const frames = globalFrameCount(chunkCount);
 	const output = new Float32Array(frames * classes);
 	const overlap = new Float32Array(frames * classes);
 	const covered = new Uint8Array(frames * classes);
 
 	for (let chunk = 0; chunk < chunkCount; chunk++) {
-		const chunkStart = CHUNK_WINDOW.start + chunk * CHUNK_WINDOW.step;
-		const startFrame = closestFrame(chunkStart + 0.5 * FRAME_WINDOW.duration, FRAME_WINDOW);
+		const startFrame = chunkStartFrame(chunk);
 
 		for (let frame = 0; frame < FRAMES_PER_CHUNK; frame++) {
 			const target = startFrame + frame;
@@ -47,11 +46,9 @@ function aggregate(
 	}
 
 	for (let index = 0; index < output.length; index++) {
-		if (!covered[index]) {
-			output[index] = 0;
-			continue;
-		}
-		if (!skipAverage) output[index] = output[index] / Math.max(overlap[index], AGGREGATE_EPSILON);
+		output[index] = covered[index]
+			? output[index] / Math.max(overlap[index], AGGREGATE_EPSILON)
+			: 0;
 	}
 
 	return { frames, classes, data: output };
@@ -65,40 +62,50 @@ export function speakerCount(activity: Uint8Array, chunkCount: number): Uint8Arr
 		}
 	}
 
-	const averaged = aggregate(perChunk, chunkCount, 1, false);
+	const averaged = aggregate(perChunk, chunkCount, 1);
 	return Uint8Array.from(averaged.data, (value) => roundHalfEven(value));
 }
 
-export function clusteredSegmentation(
+// pyannote's skip-average aggregation of the clustered segmentation, without materializing it.
+// The addends are 0 or 1, so the Float32 sums are exact and independent of order.
+export function clusterActivations(
 	activity: Uint8Array,
 	hardClusters: Int32Array,
 	chunkCount: number
-): { clusters: number; data: Float32Array } {
+): FrameScores {
 	const clusters = hardClusters.reduce((maximum, cluster) => Math.max(maximum, cluster), -1) + 1;
-	const data = new Float32Array(chunkCount * FRAMES_PER_CHUNK * clusters).fill(NaN);
+	const frames = globalFrameCount(chunkCount);
+	const data = new Float32Array(frames * clusters);
 
 	for (let chunk = 0; chunk < chunkCount; chunk++) {
-		for (let speaker = 0; speaker < LOCAL_SPEAKERS; speaker++) {
-			const cluster = hardClusters[chunk * LOCAL_SPEAKERS + speaker];
-			if (cluster === UNASSIGNED) continue;
+		const startFrame = chunkStartFrame(chunk);
+		const chunkClusters = hardClusters.subarray(
+			chunk * LOCAL_SPEAKERS,
+			(chunk + 1) * LOCAL_SPEAKERS
+		);
 
-			for (let frame = 0; frame < FRAMES_PER_CHUNK; frame++) {
-				const target = (chunk * FRAMES_PER_CHUNK + frame) * clusters + cluster;
-				const value = activity[(chunk * FRAMES_PER_CHUNK + frame) * LOCAL_SPEAKERS + speaker];
-				data[target] = Number.isNaN(data[target]) ? value : Math.max(data[target], value);
+		for (let frame = 0; frame < FRAMES_PER_CHUNK; frame++) {
+			const target = startFrame + frame;
+			if (target >= frames) break;
+			const base = (chunk * FRAMES_PER_CHUNK + frame) * LOCAL_SPEAKERS;
+
+			for (let speaker = 0; speaker < LOCAL_SPEAKERS; speaker++) {
+				const cluster = chunkClusters[speaker];
+				if (cluster === UNASSIGNED || chunkClusters.indexOf(cluster) < speaker) continue;
+
+				let active = 0;
+				for (let other = speaker; other < LOCAL_SPEAKERS; other++) {
+					if (chunkClusters[other] === cluster) active |= activity[base + other];
+				}
+				data[target * clusters + cluster] += active;
 			}
 		}
 	}
 
-	return { clusters, data };
+	return { frames, classes: clusters, data };
 }
 
-export function toDiarization(
-	clustered: { clusters: number; data: Float32Array },
-	chunkCount: number,
-	count: Uint8Array
-): FrameScores {
-	const activations = aggregate(clustered.data, chunkCount, clustered.clusters, true);
+export function toDiarization(activations: FrameScores, count: Uint8Array): FrameScores {
 	const maxCount = count.reduce((maximum, value) => Math.max(maximum, value), 0);
 	const classes = Math.max(activations.classes, maxCount);
 	const frames = Math.min(activations.frames, count.length);

@@ -1,10 +1,9 @@
 import type { Handle, HandleServerError, ServerInit } from '@sveltejs/kit/hooks';
 import packageMetadata from '../package.json';
-import { getThemeSettings } from '#lib/server/database/app-state';
+import { createAppStateOnFirstRun, getThemeSettings } from '#lib/server/database/app-state';
 import { bootstrapSchema } from '#lib/server/database/bootstrap-schema';
 import { configureDatabase } from '#lib/server/database/database';
 import { createLogger, initializeLogging } from '#lib/server/logging';
-import { seedDatabase } from '#lib/server/database/seed-database';
 import { applyVulkanDevice } from '#lib/server/providers/vulkan-devices';
 import { refreshStaleEmbeddings } from '#lib/server/rag/embedding';
 
@@ -42,7 +41,7 @@ export const init: ServerInit = async () => {
 	const migrationsFolder = process.env.DK_MIGRATIONS_DIR?.trim();
 	if (migrationsFolder) await bootstrapSchema(migrationsFolder);
 
-	await seedDatabase(process.env.DK_SEED_DIR?.trim() || 'seed');
+	await createAppStateOnFirstRun();
 
 	await applyVulkanDevice();
 

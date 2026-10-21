@@ -6,3 +6,4 @@ export * from './workspace';
 export * from './diagnostics';
 export * from './logs';
 export * from './desktop-window';
+export * from './user-guide';

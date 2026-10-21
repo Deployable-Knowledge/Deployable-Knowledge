@@ -13,7 +13,6 @@ publish: null
 files:
   - build/**
   - drizzle/**
-  - seed/**
   - electron/*.{cjs,ts}
   - LICENSE
   - THIRD-PARTY-NOTICES.md

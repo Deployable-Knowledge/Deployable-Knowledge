@@ -4,4 +4,4 @@ build/
 release/
 drizzle/
 .claude/
-seed/**/*.md
+src/lib/server/user-guide/chapters/*.md

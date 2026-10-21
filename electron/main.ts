@@ -82,7 +82,6 @@ async function startPackagedServer(): Promise<string> {
 			ELECTRON_RUN_AS_NODE: '1',
 			DK_APP_ROOT: APP_ROOT,
 			DK_MIGRATIONS_DIR: join(APP_ROOT, 'drizzle'),
-			DK_SEED_DIR: join(APP_ROOT, 'seed'),
 			BODY_SIZE_LIMIT: 'Infinity',
 			// ffmpeg-static locates its binary through `__dirname`, which packaging breaks.
 			FFMPEG_PATH: join(

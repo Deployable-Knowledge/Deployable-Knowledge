@@ -27,6 +27,7 @@ type PdfObjects = {
 
 export type PdfPage = {
 	getOperatorList(): Promise<{ fnArray: number[]; argsArray: unknown[][] }>;
+	cleanup(): boolean;
 	objs: PdfObjects;
 	commonObjs: PdfObjects;
 };
@@ -106,29 +107,34 @@ export async function extractPageImages(
 	pageNumber: number
 ): Promise<PageImage[]> {
 	const page = await document.getPage(pageNumber);
-	const { fnArray, argsArray } = await page.getOperatorList();
 
-	const images: PageImage[] = [];
-	const seen = new Set<string>();
+	try {
+		const { fnArray, argsArray } = await page.getOperatorList();
 
-	for (let index = 0; index < fnArray.length; index += 1) {
-		const operator = fnArray[index];
-		const isInline = operator === PAINT_INLINE_IMAGE_XOBJECT;
-		if (!isInline && operator !== PAINT_IMAGE_XOBJECT) continue;
+		const images: PageImage[] = [];
+		const seen = new Set<string>();
 
-		const operand = argsArray[index][0];
-		const name = isInline ? `inline_p${pageNumber}_${images.length + 1}` : String(operand);
-		if (seen.has(name)) continue;
-		seen.add(name);
+		for (let index = 0; index < fnArray.length; index += 1) {
+			const operator = fnArray[index];
+			const isInline = operator === PAINT_INLINE_IMAGE_XOBJECT;
+			if (!isInline && operator !== PAINT_IMAGE_XOBJECT) continue;
 
-		const raw = isInline ? (operand as RawImage) : await resolveImage(page, name);
-		if (!raw) continue;
+			const operand = argsArray[index][0];
+			const name = isInline ? `inline_p${pageNumber}_${images.length + 1}` : String(operand);
+			if (seen.has(name)) continue;
+			seen.add(name);
 
-		const png = await toPng(raw);
-		if (!png) continue;
+			const raw = isInline ? (operand as RawImage) : await resolveImage(page, name);
+			if (!raw) continue;
 
-		images.push({ name, ...png });
+			const png = await toPng(raw);
+			if (!png) continue;
+
+			images.push({ name, ...png });
+		}
+
+		return images;
+	} finally {
+		page.cleanup();
 	}
-
-	return images;
 }

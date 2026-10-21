@@ -89,6 +89,7 @@ async function createOcrSession(): Promise<OcrSession> {
 		});
 	});
 	exited.catch(() => undefined);
+	thread?.on('error', (error: unknown) => console.error('[OCR] Worker thread crashed.', error));
 
 	return { worker, exited };
 }

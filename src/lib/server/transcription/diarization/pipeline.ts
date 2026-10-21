@@ -3,12 +3,7 @@ import type { SpeakerTurn } from '../speaker-turn';
 import { loadDiarizationModels } from './assets';
 import { clusterEmbeddings } from './clustering';
 import { extractEmbeddings } from './embeddings';
-import {
-	binarizeToTurns,
-	clusteredSegmentation,
-	speakerCount,
-	toDiarization
-} from './reconstruction';
+import { binarizeToTurns, clusterActivations, speakerCount, toDiarization } from './reconstruction';
 import { runSegmentation } from './segmentation';
 
 export type DiarizationStage = 'segmentation' | 'embeddings' | 'clustering' | 'reconstruction';
@@ -45,8 +40,8 @@ export async function createSpeakerDiarizer(): Promise<SpeakerDiarizer> {
 		const hardClusters = clusterEmbeddings(embeddings, activity, chunkCount);
 		onProgress?.('clustering', 1);
 
-		const clustered = clusteredSegmentation(activity, hardClusters, chunkCount);
-		const turns = binarizeToTurns(toDiarization(clustered, chunkCount, count));
+		const activations = clusterActivations(activity, hardClusters, chunkCount);
+		const turns = binarizeToTurns(toDiarization(activations, count));
 		onProgress?.('reconstruction', 1);
 
 		return turns;

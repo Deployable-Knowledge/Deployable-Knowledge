@@ -8,6 +8,7 @@ import type {
 import { TRANSFORMERS_CACHE_DIR } from '../utils/transformers-env';
 
 const ALIGNMENT_MODEL = 'Xenova/wav2vec2-base-960h';
+const ALIGNMENT_REVISION = 'a19f851b3d42865797e410752b4c570c871e4825';
 
 interface AlignmentToken {
 	tokenId: number | null;
@@ -16,8 +17,16 @@ interface AlignmentToken {
 
 async function loadAlignmentAssets() {
 	const [processor, model] = await Promise.all([
-		Wav2Vec2Processor.from_pretrained(ALIGNMENT_MODEL, { cache_dir: TRANSFORMERS_CACHE_DIR }),
-		AutoModelForCTC.from_pretrained(ALIGNMENT_MODEL, { cache_dir: TRANSFORMERS_CACHE_DIR })
+		Wav2Vec2Processor.from_pretrained(ALIGNMENT_MODEL, {
+			cache_dir: TRANSFORMERS_CACHE_DIR,
+			revision: ALIGNMENT_REVISION
+		}),
+		AutoModelForCTC.from_pretrained(ALIGNMENT_MODEL, {
+			cache_dir: TRANSFORMERS_CACHE_DIR,
+			device: 'cpu',
+			dtype: 'fp32',
+			revision: ALIGNMENT_REVISION
+		})
 	]);
 
 	const tokenizer = processor.tokenizer;

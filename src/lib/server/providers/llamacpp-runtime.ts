@@ -44,14 +44,16 @@ async function createLlama(gpu: LlamaGpuMode): Promise<Llama> {
 	}
 }
 
+async function disposeLlamaInstance(): Promise<void> {
+	const previous = state.llamaInstance;
+	state.llamaInstance = undefined;
+	await previous?.promise.then((llama) => llama.dispose()).catch(() => undefined);
+}
+
 async function getLlamaFor(gpu: LlamaGpuMode): Promise<Llama> {
 	if (state.llamaInstance?.gpu === gpu) return state.llamaInstance.promise;
 
-	const previous = state.llamaInstance;
-	state.llamaInstance = undefined;
-	if (previous) {
-		await previous.promise.then((llama) => llama.dispose()).catch(() => undefined);
-	}
+	await disposeLlamaInstance();
 
 	const entry = { gpu, promise: createLlama(gpu) };
 	entry.promise.catch(() => {
@@ -185,8 +187,21 @@ export function withChat<T>(
 ): Promise<T> {
 	return withLock(async () => {
 		signal?.throwIfAborted();
-		return run((await getRuntime(modelPath, gpu)).chat);
+		try {
+			return await run((await getRuntime(modelPath, gpu)).chat);
+		} catch (error) {
+			if (!signal?.aborted) await resetRuntimeUnlocked();
+			throw error;
+		}
 	});
+}
+
+async function resetRuntimeUnlocked(): Promise<void> {
+	console.warn('[llamacpp] Resetting the runtime after a failed generation.');
+	await disposeRuntimeUnlocked().catch((error: unknown) => {
+		console.warn('[llamacpp] Failed to dispose the runtime:', error);
+	});
+	await disposeLlamaInstance();
 }
 
 export function deleteLocalModel(fileName: string): Promise<void> {

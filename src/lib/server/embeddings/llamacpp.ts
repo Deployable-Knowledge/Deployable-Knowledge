@@ -61,10 +61,17 @@ export class LlamaCppEmbeddingProvider extends EmbeddingProvider {
 			// The context adds a start and end token and rejects input that fills it.
 			const maxTokens = model.trainContextSize - 3;
 			const vectors: Float32Array[] = [];
-			for (const text of texts) {
-				const tokens = model.tokenize(prefix + text).slice(0, maxTokens);
-				const { vector } = await context.getEmbeddingFor(tokens);
-				vectors.push(normalizeVector(vector));
+			try {
+				for (const text of texts) {
+					const tokens = model.tokenize(prefix + text).slice(0, maxTokens);
+					const { vector } = await context.getEmbeddingFor(tokens);
+					vectors.push(normalizeVector(vector));
+				}
+			} catch (error) {
+				await this.release().catch((releaseError: unknown) => {
+					console.warn(`[Embedding] ${fileName} failed to unload:`, releaseError);
+				});
+				throw error;
 			}
 			return vectors;
 		});

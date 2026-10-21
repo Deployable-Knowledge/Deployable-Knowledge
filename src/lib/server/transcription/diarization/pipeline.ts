@@ -9,7 +9,7 @@ import {
 	speakerCount,
 	toDiarization
 } from './reconstruction';
-import { decodePowerset, runSegmentation } from './segmentation';
+import { runSegmentation } from './segmentation';
 
 export type DiarizationStage = 'segmentation' | 'embeddings' | 'clustering' | 'reconstruction';
 
@@ -28,8 +28,7 @@ export async function createSpeakerDiarizer(): Promise<SpeakerDiarizer> {
 		samples: Float32Array,
 		onProgress?: DiarizationProgress
 	): Promise<SpeakerTurn[]> => {
-		const { chunkCount, scores } = await runSegmentation(segmentationSession, samples);
-		const activity = decodePowerset(scores, chunkCount);
+		const { chunkCount, activity } = await runSegmentation(segmentationSession, samples);
 		const count = speakerCount(activity, chunkCount);
 		onProgress?.('segmentation', 1);
 

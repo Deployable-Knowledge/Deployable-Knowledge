@@ -40,44 +40,13 @@ function copyChunk(samples: Float32Array, index: number, target: Float32Array): 
 	target.fill(0, available.length);
 }
 
-export async function runSegmentation(
-	session: InferenceSession,
-	samples: Float32Array
-): Promise<{ chunkCount: number; scores: Float32Array }> {
-	const chunkCount = countChunks(samples.length);
-	const scores = new Float32Array(chunkCount * FRAMES_PER_CHUNK * POWERSET_CLASSES);
-
-	for (let first = 0; first < chunkCount; first += SEGMENTATION_BATCH) {
-		const batch = Math.min(SEGMENTATION_BATCH, chunkCount - first);
-		const input = new Float32Array(batch * CHUNK_SAMPLES);
-
-		for (let offset = 0; offset < batch; offset++) {
-			copyChunk(
-				samples,
-				first + offset,
-				input.subarray(offset * CHUNK_SAMPLES, (offset + 1) * CHUNK_SAMPLES)
-			);
-		}
-
-		const output = await session.run({
-			input_values: new Tensor('float32', input, [batch, 1, CHUNK_SAMPLES])
-		});
-		const batchScores = output.logits;
-
-		if (batchScores.dims.join('x') !== `${batch}x${FRAMES_PER_CHUNK}x${POWERSET_CLASSES}`) {
-			throw new Error(`Unexpected segmentation output shape ${batchScores.dims.join('x')}.`);
-		}
-
-		scores.set(batchScores.data as Float32Array, first * FRAMES_PER_CHUNK * POWERSET_CLASSES);
-	}
-
-	return { chunkCount, scores };
-}
-
-export function decodePowerset(scores: Float32Array, chunkCount: number): Uint8Array {
-	const activity = new Uint8Array(chunkCount * FRAMES_PER_CHUNK * LOCAL_SPEAKERS);
-
-	for (let frame = 0; frame < chunkCount * FRAMES_PER_CHUNK; frame++) {
+function decodeBatch(
+	scores: Float32Array,
+	frameCount: number,
+	activity: Uint8Array,
+	firstFrame: number
+): void {
+	for (let frame = 0; frame < frameCount; frame++) {
 		let best = 0;
 		for (let powersetClass = 1; powersetClass < POWERSET_CLASSES; powersetClass++) {
 			if (
@@ -86,8 +55,46 @@ export function decodePowerset(scores: Float32Array, chunkCount: number): Uint8A
 				best = powersetClass;
 			}
 		}
-		activity.set(POWERSET_MAPPING[best], frame * LOCAL_SPEAKERS);
+		activity.set(POWERSET_MAPPING[best], (firstFrame + frame) * LOCAL_SPEAKERS);
+	}
+}
+
+export async function runSegmentation(
+	session: InferenceSession,
+	samples: Float32Array
+): Promise<{ chunkCount: number; activity: Uint8Array }> {
+	const chunkCount = countChunks(samples.length);
+	const activity = new Uint8Array(chunkCount * FRAMES_PER_CHUNK * LOCAL_SPEAKERS);
+	const input = new Float32Array(Math.min(SEGMENTATION_BATCH, chunkCount) * CHUNK_SAMPLES);
+
+	for (let first = 0; first < chunkCount; first += SEGMENTATION_BATCH) {
+		const batch = Math.min(SEGMENTATION_BATCH, chunkCount - first);
+		const batchInput = input.subarray(0, batch * CHUNK_SAMPLES);
+
+		for (let offset = 0; offset < batch; offset++) {
+			copyChunk(
+				samples,
+				first + offset,
+				batchInput.subarray(offset * CHUNK_SAMPLES, (offset + 1) * CHUNK_SAMPLES)
+			);
+		}
+
+		const output = await session.run({
+			input_values: new Tensor('float32', batchInput, [batch, 1, CHUNK_SAMPLES])
+		});
+		const batchScores = output.logits;
+
+		if (batchScores.dims.join('x') !== `${batch}x${FRAMES_PER_CHUNK}x${POWERSET_CLASSES}`) {
+			throw new Error(`Unexpected segmentation output shape ${batchScores.dims.join('x')}.`);
+		}
+
+		decodeBatch(
+			batchScores.data as Float32Array,
+			batch * FRAMES_PER_CHUNK,
+			activity,
+			first * FRAMES_PER_CHUNK
+		);
 	}
 
-	return activity;
+	return { chunkCount, activity };
 }

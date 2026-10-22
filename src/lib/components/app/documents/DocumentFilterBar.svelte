@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Funnel from '@lucide/svelte/icons/funnel';
+	import Tags from '@lucide/svelte/icons/tags';
 	import X from '@lucide/svelte/icons/x';
 	import { ActionIcon } from '$lib/components/app/actions';
 	import { Input } from '$lib/components/ui/input';
@@ -48,8 +48,8 @@
 			selected={selectedTags}
 			{tags}
 			title="Filter and manage tags"
-			triggerIcon={Funnel}
-			triggerLabel="Filter"
+			triggerIcon={Tags}
+			triggerLabel="Tag Filter"
 			triggerTooltip="Filter by tags"
 		/>
 		<DocumentSortMenu onChange={onSortChange} value={sort} />

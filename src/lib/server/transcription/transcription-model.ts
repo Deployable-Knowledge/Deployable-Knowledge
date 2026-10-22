@@ -1,4 +1,5 @@
 import { pipeline, type AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers';
+import { TRANSCRIPTION_THREADS } from '../utils/inference-threads';
 import { TRANSFORMERS_CACHE_DIR } from '../utils/transformers-env';
 import { AUDIO_SAMPLE_RATE, sampleIndexToMs, type AudioChunk } from './audio-types';
 
@@ -29,7 +30,11 @@ async function getTranscriber(): Promise<AutomaticSpeechRecognitionPipeline> {
 	transcriptionPipeline ??= pipeline('automatic-speech-recognition', TRANSCRIPTION_MODEL, {
 		cache_dir: TRANSFORMERS_CACHE_DIR,
 		device: 'cpu',
-		dtype: 'q8'
+		dtype: 'q8',
+		session_options: {
+			intraOpNumThreads: TRANSCRIPTION_THREADS,
+			interOpNumThreads: 1
+		}
 	}).catch((error) => {
 		transcriptionPipeline = undefined;
 		throw error;

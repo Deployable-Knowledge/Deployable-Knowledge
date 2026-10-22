@@ -14,6 +14,8 @@ const WORKER_PATH = resolve(
 	'transcription-worker.mjs'
 );
 
+const WORKER_IDLE_TIMEOUT_MS = 60_000;
+
 interface PendingJob {
 	id: number;
 	worker: Worker;
@@ -26,6 +28,17 @@ let worker: Worker | undefined;
 let pending: PendingJob | undefined;
 let nextJobId = 1;
 let queue: Promise<unknown> = Promise.resolve();
+let idleTimer: NodeJS.Timeout | undefined;
+
+function scheduleIdleShutdown(started: Worker): void {
+	clearTimeout(idleTimer);
+	idleTimer = setTimeout(() => {
+		if (worker !== started || pending) return;
+		worker = undefined;
+		void started.terminate();
+	}, WORKER_IDLE_TIMEOUT_MS);
+	idleTimer.unref();
+}
 
 function startWorker(): Worker {
 	if (!existsSync(WORKER_PATH)) {
@@ -45,6 +58,7 @@ function startWorker(): Worker {
 
 		pending = undefined;
 		started.unref();
+		scheduleIdleShutdown(started);
 		if (message.type === 'error') {
 			job.reject(new Error(message.message));
 			return;
@@ -76,6 +90,7 @@ function runJob(
 	onProgress?: TranscriptionProgress
 ): Promise<TranscribedRecording> {
 	return new Promise((resolve, reject) => {
+		clearTimeout(idleTimer);
 		worker ??= startWorker();
 		const request: TranscribeRequest = { type: 'transcribe', id: nextJobId++, samples };
 		pending = { id: request.id, worker, onProgress, resolve, reject };

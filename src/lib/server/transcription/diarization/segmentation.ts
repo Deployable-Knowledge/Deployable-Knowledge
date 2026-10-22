@@ -12,7 +12,7 @@ export const CHUNK_WINDOW: SlidingWindow = { start: 0, duration: 10, step: 1 };
 export const FRAME_WINDOW: SlidingWindow = { start: 0, duration: 0.0619375, step: 0.016875 };
 
 const POWERSET_CLASSES = 7;
-const SEGMENTATION_BATCH = 32;
+const SEGMENTATION_BATCH = 16;
 
 const POWERSET_MAPPING: readonly (readonly number[])[] = [
 	[0, 0, 0],

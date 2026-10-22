@@ -1,4 +1,5 @@
 import { extname } from 'node:path';
+import { spansToStyledSyntax } from '#lib/utils/notebook-styles';
 
 const MARKDOWN_EXTENSION = '.md';
 const PLAIN_TEXT_EXTENSION = '.txt';
@@ -9,7 +10,7 @@ export function isNotebookPageImportPath(path: string): boolean {
 }
 
 export function parseNotebookPageContent(sourceName: string, sourceText: string): string {
-	const normalized = sourceText.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+	const normalized = spansToStyledSyntax(sourceText.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n'));
 	if (extname(sourceName).toLowerCase() !== PLAIN_TEXT_EXTENSION) return normalized;
 
 	const lines = normalized.split('\n').map((line) => line.trimEnd());

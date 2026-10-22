@@ -8,6 +8,7 @@ import {
 	transformersProgress,
 	type DownloadProgressHandler
 } from '#lib/server/utils/download-progress';
+import { TRANSCRIPTION_THREADS } from '#lib/server/utils/inference-threads';
 import { TRANSFORMERS_CACHE_DIR } from '#lib/server/utils/transformers-env';
 import { AUDIO_SAMPLE_RATE, sampleIndexToMs, type AudioChunk } from './audio-types';
 
@@ -61,11 +62,13 @@ export interface TranscriptionResult {
 }
 
 async function getTranscriber(): Promise<AutomaticSpeechRecognitionPipeline> {
-	transcriptionPipeline ??= pipeline(
-		TRANSCRIPTION_TASK,
-		TRANSCRIPTION_MODEL,
-		TRANSCRIPTION_OPTIONS
-	).catch((error) => {
+	transcriptionPipeline ??= pipeline(TRANSCRIPTION_TASK, TRANSCRIPTION_MODEL, {
+		...TRANSCRIPTION_OPTIONS,
+		session_options: {
+			intraOpNumThreads: TRANSCRIPTION_THREADS,
+			interOpNumThreads: 1
+		}
+	}).catch((error) => {
 		transcriptionPipeline = undefined;
 		throw error;
 	});

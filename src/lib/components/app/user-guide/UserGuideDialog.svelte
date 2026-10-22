@@ -108,7 +108,7 @@
 				>
 					<div class="px-12 py-9">
 						{#if userGuideStore.activeChapter}
-							<MarkdownContent content={userGuideStore.activeChapter.content} />
+							<MarkdownContent content={userGuideStore.activeChapter.content} styledSpans />
 						{:else}
 							<div class="grid gap-3">
 								<Skeleton class="h-6 w-1/2" /><Skeleton class="h-24" /><Skeleton class="h-40" />

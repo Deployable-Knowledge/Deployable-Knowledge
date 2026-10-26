@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { StreamingMarkdownContent } from '$lib/components/app/content';
-	import { ChatMessageContext } from './ChatMessageContext';
+	import { Streamdown } from 'svelte-streamdown';
 	import type { AgentTraceItem } from '$lib/types';
+	import { ChatMessageContext } from './ChatMessageContext';
 
 	interface Props {
 		error?: string;
@@ -28,5 +28,16 @@
 		</div>
 	{/if}
 	{#if error}<p class="text-xs text-destructive">{error}</p>{/if}
-	{#if streamedText}<StreamingMarkdownContent content={streamedText} />{/if}
+	{#if streamedText}
+		<Streamdown
+			baseTheme="shadcn"
+			class="markdown-content prose prose-sm max-w-none dark:prose-invert"
+			content={streamedText}
+			controls={false}
+		>
+			{#snippet code({ token })}
+				<pre><code>{token.text.replace(/\n+$/, '')}</code></pre>
+			{/snippet}
+		</Streamdown>
+	{/if}
 </article>

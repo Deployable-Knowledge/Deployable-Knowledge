@@ -50,6 +50,7 @@ export interface AgentTraceItem {
 	id: string;
 	kind: 'reasoning' | 'tool';
 	title: string;
+	input?: string;
 	output: string;
 	status?: 'running' | 'complete' | 'error';
 	isError?: boolean;

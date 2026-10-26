@@ -35,7 +35,8 @@ export function createToolTrace({
 		id,
 		kind: 'tool',
 		title: toolTitle(name, argumentsValue, status),
-		output: toolOutput(name, argumentsValue, resultValue),
+		input: toolInput(name, argumentsValue),
+		output: toolOutput(name, resultValue, status),
 		status,
 		...(isError ? { isError: true } : {})
 	};
@@ -91,31 +92,24 @@ function toolTitle(name: string, argumentsValue: unknown, status: TraceStatus): 
 	return running ? `Running ${label}…` : `Ran ${label}`;
 }
 
-function toolOutput(name: string, argumentsValue: unknown, resultValue: unknown): string {
+function toolInput(name: string, argumentsValue: unknown): string {
+	const args = readObject(argumentsValue);
+	if (name === 'python' && typeof args.code === 'string') return args.code;
+	return formatTraceValue(argumentsValue);
+}
+
+function toolOutput(name: string, resultValue: unknown, status: TraceStatus): string {
+	if (resultValue === undefined) {
+		return status === 'running' ? 'Waiting for output…' : 'No output recorded';
+	}
+
 	if (name === 'search') return formatSearchResults(resultValue);
 	if (name === 'read_chunks') return formatChunkWindow(resultValue);
 	if (name === 'goals') return formatGoals(resultValue);
-
-	const args = readObject(argumentsValue);
-	if (name === 'python') {
-		return typeof args.code === 'string' ? args.code : 'No code recorded';
-	}
-
-	const sections: string[] = [];
-
-	if (Object.keys(args).length) {
-		sections.push(`Input\n${formatTraceValue(args)}`);
-	}
-
-	if (resultValue !== undefined) {
-		sections.push(`Output\n${formatTraceValue(resultValue)}`);
-	}
-
-	return sections.join('\n\n') || 'No output';
+	return formatTraceValue(resultValue);
 }
 
 function formatSearchResults(resultValue: unknown): string {
-	if (resultValue === undefined) return 'Waiting for results…';
 	if (typeof resultValue === 'string') return resultValue.trim() || 'No results';
 
 	const result = readObject(resultValue);
@@ -152,7 +146,6 @@ function formatGoals(resultValue: unknown): string {
 }
 
 function formatChunkWindow(resultValue: unknown): string {
-	if (resultValue === undefined) return 'Waiting for chunks…';
 	if (typeof resultValue === 'string') return resultValue.trim() || 'No chunks';
 
 	const result = readObject(resultValue);

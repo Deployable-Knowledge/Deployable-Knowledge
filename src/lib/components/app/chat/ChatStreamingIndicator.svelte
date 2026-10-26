@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { MarkdownContent } from '$lib/components/app/content';
+	import { StreamingMarkdownContent } from '$lib/components/app/content';
 	import { ChatMessageContext } from './ChatMessageContext';
 	import type { AgentTraceItem } from '$lib/types';
 
@@ -28,5 +28,5 @@
 		</div>
 	{/if}
 	{#if error}<p class="text-xs text-destructive">{error}</p>{/if}
-	{#if streamedText}<MarkdownContent content={streamedText} />{/if}
+	{#if streamedText}<StreamingMarkdownContent content={streamedText} />{/if}
 </article>

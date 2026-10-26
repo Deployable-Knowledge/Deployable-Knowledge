@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @source '.';
+@source '../node_modules/svelte-streamdown/**/*';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 @import 'tw-animate-css';

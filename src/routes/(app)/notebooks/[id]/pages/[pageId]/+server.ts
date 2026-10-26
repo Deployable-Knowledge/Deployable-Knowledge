@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { and, asc, eq } from 'drizzle-orm';
-import { NOTEBOOK_TEXT_CHARACTER_LIMIT } from '#lib/constants';
 import type { ApiNotebookPageContentRequest, ApiNotebookPageTitleRequest } from '#lib/types';
 import { db } from '#lib/server/database/database';
 import {
@@ -14,7 +13,6 @@ import {
 	loadNotebookState,
 	setActiveNotebook
 } from '#lib/server/repositories/notebooks.repository';
-import { countNotebookText } from '#lib/utils/notebook-text';
 
 type PagePatch = Partial<ApiNotebookPageContentRequest & ApiNotebookPageTitleRequest>;
 
@@ -24,7 +22,7 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 	if (!notebookId || !pageId) return json({ error: 'Missing id' }, { status: 400 });
 	const body = (await request.json()) as PagePatch;
 	const pages = await db
-		.select({ id: notebookPages.id, content: notebookPages.content })
+		.select({ id: notebookPages.id })
 		.from(notebookPages)
 		.where(eq(notebookPages.notebookId, notebookId));
 	if (!pages.some(({ id }) => id === pageId)) {
@@ -40,22 +38,6 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 		changes.title = title;
 	}
 	if (typeof body.content === 'string') {
-		const characterCount = countNotebookText(
-			pages.map((page) => (page.id === pageId ? { content: body.content ?? '' } : page))
-		);
-		if (
-			characterCount > NOTEBOOK_TEXT_CHARACTER_LIMIT &&
-			characterCount > countNotebookText(pages)
-		) {
-			return json(
-				{
-					error: 'Notebook text limit exceeded',
-					characterCount,
-					limit: NOTEBOOK_TEXT_CHARACTER_LIMIT
-				},
-				{ status: 413 }
-			);
-		}
 		changes.content = body.content;
 	}
 	if (changes.title === undefined && changes.content === undefined) {

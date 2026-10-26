@@ -1,14 +1,7 @@
 <script lang="ts">
 	import { onDestroy, onMount, tick } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import {
-		ApiError,
-		countNotebookText,
-		createAutosave,
-		pickDirectory,
-		pickFiles,
-		supportsFolderSync
-	} from '#lib/utils';
+	import { createAutosave, pickDirectory, pickFiles, supportsFolderSync } from '#lib/utils';
 	import { collectFiles } from '#lib/client/folder-sync/walk';
 	import { DialogConfirmation } from '#lib/components/app/dialogs';
 	import { WorkspaceWindow } from '#lib/components/app/workspace/WorkspaceWindow';
@@ -17,12 +10,7 @@
 	import { Input } from '#lib/components/ui/input';
 	import { Label } from '#lib/components/ui/label';
 	import * as Select from '#lib/components/ui/select';
-	import {
-		isNotebookImportFileName,
-		NOTEBOOK_IMPORT_EXTENSIONS,
-		NOTEBOOK_TEXT_CHARACTER_LIMIT,
-		NOTEBOOK_TEXT_WARNING_CHARACTER_COUNT
-	} from '#lib/constants';
+	import { isNotebookImportFileName, NOTEBOOK_IMPORT_EXTENSIONS } from '#lib/constants';
 	import { notebooksStore } from '#lib/stores';
 	import type { NotebookPage, NotebookSourceItem, NotebookWithPages } from '#lib/types';
 	import { notebookCountLabel } from './notebook-format';
@@ -83,34 +71,11 @@
 		return `Rename ${renameTarget?.kind ?? 'item'}`;
 	}
 
-	const otherPageCharacters = $derived(
-		notebooksStore.activeNotebook?.pages.reduce(
-			(total, page) =>
-				page.id === notebooksStore.activePage?.id ? total : total + page.content.length,
-			0
-		) ?? 0
+	const moveDestinations = $derived(
+		notebooksStore.notebooks.filter(({ id }) => id !== notebooksStore.activeNotebookId)
 	);
-	const pageLimit = $derived(Math.max(0, NOTEBOOK_TEXT_CHARACTER_LIMIT - otherPageCharacters));
-	const characterCount = $derived(otherPageCharacters + notes.length);
-	const charactersRemaining = $derived(Math.max(0, NOTEBOOK_TEXT_CHARACTER_LIMIT - characterCount));
-	const moveDestinations = $derived.by(() => {
-		const pageLength = movePageTarget?.content.length ?? 0;
-		return notebooksStore.notebooks
-			.filter(({ id }) => id !== notebooksStore.activeNotebookId)
-			.map((notebook) => ({
-				id: notebook.id,
-				title: notebook.title,
-				hasRoom: countNotebookText(notebook.pages) + pageLength <= NOTEBOOK_TEXT_CHARACTER_LIMIT
-			}));
-	});
 	const moveDestination = $derived(moveDestinations.find(({ id }) => id === moveDestinationId));
-	const moveDestinationLabel = $derived.by(() => {
-		if (moveDestination) return moveDestination.title;
-		if (!moveDestinations.length) return 'No other notebooks';
-		return 'No notebook has room';
-	});
-	const nearLimit = $derived(characterCount >= NOTEBOOK_TEXT_WARNING_CHARACTER_COUNT);
-	const atLimit = $derived(characterCount >= NOTEBOOK_TEXT_CHARACTER_LIMIT);
+	const moveDestinationLabel = $derived(moveDestination?.title ?? 'No other notebooks');
 
 	async function writeCurrentPage(): Promise<void> {
 		const notebook = notebooksStore.activeNotebook;
@@ -122,13 +87,7 @@
 			await notebooksStore.updatePage(notebook.id, page.id, savedNotes);
 			lastSavedNotes = savedNotes;
 		} catch (error) {
-			if (error instanceof ApiError && error.status === 413) {
-				toast.error(
-					`Notebook text is limited to ${NOTEBOOK_TEXT_CHARACTER_LIMIT.toLocaleString()} characters`
-				);
-			} else {
-				toast.error(message(error));
-			}
+			toast.error(message(error));
 		}
 	}
 
@@ -161,13 +120,7 @@
 
 	async function appendToOpenPage(text: string): Promise<void> {
 		const separator = notes.trim() ? '\n\n' : '';
-		const next = `${notes}${separator}${text}`;
-		if (otherPageCharacters + next.length > NOTEBOOK_TEXT_CHARACTER_LIMIT) {
-			throw new Error(
-				`Notebook text is limited to ${NOTEBOOK_TEXT_CHARACTER_LIMIT.toLocaleString()} characters.`
-			);
-		}
-		notes = next;
+		notes = `${notes}${separator}${text}`;
 		autosave.schedule();
 		await flushPage();
 	}
@@ -289,12 +242,12 @@
 
 	function openMovePage(page: NotebookPage): void {
 		movePageTarget = page;
-		moveDestinationId = moveDestinations.find(({ hasRoom }) => hasRoom)?.id ?? '';
+		moveDestinationId = moveDestinations[0]?.id ?? '';
 	}
 
 	async function movePageToNotebook(): Promise<void> {
 		const notebook = notebooksStore.activeNotebook;
-		if (!notebook || !movePageTarget || !moveDestination?.hasRoom) return;
+		if (!notebook || !movePageTarget || !moveDestination) return;
 		await flushPage();
 		try {
 			await notebooksStore.movePage(notebook.id, movePageTarget.id, moveDestinationId);
@@ -589,12 +542,7 @@
 				bind:this={editorRef}
 				bind:findOpen={editorFindOpen}
 				bind:notes
-				{pageLimit}
-				{characterCount}
-				characterLimit={NOTEBOOK_TEXT_CHARACTER_LIMIT}
-				{charactersRemaining}
-				{nearLimit}
-				{atLimit}
+				characterCount={notes.length}
 				onInput={autosave.schedule}
 			/>
 		{/if}
@@ -644,20 +592,14 @@
 				</Select.Trigger>
 				<Select.Content>
 					{#each moveDestinations as destination (destination.id)}
-						<Select.Item
-							value={destination.id}
-							disabled={!destination.hasRoom}
-							label={destination.hasRoom
-								? destination.title
-								: `${destination.title} (not enough room)`}
-						/>
+						<Select.Item value={destination.id} label={destination.title} />
 					{/each}
 				</Select.Content>
 			</Select.Root>
 		</div>
 		<Dialog.Footer>
 			<Button variant="outline" onclick={() => (movePageTarget = null)}>Cancel</Button>
-			<Button disabled={!moveDestination?.hasRoom} onclick={() => void movePageToNotebook()}
+			<Button disabled={!moveDestination} onclick={() => void movePageToNotebook()}
 				>Move page</Button
 			>
 		</Dialog.Footer>

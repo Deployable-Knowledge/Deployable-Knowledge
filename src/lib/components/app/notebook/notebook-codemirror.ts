@@ -32,7 +32,6 @@ import { applyTableAction, formatTable, type TableAction } from '#lib/utils/mark
 import type { RibbonCommand } from './notebook-editing';
 
 export interface NotebookEditorHooks {
-	characterLimit(): number;
 	onCommand(command: RibbonCommand): void;
 	onOpenFind(): void;
 	onEscape(): boolean;
@@ -364,7 +363,7 @@ function moveIntoTable(view: EditorView, forward: boolean): boolean {
 
 // Moving the caret into a ragged table pads it into a grid before its source is
 // revealed. The padding stays out of undo history so undo never fights it.
-function alignTableOnEntry(hooks: NotebookEditorHooks): Extension {
+function alignTableOnEntry(): Extension {
 	return EditorState.transactionFilter.of((transaction) => {
 		const { selection, startState } = transaction;
 		if (!selection?.main.empty || transaction.docChanged) return transaction;
@@ -380,8 +379,6 @@ function alignTableOnEntry(hooks: NotebookEditorHooks): Extension {
 		const source = startState.sliceDoc(table.from, table.to);
 		const edit = formatTable(source, head - table.from);
 		if (edit.text === source) return transaction;
-		const length = startState.doc.length + edit.text.length - source.length;
-		if (length > hooks.characterLimit()) return transaction;
 
 		return [
 			transaction,
@@ -658,7 +655,7 @@ export function notebookEditorExtensions(hooks: NotebookEditorHooks): Extension 
 		syntaxHighlighting(markdownHighlighting),
 		livePreviewPlugin,
 		tableField,
-		alignTableOnEntry(hooks),
+		alignTableOnEntry(),
 		findHighlightField,
 		editorTheme,
 		clickHandler,
@@ -671,12 +668,6 @@ export function notebookEditorExtensions(hooks: NotebookEditorHooks): Extension 
 				{ key: 'Mod-Shift-k', run: (view) => runTableAction(view, 'delete-row') },
 				{ key: 'Mod-Alt-Shift-k', run: (view) => runTableAction(view, 'delete-column') }
 			])
-		),
-		EditorState.changeFilter.of(
-			(transaction) =>
-				!transaction.docChanged ||
-				transaction.newDoc.length <= hooks.characterLimit() ||
-				transaction.newDoc.length <= transaction.startState.doc.length
 		),
 		keymap.of([
 			{

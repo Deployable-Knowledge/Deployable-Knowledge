@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { and, asc, eq, max } from 'drizzle-orm';
-import { NOTEBOOK_TEXT_CHARACTER_LIMIT } from '#lib/constants';
 import type { ApiNotebookPageMoveRequest } from '#lib/types';
 import { db } from '#lib/server/database/database';
 import { notebookPages, notebooks, type NewNotebookPage } from '#lib/server/database/schema';
@@ -9,7 +8,6 @@ import {
 	loadNotebookState,
 	setActiveNotebook
 } from '#lib/server/repositories/notebooks.repository';
-import { countNotebookText } from '#lib/utils/notebook-text';
 
 export const PATCH: RequestHandler = async ({ params, request }) => {
 	const sourceNotebookId = params.id;
@@ -48,17 +46,9 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 	}
 
 	const destinationPages = await db
-		.select({ title: notebookPages.title, content: notebookPages.content })
+		.select({ title: notebookPages.title })
 		.from(notebookPages)
 		.where(eq(notebookPages.notebookId, destinationNotebookId));
-	if (countNotebookText(destinationPages) + page.content.length > NOTEBOOK_TEXT_CHARACTER_LIMIT) {
-		return json(
-			{
-				error: `Notebook text is limited to ${NOTEBOOK_TEXT_CHARACTER_LIMIT.toLocaleString()} characters.`
-			},
-			{ status: 413 }
-		);
-	}
 	const movedTitle = uniquePageTitle(
 		page.title,
 		destinationPages.map(({ title }) => title)

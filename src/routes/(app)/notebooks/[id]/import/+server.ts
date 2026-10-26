@@ -1,7 +1,6 @@
 import { basename, extname } from 'node:path';
 import { error, json } from '@sveltejs/kit';
 import type { ApiNotebookPageImportRequest } from '#lib/types';
-import { NOTEBOOK_TEXT_CHARACTER_LIMIT } from '#lib/constants';
 import {
 	isNotebookPageImportPath,
 	parseNotebookPageContent
@@ -11,7 +10,6 @@ import {
 	setActiveNotebook,
 	NotebooksRepository
 } from '#lib/server/repositories/notebooks.repository';
-import { countNotebookText } from '#lib/utils/notebook-text';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ params, request }) => {
@@ -33,21 +31,9 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		throw error(400, 'The selected file is empty.');
 	}
 
-	if (body.content.length > NOTEBOOK_TEXT_CHARACTER_LIMIT) {
-		throw error(413, 'The selected file is too large.');
-	}
-
 	const content = parseNotebookPageContent(name, body.content);
 	if (!content.trim()) {
 		throw error(400, 'The selected file contains no text.');
-	}
-
-	const characterCount = countNotebookText(notebook.pages) + content.length;
-	if (characterCount > NOTEBOOK_TEXT_CHARACTER_LIMIT) {
-		throw error(
-			413,
-			`Notebook text is limited to ${NOTEBOOK_TEXT_CHARACTER_LIMIT.toLocaleString()} characters.`
-		);
 	}
 
 	const title = basename(name, extname(name)).trim() || 'Imported page';

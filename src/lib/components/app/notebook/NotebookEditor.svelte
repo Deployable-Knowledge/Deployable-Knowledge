@@ -12,27 +12,17 @@
 	import NotebookEditorRibbon from './NotebookEditorRibbon.svelte';
 
 	interface Props {
-		atLimit?: boolean;
 		characterCount: number;
-		characterLimit: number;
-		charactersRemaining: number;
 		findOpen?: boolean;
-		nearLimit?: boolean;
 		notes: string;
 		onInput: () => void;
-		pageLimit: number;
 	}
 
 	let {
-		atLimit = false,
 		characterCount,
-		characterLimit,
-		charactersRemaining,
 		findOpen = $bindable(false),
-		nearLimit = false,
 		notes = $bindable(),
-		onInput,
-		pageLimit
+		onInput
 	}: Props = $props();
 
 	const MAX_FIND_MATCHES = 500;
@@ -70,7 +60,6 @@
 			doc: notes,
 			extensions: [
 				notebookEditorExtensions({
-					characterLimit: () => pageLimit,
 					onCommand: (command) => runCommand(command),
 					onOpenFind: openFind,
 					onEscape: () => {
@@ -109,19 +98,12 @@
 		editorView?.dispatch({ effects: setFindHighlights.of(spec) });
 	});
 
-	function limitSuffix(): string {
-		if (atLimit) return ' · limit reached';
-		if (nearLimit) return ` · ${charactersRemaining.toLocaleString()} remaining`;
-		return '';
-	}
-
 	function runCommand(command: RibbonCommand): void {
 		const view = editorView;
 		if (!view) return;
 		const { from, to } = view.state.selection.main;
 		const text = view.state.doc.toString();
 		const result = applyRibbonCommand(text, { start: from, end: to }, command);
-		if (result.text.length > pageLimit) return;
 		const changes = documentChanges(text, result.text);
 		view.dispatch({
 			...(changes ? { changes } : {}),
@@ -192,15 +174,11 @@
 			</div>
 		{/if}
 		<div
-			class={[
-				'pointer-events-none absolute right-3 bottom-2 text-[11px] text-muted-foreground',
-				nearLimit && !atLimit && 'text-amber-600 dark:text-amber-400',
-				atLimit && 'text-destructive'
-			]}
+			class="pointer-events-none absolute right-3 bottom-2 text-[11px] text-muted-foreground"
 			role="status"
 			aria-live="polite"
 		>
-			{characterCount.toLocaleString()} / {characterLimit.toLocaleString()} characters{limitSuffix()}
+			{characterCount.toLocaleString()} characters
 		</div>
 	</div>
 </div>

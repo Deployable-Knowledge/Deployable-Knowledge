@@ -9,6 +9,7 @@ import {
 	Annotation,
 	EditorState,
 	Prec,
+	type Range,
 	StateEffect,
 	StateField,
 	Transaction,
@@ -28,7 +29,7 @@ import {
 } from '@codemirror/view';
 import { tags } from '@lezer/highlight';
 import { renderMarkdown } from '#lib/utils/markdown';
-import { applyTableAction, formatTable, type TableAction } from '#lib/utils/markdown-table';
+import { formatTable, type TableAction } from '#lib/utils/markdown-table';
 import type { RibbonCommand } from './notebook-editing';
 
 export interface NotebookEditorHooks {
@@ -149,6 +150,17 @@ function buildLivePreview(view: EditorView): DecorationSet {
 	const hide = (from: number, to: number) => {
 		if (to > from && to <= state.doc.lineAt(from).to) pending.push({ from, to, deco: HIDE });
 	};
+	const blockLines = (from: number, to: number, baseClass: string) => {
+		const open = state.doc.lineAt(from).number;
+		const close = state.doc.lineAt(to).number;
+		for (let lineNumber = open; lineNumber <= close; lineNumber += 1) {
+			let lineClass = baseClass;
+			if (lineNumber === open) lineClass += ' nb-codeblock-first';
+			if (lineNumber === close) lineClass += ' nb-codeblock-last';
+			const line = state.doc.line(lineNumber);
+			pending.push({ from: line.from, to: line.from, deco: Decoration.line({ class: lineClass }) });
+		}
+	};
 
 	for (const range of view.visibleRanges) {
 		syntaxTree(state).iterate({
@@ -162,19 +174,7 @@ function buildLivePreview(view: EditorView): DecorationSet {
 					case 'Table': {
 						const span = lineSpan(state, node.from, node.to);
 						tables.push(span);
-						const open = state.doc.lineAt(span.from).number;
-						const close = state.doc.lineAt(span.to).number;
-						for (let lineNumber = open; lineNumber <= close; lineNumber += 1) {
-							let lineClass = 'nb-codeblock nb-table-source';
-							if (lineNumber === open) lineClass += ' nb-codeblock-first';
-							if (lineNumber === close) lineClass += ' nb-codeblock-last';
-							const line = state.doc.line(lineNumber);
-							pending.push({
-								from: line.from,
-								to: line.from,
-								deco: Decoration.line({ class: lineClass })
-							});
-						}
+						blockLines(span.from, span.to, 'nb-codeblock nb-table-source');
 						return false;
 					}
 					case 'HeaderMark': {
@@ -198,19 +198,9 @@ function buildLivePreview(view: EditorView): DecorationSet {
 						return;
 					}
 					case 'FencedCode': {
+						blockLines(node.from, node.to, 'nb-codeblock');
 						const open = state.doc.lineAt(node.from);
 						const close = state.doc.lineAt(node.to);
-						for (let lineNumber = open.number; lineNumber <= close.number; lineNumber += 1) {
-							const line = state.doc.line(lineNumber);
-							let lineClass = 'nb-codeblock';
-							if (lineNumber === open.number) lineClass += ' nb-codeblock-first';
-							if (lineNumber === close.number) lineClass += ' nb-codeblock-last';
-							pending.push({
-								from: line.from,
-								to: line.from,
-								deco: Decoration.line({ class: lineClass })
-							});
-						}
 						// With the cursor outside, the fence lines collapse into the
 						// block's top and bottom padding
 						const closed = node.node.getChildren('CodeMark').length >= 2;
@@ -302,29 +292,20 @@ function buildLivePreview(view: EditorView): DecorationSet {
 
 function buildTables(state: EditorState): DecorationSet {
 	const selection = state.selection.main;
-	const pending: PendingDecoration[] = [];
+	const widgets: Range<Decoration>[] = [];
 
 	syntaxTree(state).iterate({
 		enter: (node) => {
 			if (node.name !== 'Table') return;
 			const { from, to } = lineSpan(state, node.from, node.to);
 			if (selection.from <= to && selection.to >= from) return false;
-			pending.push({
-				from,
-				to,
-				deco: Decoration.replace({
-					widget: new TableWidget(state.doc.sliceString(from, to)),
-					block: true
-				})
-			});
+			const widget = new TableWidget(state.doc.sliceString(from, to));
+			widgets.push(Decoration.replace({ widget, block: true }).range(from, to));
 			return false;
 		}
 	});
 
-	return Decoration.set(
-		pending.map(({ from, to, deco }) => deco.range(from, to)),
-		true
-	);
+	return Decoration.set(widgets, true);
 }
 
 const tableField = StateField.define<DecorationSet>({
@@ -399,7 +380,7 @@ function runTableAction(view: EditorView, action: TableAction): boolean {
 	if (!table) return false;
 
 	const source = view.state.sliceDoc(table.from, table.to);
-	const edit = applyTableAction(source, range.head - table.from, action);
+	const edit = formatTable(source, range.head - table.from, action);
 	view.dispatch({
 		changes:
 			edit.text === source ? undefined : { from: table.from, to: table.to, insert: edit.text },

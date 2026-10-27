@@ -1,10 +1,10 @@
 import { eastAsianWidth } from 'get-east-asian-width';
 
-export type ColumnAlignment = 'none' | 'left' | 'center' | 'right';
-export type TableMove = 'next' | 'previous' | 'down';
+type ColumnAlignment = 'none' | 'left' | 'center' | 'right';
+type TableMove = 'next' | 'previous' | 'down';
 export type TableAction = TableMove | 'delete-row' | 'delete-column';
 
-export interface TableEdit {
+interface TableEdit {
 	text: string;
 	cursor: number;
 }
@@ -23,7 +23,6 @@ interface CellPosition {
 interface RenderedRow {
 	text: string;
 	starts: number[];
-	lengths: number[];
 }
 
 const DELIMITER_ROW = 1;
@@ -40,11 +39,10 @@ function rowSegments(line: string): Segment[] {
 		escaped = !escaped && char === '\\';
 	}
 
-	const bounds = [-1, ...pipes, line.length];
-	const segments: Segment[] = [];
-	for (let index = 0; index < bounds.length - 1; index += 1) {
-		segments.push({ from: bounds[index] + 1, to: bounds[index + 1] });
-	}
+	const segments: Segment[] = [-1, ...pipes].map((pipe, index) => ({
+		from: pipe + 1,
+		to: pipes[index] ?? line.length
+	}));
 	if (!pipes.length) return segments;
 	if (!line.slice(0, pipes[0]).trim()) segments.shift();
 	if (segments.length && !line.slice(pipes[pipes.length - 1] + 1).trim()) segments.pop();
@@ -86,18 +84,15 @@ function leftPadding(space: number, alignment: ColumnAlignment): number {
 function renderRow(cells: string[], widths: number[], alignments: ColumnAlignment[]): RenderedRow {
 	let text = '|';
 	const starts: number[] = [];
-	const lengths: number[] = [];
 	const columnCount = Math.max(cells.length, widths.length);
 	for (let column = 0; column < columnCount; column += 1) {
 		const content = cells[column] ?? '';
-		const width = widths[column] ?? displayWidth(content);
-		const space = Math.max(0, width - displayWidth(content));
+		const space = (widths[column] ?? displayWidth(content)) - displayWidth(content);
 		const before = leftPadding(space, alignments[column] ?? 'none');
 		starts.push(text.length + 1 + before);
-		lengths.push(content.length);
 		text += ` ${' '.repeat(before)}${content}${' '.repeat(space - before)} |`;
 	}
-	return { text, starts, lengths };
+	return { text, starts };
 }
 
 function locateCursor(lines: string[], cursor: number): CellPosition {
@@ -156,12 +151,12 @@ function deleteColumn(cells: string[][], position: CellPosition): CellPosition {
 	return { row: position.row, column: Math.min(position.column, cells[0].length - 1), offset: 0 };
 }
 
-function layoutTable(source: string, cursor: number, action?: TableAction): TableEdit | null {
+export function formatTable(source: string, cursor: number, action?: TableAction): TableEdit {
 	const lines = source.split('\n');
-	if (lines.length <= DELIMITER_ROW) return null;
+	if (lines.length <= DELIMITER_ROW) return { text: source, cursor };
 
 	const cells = lines.map(tableRowCells);
-	if (!cells[0].length) return null;
+	if (!cells[0].length) return { text: source, cursor };
 
 	let position = locateCursor(lines, cursor);
 	if (action === 'delete-row') {
@@ -174,37 +169,29 @@ function layoutTable(source: string, cursor: number, action?: TableAction): Tabl
 	}
 
 	const columnCount = cells[0].length;
-	const columns = Array.from({ length: columnCount }, (_, column) => column);
-	const alignments = columns.map((column) => alignmentOf(cells[DELIMITER_ROW][column] ?? ''));
-	const widths = columns.map((column) =>
+	const alignments = cells[0].map((_, column) => alignmentOf(cells[DELIMITER_ROW][column] ?? ''));
+	const widths = cells[0].map((_, column) =>
 		cells.reduce(
 			(widest, row, index) =>
 				index === DELIMITER_ROW ? widest : Math.max(widest, displayWidth(row[column] ?? '')),
 			MIN_COLUMN_WIDTH
 		)
 	);
+	cells[DELIMITER_ROW] = [
+		...widths.map((width, column) => delimiterCell(width, alignments[column])),
+		...cells[DELIMITER_ROW].slice(columnCount)
+	];
 
-	const rendered = cells.map((row, index) => {
-		if (index !== DELIMITER_ROW) return renderRow(row, widths, alignments);
-		const delimiters = columns.map((column) => delimiterCell(widths[column], alignments[column]));
-		return renderRow([...delimiters, ...row.slice(columnCount)], widths, alignments);
-	});
+	const rendered = cells.map((row) => renderRow(row, widths, alignments));
 
 	const lineStart = rendered
 		.slice(0, position.row)
 		.reduce((offset, row) => offset + row.text.length + 1, 0);
 	const target = rendered[position.row];
 	const column = Math.min(position.column, target.starts.length - 1);
+	const contentLength = (cells[position.row][column] ?? '').length;
 	return {
 		text: rendered.map((row) => row.text).join('\n'),
-		cursor: lineStart + target.starts[column] + Math.min(position.offset, target.lengths[column])
+		cursor: lineStart + target.starts[column] + Math.min(position.offset, contentLength)
 	};
-}
-
-export function formatTable(source: string, cursor: number): TableEdit {
-	return layoutTable(source, cursor) ?? { text: source, cursor };
-}
-
-export function applyTableAction(source: string, cursor: number, action: TableAction): TableEdit {
-	return layoutTable(source, cursor, action) ?? { text: source, cursor };
 }

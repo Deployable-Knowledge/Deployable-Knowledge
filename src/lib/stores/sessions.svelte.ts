@@ -1,5 +1,5 @@
-import { ChatService } from '$lib/services';
-import type { Session } from '$lib/types';
+import { ChatService } from '#lib/services';
+import type { Session } from '#lib/types';
 
 class SessionsStore {
 	private _sessions = $state<Session[]>([]);

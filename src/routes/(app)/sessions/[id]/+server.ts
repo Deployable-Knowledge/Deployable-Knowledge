@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
-import type { ApiSessionTitleRequest } from '$lib/types';
-import { SessionsRepository } from '$lib/server/repositories';
+import type { ApiSessionTitleRequest } from '#lib/types';
+import { SessionsRepository } from '#lib/server/repositories';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ params }) => {

@@ -1,9 +1,9 @@
 import { error, json } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 
-import type { ApiPromptTemplateRequest } from '$lib/types';
-import { db } from '$lib/server/database/database';
-import { profiles, promptTemplates } from '$lib/server/database/schema';
+import type { ApiPromptTemplateRequest } from '#lib/types';
+import { db } from '#lib/server/database/database';
+import { profiles, promptTemplates } from '#lib/server/database/schema';
 import type { RequestHandler } from './$types';
 
 export const PATCH: RequestHandler = async ({ params, request }) => {

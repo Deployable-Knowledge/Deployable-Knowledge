@@ -1,8 +1,8 @@
 <script lang="ts">
 	import BookOpen from '@lucide/svelte/icons/book-open';
 	import GripVertical from '@lucide/svelte/icons/grip-vertical';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import type { NotebookWithPages } from '$lib/types';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import type { NotebookWithPages } from '#lib/types';
 	import { notebookCountLabel } from './notebook-format';
 	import type { ReorderHandleProps } from './notebook-types';
 	import NotebookItemMenu from './NotebookItemMenu.svelte';

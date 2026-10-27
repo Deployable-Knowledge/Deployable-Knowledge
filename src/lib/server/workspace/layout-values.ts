@@ -2,9 +2,9 @@ import {
 	DEFAULT_WINDOW_HEIGHT,
 	DEFAULT_WINDOW_PLACEMENTS,
 	LAYOUT_NAME_MAX_LENGTH
-} from '$lib/constants';
-import { WindowColumn } from '$lib/enums';
-import type { WindowPlacement, WorkspaceLayoutSnapshot } from '$lib/types/workspace';
+} from '#lib/constants';
+import { WindowColumn } from '#lib/enums';
+import type { WindowPlacement, WorkspaceLayoutSnapshot } from '#lib/types/workspace';
 
 export function defaultLayoutSnapshot(): WorkspaceLayoutSnapshot {
 	return {

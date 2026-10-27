@@ -1,12 +1,12 @@
 import { error, json } from '@sveltejs/kit';
 
-import type { ApiWorkspaceLayoutCreateRequest } from '$lib/types';
-import { WorkspaceLayoutsRepository } from '$lib/server/repositories';
+import type { ApiWorkspaceLayoutCreateRequest } from '#lib/types';
+import { WorkspaceLayoutsRepository } from '#lib/server/repositories';
 import {
 	nextLayoutName,
 	normalizeLayoutName,
 	normalizeLayoutSnapshot
-} from '$lib/server/workspace/layout-values';
+} from '#lib/server/workspace/layout-values';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async () => {

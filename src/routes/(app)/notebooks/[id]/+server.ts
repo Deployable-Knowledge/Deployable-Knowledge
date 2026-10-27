@@ -1,13 +1,13 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { asc, eq } from 'drizzle-orm';
-import type { ApiNotebookTitleRequest } from '$lib/types';
-import { db } from '$lib/server/database/database';
-import { notebooks, type Notebook } from '$lib/server/database/schema';
+import type { ApiNotebookTitleRequest } from '#lib/types';
+import { db } from '#lib/server/database/database';
+import { notebooks, type Notebook } from '#lib/server/database/schema';
 import {
 	createDefaultNotebook,
 	loadNotebookState,
 	setActiveNotebook
-} from '$lib/server/repositories/notebooks.repository';
+} from '#lib/server/repositories/notebooks.repository';
 
 export const PATCH: RequestHandler = async ({ params, request }) => {
 	const id = params.id;

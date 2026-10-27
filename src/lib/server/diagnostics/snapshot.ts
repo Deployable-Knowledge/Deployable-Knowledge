@@ -1,7 +1,7 @@
 import { count, eq } from 'drizzle-orm';
 import packageMetadata from '../../../../package.json';
-import type { ApiDiagnosticsSnapshot } from '$lib/types';
-import { databaseClient, db } from '$lib/server/database/database';
+import type { ApiDiagnosticsSnapshot } from '#lib/types';
+import { databaseClient, db } from '#lib/server/database/database';
 import {
 	documentChunks,
 	documents,
@@ -10,8 +10,8 @@ import {
 	sessionMessages,
 	sessions,
 	syncedFolders
-} from '$lib/server/database/schema';
-import { isEmbeddingModelInstalled } from '$lib/server/rag/embedding-model';
+} from '#lib/server/database/schema';
+import { isEmbeddingModelInstalled } from '#lib/server/rag/embedding-model';
 
 const EMPTY_COUNTS: ApiDiagnosticsSnapshot['counts'] = {
 	activeDocuments: null,

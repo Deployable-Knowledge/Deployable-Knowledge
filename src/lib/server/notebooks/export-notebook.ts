@@ -1,5 +1,5 @@
 import AdmZip from 'adm-zip';
-import type { NotebookPage, NotebookWithPages } from '$lib/types';
+import type { NotebookPage, NotebookWithPages } from '#lib/types';
 
 function filenameBase(title: string, fallback: string): string {
 	return (

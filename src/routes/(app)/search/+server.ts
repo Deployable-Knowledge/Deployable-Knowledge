@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
-import { DEFAULT_ASSISTANT_CONFIG } from '$lib/constants';
-import { diagnosticEvents } from '$lib/server/diagnostics/events';
-import { toolRegistry } from '$lib/server/tools';
+import { DEFAULT_ASSISTANT_CONFIG } from '#lib/constants';
+import { diagnosticEvents } from '#lib/server/diagnostics/events';
+import { toolRegistry } from '#lib/server/tools';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ url }) => {

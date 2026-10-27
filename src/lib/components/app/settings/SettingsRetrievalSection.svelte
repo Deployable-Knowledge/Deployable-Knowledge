@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { RetrievalMode } from '$lib/enums';
-	import { Button } from '$lib/components/ui/button';
-	import * as ButtonGroup from '$lib/components/ui/button-group';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import { settingsStore } from '$lib/stores';
+	import { RetrievalMode } from '#lib/enums';
+	import { Button } from '#lib/components/ui/button';
+	import * as ButtonGroup from '#lib/components/ui/button-group';
+	import { Input } from '#lib/components/ui/input';
+	import { Label } from '#lib/components/ui/label';
+	import { settingsStore } from '#lib/stores';
 
 	const modes = [
 		{ value: RetrievalMode.SEMANTIC, label: 'Semantic' },

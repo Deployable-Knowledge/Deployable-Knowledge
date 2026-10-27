@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Textarea } from '$lib/components/ui/textarea';
-	import { settingsStore } from '$lib/stores';
+	import { Textarea } from '#lib/components/ui/textarea';
+	import { settingsStore } from '#lib/stores';
 </script>
 
 <section class="grid gap-2">

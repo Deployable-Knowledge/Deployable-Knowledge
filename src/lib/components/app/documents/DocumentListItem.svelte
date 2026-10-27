@@ -9,11 +9,11 @@
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import Video from '@lucide/svelte/icons/video';
 	import WandSparkles from '@lucide/svelte/icons/wand-sparkles';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import { Checkbox } from '$lib/components/ui/checkbox';
-	import { cn } from '$lib/components/ui/utils';
-	import { documentViewerHref } from '$lib/constants';
-	import type { DocumentRow } from '$lib/types';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import { Checkbox } from '#lib/components/ui/checkbox';
+	import { cn } from '#lib/components/ui/utils';
+	import { documentViewerHref } from '#lib/constants';
+	import type { DocumentRow } from '#lib/types';
 	import DocumentTagChip from './DocumentTagChip.svelte';
 	import TagFilterMenu from './TagFilterMenu.svelte';
 

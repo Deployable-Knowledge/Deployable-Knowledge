@@ -1,5 +1,5 @@
-import type { EmbeddingTask } from '$lib/constants';
-import type { CustomProviderRecord } from '$lib/server/database/schema';
+import type { EmbeddingTask } from '#lib/constants';
+import type { CustomProviderRecord } from '#lib/server/database/schema';
 import { EmbeddingProvider, normalizeVector } from './provider';
 
 export class OpenAiCompatibleEmbeddingProvider extends EmbeddingProvider {

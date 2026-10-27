@@ -5,34 +5,34 @@ import {
 	DEFAULT_PROMPT_TEMPLATE,
 	LOCAL_MODEL_PROVIDER_ID,
 	NEW_CHAT_TITLE
-} from '$lib/constants';
-import { RetrievalMode } from '$lib/enums';
+} from '#lib/constants';
+import { RetrievalMode } from '#lib/enums';
 import type {
 	AgentProgressEvent,
 	ApiChatMessageRequest,
 	ApiChatStreamEvent,
 	ApiNotebookChatMessageRequest,
 	AssistantProfile
-} from '$lib/types';
-import { runAgent } from '$lib/server/agent/runner';
-import { runAutoSearch } from '$lib/server/chat/auto-search';
+} from '#lib/types';
+import { runAgent } from '#lib/server/agent/runner';
+import { runAutoSearch } from '#lib/server/chat/auto-search';
 import {
 	createDocumentMessages,
 	createNotebookMessages
-} from '$lib/server/chat/build-chat-messages';
-import { generateChatTitle } from '$lib/server/chat/generate-chat-title';
-import { getNotebookSourceExcerpts } from '$lib/server/chat/notebook-context';
-import { db } from '$lib/server/database/database';
-import { promptTemplates } from '$lib/server/database/schema';
-import { diagnosticEvents } from '$lib/server/diagnostics/events';
-import { getActiveProfile } from '$lib/server/profiles/active-profile';
-import { findProvider } from '$lib/server/providers/registry';
-import type { Provider, ProviderChatOptions } from '$lib/server/providers/provider';
-import { DocumentsRepository, SessionsRepository } from '$lib/server/repositories';
-import { toolRegistry } from '$lib/server/tools';
-import { readGoals } from '$lib/server/tools/goals';
-import type { ToolExecutionContext } from '$lib/server/tools/types';
-import { ndjsonTaskResponse } from '$lib/server/utils/ndjson-response';
+} from '#lib/server/chat/build-chat-messages';
+import { generateChatTitle } from '#lib/server/chat/generate-chat-title';
+import { getNotebookSourceExcerpts } from '#lib/server/chat/notebook-context';
+import { db } from '#lib/server/database/database';
+import { promptTemplates } from '#lib/server/database/schema';
+import { diagnosticEvents } from '#lib/server/diagnostics/events';
+import { getActiveProfile } from '#lib/server/profiles/active-profile';
+import { findProvider } from '#lib/server/providers/registry';
+import type { Provider, ProviderChatOptions } from '#lib/server/providers/provider';
+import { DocumentsRepository, SessionsRepository } from '#lib/server/repositories';
+import { toolRegistry } from '#lib/server/tools';
+import { readGoals } from '#lib/server/tools/goals';
+import type { ToolExecutionContext } from '#lib/server/tools/types';
+import { ndjsonTaskResponse } from '#lib/server/utils/ndjson-response';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ params, request }) => {

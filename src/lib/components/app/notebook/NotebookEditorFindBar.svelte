@@ -2,8 +2,8 @@
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import ChevronUp from '@lucide/svelte/icons/chevron-up';
 	import X from '@lucide/svelte/icons/x';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import { Input } from '$lib/components/ui/input';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import { Input } from '#lib/components/ui/input';
 
 	interface Props {
 		activeIndex: number;

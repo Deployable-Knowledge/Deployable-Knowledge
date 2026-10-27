@@ -4,11 +4,11 @@
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import MessageSquarePlus from '@lucide/svelte/icons/message-square-plus';
 	import Square from '@lucide/svelte/icons/square';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import { Button } from '$lib/components/ui/button';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import { Textarea } from '$lib/components/ui/textarea';
-	import { REASONING_PRESETS, type ReasoningEffort } from '$lib/constants';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import { Button } from '#lib/components/ui/button';
+	import * as DropdownMenu from '#lib/components/ui/dropdown-menu';
+	import { Textarea } from '#lib/components/ui/textarea';
+	import { REASONING_PRESETS, type ReasoningEffort } from '#lib/constants';
 	import ChatModeMenu from './ChatModeMenu.svelte';
 	import ChatModelMenu from './ChatModelMenu.svelte';
 

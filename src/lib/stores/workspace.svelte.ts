@@ -1,20 +1,20 @@
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import { toast } from 'svelte-sonner';
 import {
 	DEFAULT_WINDOW_HEIGHT,
 	DEFAULT_WINDOW_PLACEMENTS,
 	LAYOUT_NAME_MAX_LENGTH
-} from '$lib/constants';
-import { WindowColumn } from '$lib/enums';
-import { WorkspaceLayoutsService } from '$lib/services';
+} from '#lib/constants';
+import { WindowColumn } from '#lib/enums';
+import { WorkspaceLayoutsService } from '#lib/services';
 import type {
 	WindowDropPlacement,
 	WindowPlacement,
 	WorkspaceLayout,
 	WorkspaceLayoutSnapshot,
 	WorkspaceLayoutStateResponse
-} from '$lib/types';
-import { createAutosave } from '$lib/utils';
+} from '#lib/types';
+import { createAutosave } from '#lib/utils';
 
 const SNAPSHOT_SAVE_DELAY = 400;
 

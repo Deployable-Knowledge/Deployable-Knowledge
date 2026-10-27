@@ -1,5 +1,5 @@
-import { EmbeddingService, ProvidersService } from '$lib/services';
-import type { ApiDocumentIngestProgress, ApiEmbeddingStatus, EmbeddingSettings } from '$lib/types';
+import { EmbeddingService, ProvidersService } from '#lib/services';
+import type { ApiDocumentIngestProgress, ApiEmbeddingStatus, EmbeddingSettings } from '#lib/types';
 
 function errorMessage(error: unknown, fallback: string): string {
 	return error instanceof Error ? error.message : fallback;

@@ -1,4 +1,4 @@
-import type { ApiReorderRequest } from '$lib/types';
+import type { ApiReorderRequest } from '#lib/types';
 
 export function parseReorderRequest(value: unknown): ApiReorderRequest | null {
 	if (!value || typeof value !== 'object' || Array.isArray(value)) return null;

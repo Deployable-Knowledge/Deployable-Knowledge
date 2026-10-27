@@ -3,19 +3,19 @@
 	import { onMount } from 'svelte';
 	import { Toaster } from 'svelte-sonner';
 	import packageMetadata from '../../../package.json';
-	import favicon from '$lib/assets/icon.svg';
-	import { DialogProgress } from '$lib/components/app/dialogs';
-	import { AppStartupOverlay } from '$lib/components/app/navigation';
-	import { SettingsDialog } from '$lib/components/app/settings';
-	import EngineHeartbeat from '$lib/components/app/navigation/EngineHeartbeat.svelte';
-	import * as Tooltip from '$lib/components/ui/tooltip';
+	import favicon from '#lib/assets/icon.svg';
+	import { DialogProgress } from '#lib/components/app/dialogs';
+	import { AppStartupOverlay } from '#lib/components/app/navigation';
+	import { SettingsDialog } from '#lib/components/app/settings';
+	import EngineHeartbeat from '#lib/components/app/navigation/EngineHeartbeat.svelte';
+	import * as Tooltip from '#lib/components/ui/tooltip';
 	import {
 		desktopWindowStore,
 		embeddingStore,
 		settingsStore,
 		themeStore,
 		workspaceStore
-	} from '$lib/stores';
+	} from '#lib/stores';
 
 	let { children } = $props();
 	let framesPainted = $state(false);

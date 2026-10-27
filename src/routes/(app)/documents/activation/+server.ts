@@ -1,8 +1,8 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { inArray } from 'drizzle-orm';
-import type { ApiDocumentActivationRequest } from '$lib/types';
-import { db } from '$lib/server/database/database';
-import { documents } from '$lib/server/database/schema';
+import type { ApiDocumentActivationRequest } from '#lib/types';
+import { db } from '#lib/server/database/database';
+import { documents } from '#lib/server/database/schema';
 
 export const PATCH: RequestHandler = async ({ request }) => {
 	const body = (await request.json()) as ApiDocumentActivationRequest;

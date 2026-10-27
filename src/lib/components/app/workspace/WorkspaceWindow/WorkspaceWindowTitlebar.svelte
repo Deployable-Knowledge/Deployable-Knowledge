@@ -3,7 +3,7 @@
 	import ChevronUp from '@lucide/svelte/icons/chevron-up';
 	import GripVertical from '@lucide/svelte/icons/grip-vertical';
 	import X from '@lucide/svelte/icons/x';
-	import { ActionIcon } from '$lib/components/app/actions';
+	import { ActionIcon } from '#lib/components/app/actions';
 	import type { Snippet } from 'svelte';
 
 	interface Props {

@@ -1,6 +1,6 @@
-import { API_SEARCH } from '$lib/constants';
-import type { ApiSearchResults } from '$lib/types';
-import { apiFetch } from '$lib/utils';
+import { API_SEARCH } from '#lib/constants';
+import type { ApiSearchResults } from '#lib/types';
+import { apiFetch } from '#lib/utils';
 
 export class SearchService {
 	static search(query: string, topK: number, documentIds: readonly string[] = []) {

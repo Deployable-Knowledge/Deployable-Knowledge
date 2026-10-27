@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Tags from '@lucide/svelte/icons/tags';
 	import X from '@lucide/svelte/icons/x';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import { Input } from '$lib/components/ui/input';
-	import type { DocumentSortMode } from '$lib/utils';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import { Input } from '#lib/components/ui/input';
+	import type { DocumentSortMode } from '#lib/utils';
 	import DocumentSortMenu from './DocumentSortMenu.svelte';
 	import DocumentTagChip from './DocumentTagChip.svelte';
 	import TagFilterMenu from './TagFilterMenu.svelte';

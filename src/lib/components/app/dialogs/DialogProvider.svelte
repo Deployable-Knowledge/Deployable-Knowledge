@@ -1,18 +1,18 @@
 <script lang="ts">
 	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
-	import { Button } from '$lib/components/ui/button';
-	import { Checkbox } from '$lib/components/ui/checkbox';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
+	import { Button } from '#lib/components/ui/button';
+	import { Checkbox } from '#lib/components/ui/checkbox';
+	import * as Dialog from '#lib/components/ui/dialog';
+	import { Input } from '#lib/components/ui/input';
+	import { Label } from '#lib/components/ui/label';
 	import {
 		CUSTOM_PROVIDER_TYPES,
 		PROVIDER_NAME_MAX_LENGTH,
 		type CustomProviderType
-	} from '$lib/constants';
-	import type { ApiCustomProviderInfo, ApiCustomProviderRequest } from '$lib/types';
-	import { normalizeProviderBaseUrl } from '$lib/utils';
+	} from '#lib/constants';
+	import type { ApiCustomProviderInfo, ApiCustomProviderRequest } from '#lib/types';
+	import { normalizeProviderBaseUrl } from '#lib/utils';
 	import { CUSTOM_PROVIDER_TYPE_OPTIONS } from './provider-types';
 
 	interface Props {

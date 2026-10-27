@@ -1,15 +1,15 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { randomUUID } from 'node:crypto';
 import { eq, max } from 'drizzle-orm';
-import type { ApiNotebookPageTitleRequest, ApiReorderResponse } from '$lib/types';
-import { db } from '$lib/server/database/database';
-import { notebooks, notebookPages, type NewNotebookPage } from '$lib/server/database/schema';
-import { parseReorderRequest } from '$lib/server/utils/reorder';
+import type { ApiNotebookPageTitleRequest, ApiReorderResponse } from '#lib/types';
+import { db } from '#lib/server/database/database';
+import { notebooks, notebookPages, type NewNotebookPage } from '#lib/server/database/schema';
+import { parseReorderRequest } from '#lib/server/utils/reorder';
 import {
 	loadNotebookState,
 	NotebooksRepository,
 	setActiveNotebook
-} from '$lib/server/repositories/notebooks.repository';
+} from '#lib/server/repositories/notebooks.repository';
 
 export const POST: RequestHandler = async ({ params, request }) => {
 	const notebookId = params.id;

@@ -1,20 +1,20 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { randomUUID } from 'node:crypto';
 import { max } from 'drizzle-orm';
-import type { ApiNotebookTitleRequest, ApiReorderResponse } from '$lib/types';
-import { db } from '$lib/server/database/database';
+import type { ApiNotebookTitleRequest, ApiReorderResponse } from '#lib/types';
+import { db } from '#lib/server/database/database';
 import {
 	notebooks,
 	notebookPages,
 	type NewNotebook,
 	type NewNotebookPage
-} from '$lib/server/database/schema';
+} from '#lib/server/database/schema';
 import {
 	loadNotebookState,
 	NotebooksRepository,
 	setActiveNotebook
-} from '$lib/server/repositories/notebooks.repository';
-import { parseReorderRequest } from '$lib/server/utils/reorder';
+} from '#lib/server/repositories/notebooks.repository';
+import { parseReorderRequest } from '#lib/server/utils/reorder';
 
 export const GET: RequestHandler = async () => {
 	return json(await loadNotebookState());

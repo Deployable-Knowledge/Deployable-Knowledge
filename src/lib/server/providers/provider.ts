@@ -1,4 +1,4 @@
-import type { LlamaGpuMode } from '$lib/types';
+import type { LlamaGpuMode } from '#lib/types';
 
 export type ProviderChatOptions = {
 	temperature?: number;

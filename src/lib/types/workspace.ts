@@ -1,4 +1,4 @@
-import type { WindowColumn } from '$lib/enums';
+import type { WindowColumn } from '#lib/enums';
 
 export interface WindowPlacement {
 	id: string;

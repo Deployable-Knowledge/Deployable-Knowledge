@@ -1,4 +1,4 @@
-import { ERROR_MESSAGES, HTTP_CODE_TO_STRING } from '$lib/constants';
+import { ERROR_MESSAGES, HTTP_CODE_TO_STRING } from '#lib/constants';
 
 export class ApiError extends Error {
 	constructor(

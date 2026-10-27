@@ -7,27 +7,27 @@
 	import Video from '@lucide/svelte/icons/video';
 	import { onDestroy, onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import { folderSyncEngine } from '$lib/client/folder-sync/sync-engine.svelte';
+	import { folderSyncEngine } from '#lib/client/folder-sync/sync-engine.svelte';
 	import {
 		DialogConfirmation,
 		DialogDocumentAutotagProgress,
 		DialogDocumentTagPicker,
 		DialogDocumentTextEntry,
 		DialogDocumentYoutubeEntry
-	} from '$lib/components/app/dialogs';
-	import { WorkspaceWindow } from '$lib/components/app/workspace/WorkspaceWindow';
-	import { Button } from '$lib/components/ui/button';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import * as Tooltip from '$lib/components/ui/tooltip';
-	import { INGESTABLE_FILE_ACCEPT, INGESTABLE_FILE_EXTENSIONS } from '$lib/constants';
-	import { documentsStore } from '$lib/stores';
-	import type { ApiDocumentSyncResult, ApiSyncedFolder, DocumentRow } from '$lib/types';
+	} from '#lib/components/app/dialogs';
+	import { WorkspaceWindow } from '#lib/components/app/workspace/WorkspaceWindow';
+	import { Button } from '#lib/components/ui/button';
+	import * as DropdownMenu from '#lib/components/ui/dropdown-menu';
+	import * as Tooltip from '#lib/components/ui/tooltip';
+	import { INGESTABLE_FILE_ACCEPT, INGESTABLE_FILE_EXTENSIONS } from '#lib/constants';
+	import { documentsStore } from '#lib/stores';
+	import type { ApiDocumentSyncResult, ApiSyncedFolder, DocumentRow } from '#lib/types';
 	import {
 		FOLDER_SYNC_UNSUPPORTED_MESSAGE,
 		pickDirectory,
 		pickFiles,
 		supportsFolderSync
-	} from '$lib/utils';
+	} from '#lib/utils';
 	import DocumentBulkActionsBar from './DocumentBulkActionsBar.svelte';
 	import DocumentFilterBar from './DocumentFilterBar.svelte';
 	import DocumentList from './DocumentList.svelte';

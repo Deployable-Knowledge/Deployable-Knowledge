@@ -2,7 +2,7 @@
 	import Check from '@lucide/svelte/icons/check';
 	import Minus from '@lucide/svelte/icons/minus';
 	import { ContextMenu as ContextMenuPrimitive } from 'bits-ui';
-	import { cn, type WithoutChildrenOrChild } from '$lib/components/ui/utils';
+	import { cn, type WithoutChildrenOrChild } from '#lib/components/ui/utils';
 	import type { Snippet } from 'svelte';
 
 	let {

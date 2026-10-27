@@ -1,13 +1,13 @@
 import { error, json } from '@sveltejs/kit';
-import { db } from '$lib/server/database/database';
-import { documents } from '$lib/server/database/schema';
+import { db } from '#lib/server/database/database';
+import { documents } from '#lib/server/database/schema';
 import {
 	ingestFileBuffer,
 	ingestTextContent,
 	ingestYoutubeUrl
-} from '$lib/server/documents/ingest-file';
-import { ingestStreamResponse, type IngestTask } from '$lib/server/documents/ingest-response';
-import { removeDocument } from '$lib/server/documents/remove-document';
+} from '#lib/server/documents/ingest-file';
+import { ingestStreamResponse, type IngestTask } from '#lib/server/documents/ingest-response';
+import { removeDocument } from '#lib/server/documents/remove-document';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {

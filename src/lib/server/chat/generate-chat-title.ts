@@ -1,6 +1,6 @@
-import { NEW_CHAT_TITLE } from '$lib/constants';
-import { TITLE_GENERATION_PROMPT } from '$lib/server/agent/prompts';
-import type { Provider, ProviderChatOptions } from '$lib/server/providers/provider';
+import { NEW_CHAT_TITLE } from '#lib/constants';
+import { TITLE_GENERATION_PROMPT } from '#lib/server/agent/prompts';
+import type { Provider, ProviderChatOptions } from '#lib/server/providers/provider';
 
 // A title is a handful of tokens, but it runs as a second generation and holds
 // the single local-model lock while it does. Inheriting the conversation's

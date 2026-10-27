@@ -1,11 +1,11 @@
 <script lang="ts">
 	import Cpu from '@lucide/svelte/icons/cpu';
 	import { onMount } from 'svelte';
-	import { Label } from '$lib/components/ui/label';
-	import * as Select from '$lib/components/ui/select';
-	import { LOCAL_MODEL_PROVIDER_ID } from '$lib/constants';
-	import { localModelsStore, settingsStore } from '$lib/stores';
-	import type { LlamaGpuMode } from '$lib/types';
+	import { Label } from '#lib/components/ui/label';
+	import * as Select from '#lib/components/ui/select';
+	import { LOCAL_MODEL_PROVIDER_ID } from '#lib/constants';
+	import { localModelsStore, settingsStore } from '#lib/stores';
+	import type { LlamaGpuMode } from '#lib/types';
 	import SettingsFieldGroup from './SettingsFieldGroup.svelte';
 	import SettingsVulkanDeviceField from './SettingsVulkanDeviceField.svelte';
 

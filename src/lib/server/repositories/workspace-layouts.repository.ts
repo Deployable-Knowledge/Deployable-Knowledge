@@ -1,17 +1,17 @@
 import { randomUUID } from 'node:crypto';
 import { asc, eq, max } from 'drizzle-orm';
 
-import { DEFAULT_LAYOUT_NAME } from '$lib/constants';
-import type { WorkspaceLayoutStateResponse } from '$lib/types';
-import { db } from '$lib/server/database/database';
-import { getActiveLayoutId, setActiveLayoutId } from '$lib/server/database/app-state';
+import { DEFAULT_LAYOUT_NAME } from '#lib/constants';
+import type { WorkspaceLayoutStateResponse } from '#lib/types';
+import { db } from '#lib/server/database/database';
+import { getActiveLayoutId, setActiveLayoutId } from '#lib/server/database/app-state';
 import {
 	workspaceLayouts,
 	type WorkspaceLayout,
 	type NewWorkspaceLayout
-} from '$lib/server/database/schema';
-import { defaultLayoutSnapshot } from '$lib/server/workspace/layout-values';
-import { hasExactIds } from '$lib/server/utils/reorder';
+} from '#lib/server/database/schema';
+import { defaultLayoutSnapshot } from '#lib/server/workspace/layout-values';
+import { hasExactIds } from '#lib/server/utils/reorder';
 
 export class WorkspaceLayoutsRepository {
 	static list() {

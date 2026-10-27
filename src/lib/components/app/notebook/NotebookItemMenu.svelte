@@ -4,8 +4,8 @@
 	import Pencil from '@lucide/svelte/icons/pencil';
 	import MoveRight from '@lucide/svelte/icons/move-right';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import * as DropdownMenu from '#lib/components/ui/dropdown-menu';
 
 	interface Props {
 		exportDisabled?: boolean;

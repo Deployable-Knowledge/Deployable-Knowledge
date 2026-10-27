@@ -1,7 +1,7 @@
 <script lang="ts">
-	import * as Empty from '$lib/components/ui/empty';
-	import { ScrollArea } from '$lib/components/ui/scroll-area';
-	import type { NotebookWithPages } from '$lib/types';
+	import * as Empty from '#lib/components/ui/empty';
+	import { ScrollArea } from '#lib/components/ui/scroll-area';
+	import type { NotebookWithPages } from '#lib/types';
 	import NotebookListItem from './NotebookListItem.svelte';
 	import VerticalReorderList from './VerticalReorderList.svelte';
 

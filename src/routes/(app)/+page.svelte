@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { WorkspaceColumns, WorkspaceTabs } from '$lib/components/app/workspace';
+	import { WorkspaceColumns, WorkspaceTabs } from '#lib/components/app/workspace';
 </script>
 
 <svelte:head>

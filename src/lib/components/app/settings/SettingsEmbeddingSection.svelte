@@ -3,21 +3,21 @@
 	import RefreshCw from '@lucide/svelte/icons/refresh-cw';
 	import ScanSearch from '@lucide/svelte/icons/scan-search';
 	import { onMount } from 'svelte';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import { DialogConfirmation } from '$lib/components/app/dialogs';
-	import { Button } from '$lib/components/ui/button';
-	import * as ButtonGroup from '$lib/components/ui/button-group';
-	import { Label } from '$lib/components/ui/label';
-	import * as Select from '$lib/components/ui/select';
-	import { Skeleton } from '$lib/components/ui/skeleton';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import { DialogConfirmation } from '#lib/components/app/dialogs';
+	import { Button } from '#lib/components/ui/button';
+	import * as ButtonGroup from '#lib/components/ui/button-group';
+	import { Label } from '#lib/components/ui/label';
+	import * as Select from '#lib/components/ui/select';
+	import { Skeleton } from '#lib/components/ui/skeleton';
 	import {
 		EMBEDDING_DEVICES,
 		LOCAL_EMBEDDING_MODELS,
 		LOCAL_MODEL_PROVIDER_ID,
 		type EmbeddingDevice
-	} from '$lib/constants';
-	import { embeddingStore } from '$lib/stores';
-	import type { ApiEmbeddingStatus, EmbeddingBackend, EmbeddingSettings } from '$lib/types';
+	} from '#lib/constants';
+	import { embeddingStore } from '#lib/stores';
+	import type { ApiEmbeddingStatus, EmbeddingBackend, EmbeddingSettings } from '#lib/types';
 	import { catalogModelCard } from './local-model-catalog';
 	import SettingsFieldGroup from './SettingsFieldGroup.svelte';
 	import SettingsModelCard from './SettingsModelCard.svelte';

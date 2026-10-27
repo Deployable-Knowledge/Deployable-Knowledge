@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import { DialogConfirmation } from '$lib/components/app/dialogs';
-	import { WorkspaceWindow } from '$lib/components/app/workspace/WorkspaceWindow';
-	import { Button } from '$lib/components/ui/button';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import { Input } from '$lib/components/ui/input';
-	import { chatStore, sessionsStore } from '$lib/stores';
-	import type { Session } from '$lib/types';
+	import { DialogConfirmation } from '#lib/components/app/dialogs';
+	import { WorkspaceWindow } from '#lib/components/app/workspace/WorkspaceWindow';
+	import { Button } from '#lib/components/ui/button';
+	import * as Dialog from '#lib/components/ui/dialog';
+	import { Input } from '#lib/components/ui/input';
+	import { chatStore, sessionsStore } from '#lib/stores';
+	import type { Session } from '#lib/types';
 	import ChatHistoryItem from './ChatHistoryItem.svelte';
 
 	interface Props {

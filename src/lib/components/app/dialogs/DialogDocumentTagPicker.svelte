@@ -1,7 +1,7 @@
 <script lang="ts">
-	import TagPaletteItem from '$lib/components/app/documents/TagPaletteItem.svelte';
-	import { Button } from '$lib/components/ui/button';
-	import * as Dialog from '$lib/components/ui/dialog';
+	import TagPaletteItem from '#lib/components/app/documents/TagPaletteItem.svelte';
+	import { Button } from '#lib/components/ui/button';
+	import * as Dialog from '#lib/components/ui/dialog';
 
 	interface Props {
 		onOpenChange: (open: boolean) => void;

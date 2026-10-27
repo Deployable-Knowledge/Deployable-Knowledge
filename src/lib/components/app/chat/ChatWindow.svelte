@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import { WorkspaceWindow } from '$lib/components/app/workspace/WorkspaceWindow';
+	import { WorkspaceWindow } from '#lib/components/app/workspace/WorkspaceWindow';
 	import {
 		chatStore,
 		documentsStore,
 		notebooksStore,
 		sessionsStore,
 		settingsStore
-	} from '$lib/stores';
-	import type { ApiChatMessageRequest, SessionMessage } from '$lib/types';
+	} from '#lib/stores';
+	import type { ApiChatMessageRequest, SessionMessage } from '#lib/types';
 	import ChatForm from './ChatForm.svelte';
 	import ChatGoalsBar from './ChatGoalsBar.svelte';
 	import ChatMessageList from './ChatMessageList.svelte';

@@ -4,10 +4,10 @@ import type {
 	ApiDocumentTagAssignmentRequest,
 	ApiDocumentTagRequest,
 	ApiDocumentTagsResponse
-} from '$lib/types';
-import { DOCUMENT_TAG_PATTERN, normalizeDocumentTag } from '$lib/utils';
-import { db } from '$lib/server/database/database';
-import { documentTags, tags } from '$lib/server/database/schema';
+} from '#lib/types';
+import { DOCUMENT_TAG_PATTERN, normalizeDocumentTag } from '#lib/utils';
+import { db } from '#lib/server/database/database';
+import { documentTags, tags } from '#lib/server/database/schema';
 
 async function listTags(): Promise<string[]> {
 	const rows = await db.select({ name: tags.name }).from(tags).orderBy(asc(tags.name));

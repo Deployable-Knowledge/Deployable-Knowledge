@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Spring, prefersReducedMotion } from 'svelte/motion';
-	import * as Empty from '$lib/components/ui/empty';
-	import { ScrollArea } from '$lib/components/ui/scroll-area';
-	import type { AgentTraceItem, SessionMessage } from '$lib/types';
+	import * as Empty from '#lib/components/ui/empty';
+	import { ScrollArea } from '#lib/components/ui/scroll-area';
+	import type { AgentTraceItem, SessionMessage } from '#lib/types';
 	import ChatMessage from './ChatMessage.svelte';
 	import ChatStreamingIndicator from './ChatStreamingIndicator.svelte';
 

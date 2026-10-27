@@ -1,7 +1,7 @@
 import type { AgentTool, ToolExecutionContext } from './types';
 import { createToolResult } from './result';
 import { clampText, readObject } from '../utils/values';
-import type { AgentGoal } from '$lib/types';
+import type { AgentGoal } from '#lib/types';
 
 const MAX_GOALS = 30;
 const MAX_GOAL_LENGTH = 300;

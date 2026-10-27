@@ -1,8 +1,8 @@
 <script lang="ts">
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import { Input } from '$lib/components/ui/input';
-	import type { NotebookSourceItem } from '$lib/types';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import { Input } from '#lib/components/ui/input';
+	import type { NotebookSourceItem } from '#lib/types';
 	import NotebookHeaderActions from './NotebookHeaderActions.svelte';
 	import type { NotebookView } from './notebook-types';
 

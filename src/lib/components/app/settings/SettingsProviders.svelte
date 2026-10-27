@@ -4,17 +4,17 @@
 	import Plus from '@lucide/svelte/icons/plus';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import { toast } from 'svelte-sonner';
-	import { ActionIcon } from '$lib/components/app/actions';
+	import { ActionIcon } from '#lib/components/app/actions';
 	import {
 		CUSTOM_PROVIDER_TYPE_OPTIONS,
 		DialogConfirmation,
 		DialogProvider
-	} from '$lib/components/app/dialogs';
-	import { Badge } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button';
-	import type { CustomProviderType } from '$lib/constants';
-	import { settingsStore } from '$lib/stores';
-	import type { ApiCustomProviderInfo, ApiCustomProviderRequest } from '$lib/types';
+	} from '#lib/components/app/dialogs';
+	import { Badge } from '#lib/components/ui/badge';
+	import { Button } from '#lib/components/ui/button';
+	import type { CustomProviderType } from '#lib/constants';
+	import { settingsStore } from '#lib/stores';
+	import type { ApiCustomProviderInfo, ApiCustomProviderRequest } from '#lib/types';
 	import SettingsFieldGroup from './SettingsFieldGroup.svelte';
 
 	let editorOpen = $state(false);

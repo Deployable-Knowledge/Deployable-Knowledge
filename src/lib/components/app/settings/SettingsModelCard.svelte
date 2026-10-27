@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Box from '@lucide/svelte/icons/box';
-	import { Badge } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button';
-	import { Progress } from '$lib/components/ui/progress';
+	import { Badge } from '#lib/components/ui/badge';
+	import { Button } from '#lib/components/ui/button';
+	import { Progress } from '#lib/components/ui/progress';
 	import type { LocalModelCardData } from './local-model-catalog';
 
 	interface Props {

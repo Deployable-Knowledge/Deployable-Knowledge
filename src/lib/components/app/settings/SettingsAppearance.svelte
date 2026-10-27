@@ -3,11 +3,11 @@
 	import Monitor from '@lucide/svelte/icons/monitor';
 	import Moon from '@lucide/svelte/icons/moon';
 	import Sun from '@lucide/svelte/icons/sun';
-	import { Button } from '$lib/components/ui/button';
-	import * as ButtonGroup from '$lib/components/ui/button-group';
-	import { Label } from '$lib/components/ui/label';
-	import { THEME_COLORS, THEME_MODES, type ThemeColor, type ThemeMode } from '$lib/constants';
-	import { themeStore } from '$lib/stores';
+	import { Button } from '#lib/components/ui/button';
+	import * as ButtonGroup from '#lib/components/ui/button-group';
+	import { Label } from '#lib/components/ui/label';
+	import { THEME_COLORS, THEME_MODES, type ThemeColor, type ThemeMode } from '#lib/constants';
+	import { themeStore } from '#lib/stores';
 
 	const colorOptions: Record<ThemeColor, { label: string; swatch: string }> = {
 		classic: { label: 'Classic', swatch: 'bg-sky-500' },

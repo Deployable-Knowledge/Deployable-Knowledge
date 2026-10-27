@@ -5,14 +5,14 @@
 	import RefreshCw from '@lucide/svelte/icons/refresh-cw';
 	import { onMount, tick } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import { Badge, type BadgeVariant } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button';
-	import { ScrollArea } from '$lib/components/ui/scroll-area';
-	import { DiagnosticsService } from '$lib/services';
-	import { diagnosticsStore } from '$lib/stores';
-	import type { ApiDiagnosticsSnapshot, DiagnosticEvent, DiagnosticLevel } from '$lib/types';
-	import { formatBytes } from '$lib/utils';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import { Badge, type BadgeVariant } from '#lib/components/ui/badge';
+	import { Button } from '#lib/components/ui/button';
+	import { ScrollArea } from '#lib/components/ui/scroll-area';
+	import { DiagnosticsService } from '#lib/services';
+	import { diagnosticsStore } from '#lib/stores';
+	import type { ApiDiagnosticsSnapshot, DiagnosticEvent, DiagnosticLevel } from '#lib/types';
+	import { formatBytes } from '#lib/utils';
 
 	type LevelFilter = 'all' | DiagnosticLevel;
 	type HealthValue = ApiDiagnosticsSnapshot['health'][keyof ApiDiagnosticsSnapshot['health']];

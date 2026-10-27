@@ -3,14 +3,14 @@
 	import { resolve } from '$app/paths';
 	import Check from '@lucide/svelte/icons/check';
 	import Eye from '@lucide/svelte/icons/eye';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import { windowDefinitions } from '$lib/components/app/workspace/window-registry';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import { workspaceStore } from '$lib/stores';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import { windowDefinitions } from '#lib/components/app/workspace/window-registry';
+	import * as DropdownMenu from '#lib/components/ui/dropdown-menu';
+	import { workspaceStore } from '#lib/stores';
 
 	function showWindow(id: string): void {
 		workspaceStore.showWindow(id);
-		void goto(resolve('/'));
+		void goto(resolve('/(app)'));
 	}
 </script>
 

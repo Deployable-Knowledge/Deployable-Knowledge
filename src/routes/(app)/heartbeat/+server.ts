@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { databaseClient } from '$lib/server/database/database';
+import { databaseClient } from '#lib/server/database/database';
 import type { RequestHandler } from './$types';
 
 const NO_CACHE_HEADERS = {

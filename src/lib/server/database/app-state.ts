@@ -1,9 +1,9 @@
 import { eq } from 'drizzle-orm';
 
-import { DEFAULT_EMBEDDING_SETTINGS, parseThemeColor, parseThemeMode } from '$lib/constants';
-import type { EmbeddingSettings, ThemeSettings } from '$lib/types';
-import { db } from '$lib/server/database/database';
-import { appState } from '$lib/server/database/schema';
+import { DEFAULT_EMBEDDING_SETTINGS, parseThemeColor, parseThemeMode } from '#lib/constants';
+import type { EmbeddingSettings, ThemeSettings } from '#lib/types';
+import { db } from '#lib/server/database/database';
+import { appState } from '#lib/server/database/schema';
 
 const APP_STATE_ID = 'app';
 

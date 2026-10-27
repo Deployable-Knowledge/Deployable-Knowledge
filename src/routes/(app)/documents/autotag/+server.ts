@@ -1,10 +1,10 @@
 import { error } from '@sveltejs/kit';
 import { asc } from 'drizzle-orm';
-import type { ApiDocumentAutotagEvent } from '$lib/types';
-import { db } from '$lib/server/database/database';
-import { tags } from '$lib/server/database/schema';
-import { autotagDocuments } from '$lib/server/documents/autotag';
-import { ndjsonTaskResponse } from '$lib/server/utils/ndjson-response';
+import type { ApiDocumentAutotagEvent } from '#lib/types';
+import { db } from '#lib/server/database/database';
+import { tags } from '#lib/server/database/schema';
+import { autotagDocuments } from '#lib/server/documents/autotag';
+import { ndjsonTaskResponse } from '#lib/server/utils/ndjson-response';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {

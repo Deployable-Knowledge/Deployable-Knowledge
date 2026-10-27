@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { asc, eq } from 'drizzle-orm';
-import { db } from '$lib/server/database/database';
-import { customProviders, type NewCustomProviderRecord } from '$lib/server/database/schema';
+import { db } from '#lib/server/database/database';
+import { customProviders, type NewCustomProviderRecord } from '#lib/server/database/schema';
 
 type CustomProviderValues = Pick<NewCustomProviderRecord, 'type' | 'name' | 'baseUrl' | 'apiKey'>;
 

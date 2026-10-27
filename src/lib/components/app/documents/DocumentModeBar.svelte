@@ -1,9 +1,9 @@
 <script lang="ts">
 	import PowerOff from '@lucide/svelte/icons/power-off';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import { Button } from '$lib/components/ui/button';
-	import * as ButtonGroup from '$lib/components/ui/button-group';
-	import type { DocumentListMode } from '$lib/types';
+	import { Button } from '#lib/components/ui/button';
+	import * as ButtonGroup from '#lib/components/ui/button-group';
+	import type { DocumentListMode } from '#lib/types';
 
 	interface Props {
 		busy?: boolean;

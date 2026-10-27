@@ -5,7 +5,7 @@
 	import PowerOff from '@lucide/svelte/icons/power-off';
 	import Tag from '@lucide/svelte/icons/tag';
 	import TagOff from '@lucide/svelte/icons/tag-x';
-	import { Button } from '$lib/components/ui/button';
+	import { Button } from '#lib/components/ui/button';
 
 	interface Props {
 		count: number;

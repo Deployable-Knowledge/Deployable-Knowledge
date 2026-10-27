@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Slider as SliderPrimitive } from 'bits-ui';
-	import { cn } from '$lib/components/ui/utils';
+	import { cn } from '#lib/components/ui/utils';
 
 	interface Props {
 		'aria-describedby'?: string;

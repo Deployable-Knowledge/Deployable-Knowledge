@@ -2,11 +2,11 @@
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import Download from '@lucide/svelte/icons/download';
 	import Settings from '@lucide/svelte/icons/settings';
-	import { Button } from '$lib/components/ui/button';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import { Progress } from '$lib/components/ui/progress';
-	import { LOCAL_MODEL_PROVIDER_ID, LOCAL_MODELS, findLocalModelByFile } from '$lib/constants';
-	import { localModelsStore, settingsDialogStore, settingsStore } from '$lib/stores';
+	import { Button } from '#lib/components/ui/button';
+	import * as DropdownMenu from '#lib/components/ui/dropdown-menu';
+	import { Progress } from '#lib/components/ui/progress';
+	import { LOCAL_MODEL_PROVIDER_ID, LOCAL_MODELS, findLocalModelByFile } from '#lib/constants';
+	import { localModelsStore, settingsDialogStore, settingsStore } from '#lib/stores';
 
 	interface Props {
 		disabled?: boolean;

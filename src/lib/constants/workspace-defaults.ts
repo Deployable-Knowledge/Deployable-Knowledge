@@ -1,5 +1,5 @@
-import { WindowColumn } from '$lib/enums';
-import type { WindowPlacement } from '$lib/types/workspace';
+import { WindowColumn } from '#lib/enums';
+import type { WindowPlacement } from '#lib/types/workspace';
 
 export const WORKSPACE_WINDOW_IDS = {
 	CHAT: 'chat-window',

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { cn } from '$lib/components/ui/utils';
+	import { cn } from '#lib/components/ui/utils';
 	import WorkspaceWindowTitlebar from './WorkspaceWindowTitlebar.svelte';
 	import type { Snippet } from 'svelte';
 

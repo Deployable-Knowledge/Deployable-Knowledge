@@ -1,13 +1,13 @@
-import { CHAT_HISTORY_MESSAGE_LIMIT } from '$lib/constants';
-import type { SessionMessage } from '$lib/server/database/schema';
-import type { ProviderChatMessage } from '$lib/server/providers/provider';
-import { toolRegistry } from '$lib/server/tools';
+import { CHAT_HISTORY_MESSAGE_LIMIT } from '#lib/constants';
+import type { SessionMessage } from '#lib/server/database/schema';
+import type { ProviderChatMessage } from '#lib/server/providers/provider';
+import { toolRegistry } from '#lib/server/tools';
 import {
 	AGENT_SYSTEM_PROMPT,
 	CONVERSATIONAL_SYSTEM_PROMPT,
 	DOCUMENT_CONTEXT_SYSTEM_PROMPT,
 	REFERENCE_MATERIAL_INSTRUCTION
-} from '$lib/server/agent/prompts';
+} from '#lib/server/agent/prompts';
 
 type ChatInput = {
 	history: SessionMessage[];

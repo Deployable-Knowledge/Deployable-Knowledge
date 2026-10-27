@@ -1,9 +1,9 @@
 import { error, json } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 
-import { db } from '$lib/server/database/database';
-import { setActiveProfileId } from '$lib/server/database/app-state';
-import { profiles, type AssistantProfileActivationResponse } from '$lib/server/database/schema';
+import { db } from '#lib/server/database/database';
+import { setActiveProfileId } from '#lib/server/database/app-state';
+import { profiles, type AssistantProfileActivationResponse } from '#lib/server/database/schema';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ params }) => {

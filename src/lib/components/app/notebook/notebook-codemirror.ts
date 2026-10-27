@@ -25,7 +25,7 @@ import {
 	WidgetType
 } from '@codemirror/view';
 import { tags } from '@lezer/highlight';
-import { renderMarkdown } from '$lib/utils/markdown';
+import { renderMarkdown } from '#lib/utils/markdown';
 import type { RibbonCommand } from './notebook-editing';
 
 export interface NotebookEditorHooks {

@@ -3,8 +3,8 @@
 	import Layers3 from '@lucide/svelte/icons/layers-3';
 	import Repeat2 from '@lucide/svelte/icons/repeat-2';
 	import Wrench from '@lucide/svelte/icons/wrench';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import type { AgentTraceItem, StoredAgentRun } from '$lib/types';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import type { AgentTraceItem, StoredAgentRun } from '#lib/types';
 
 	interface Props {
 		agent?: StoredAgentRun;

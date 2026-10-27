@@ -1,11 +1,11 @@
 import { and, count, eq } from 'drizzle-orm';
-import { databaseClient, db } from '$lib/server/database/database';
+import { databaseClient, db } from '#lib/server/database/database';
 import {
 	documentChunks,
 	documents,
 	type Document,
 	type DocumentChunk
-} from '$lib/server/database/schema';
+} from '#lib/server/database/schema';
 
 export type ChunkWindowChunk = {
 	chunkId: string;

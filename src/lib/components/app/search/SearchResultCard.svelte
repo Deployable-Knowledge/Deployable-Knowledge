@@ -4,10 +4,10 @@
 	import BookmarkPlus from '@lucide/svelte/icons/bookmark-plus';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
 	import Video from '@lucide/svelte/icons/video';
-	import { Button } from '$lib/components/ui/button';
-	import { documentViewerHref } from '$lib/constants';
-	import type { ApiSearchMatch } from '$lib/types';
-	import { describeDocumentLocation } from '$lib/utils';
+	import { Button } from '#lib/components/ui/button';
+	import { documentViewerHref } from '#lib/constants';
+	import type { ApiSearchMatch } from '#lib/types';
+	import { describeDocumentLocation } from '#lib/utils';
 
 	interface Props {
 		index?: number;

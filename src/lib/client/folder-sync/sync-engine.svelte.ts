@@ -1,10 +1,10 @@
 import { SvelteMap } from 'svelte/reactivity';
-import { browser } from '$app/environment';
-import { isIngestableFileName } from '$lib/constants/ingest-formats';
-import { DocumentsService } from '$lib/services';
-import { documentsStore } from '$lib/stores/documents.svelte';
-import type { ApiDocumentSyncResult, ApiSyncFileStat, PendingDocument } from '$lib/types';
-import { supportsFileObserver, supportsFolderSync } from '$lib/utils/fs-access';
+import { browser } from '$app/env';
+import { isIngestableFileName } from '#lib/constants/ingest-formats';
+import { DocumentsService } from '#lib/services';
+import { documentsStore } from '#lib/stores/documents.svelte';
+import type { ApiDocumentSyncResult, ApiSyncFileStat, PendingDocument } from '#lib/types';
+import { supportsFileObserver, supportsFolderSync } from '#lib/utils/fs-access';
 import { deleteFolder, listFolders, putFolder } from './handle-store';
 import { matchRenames } from './rename-plan';
 import { collectFiles, type WalkedFile } from './walk';

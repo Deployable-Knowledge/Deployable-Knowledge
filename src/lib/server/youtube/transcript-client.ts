@@ -1,5 +1,5 @@
 import { Innertube, Log } from 'youtubei.js';
-import type { TranscriptSegment } from '$lib/server/transcription/transcription-model';
+import type { TranscriptSegment } from '#lib/server/transcription/transcription-model';
 import { mintVideoPoToken } from './po-token';
 
 const CAPTION_TIMEOUT_MS = 30_000;

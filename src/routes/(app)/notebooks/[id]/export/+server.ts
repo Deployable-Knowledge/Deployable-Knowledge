@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
-import { notebookZip, notebookZipFilename } from '$lib/server/notebooks/export-notebook';
-import { NotebooksRepository } from '$lib/server/repositories';
+import { notebookZip, notebookZipFilename } from '#lib/server/notebooks/export-notebook';
+import { NotebooksRepository } from '#lib/server/repositories';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ params }) => {

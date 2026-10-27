@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { paneResize } from '$lib/actions';
-	import * as Tooltip from '$lib/components/ui/tooltip';
-	import { workspaceStore } from '$lib/stores';
+	import { paneResize } from '#lib/actions';
+	import * as Tooltip from '#lib/components/ui/tooltip';
+	import { workspaceStore } from '#lib/stores';
 
 	interface Props {
 		after: { id: string; collapsed: boolean };

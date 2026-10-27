@@ -1,5 +1,5 @@
-import { LOCAL_MODEL_PROVIDER_ID } from '$lib/constants';
-import { CustomProvidersRepository } from '$lib/server/repositories';
+import { LOCAL_MODEL_PROVIDER_ID } from '#lib/constants';
+import { CustomProvidersRepository } from '#lib/server/repositories';
 import { LlamaCppEmbeddingProvider } from './llamacpp';
 import { OpenAiCompatibleEmbeddingProvider } from './openai-compatible';
 import type { EmbeddingProvider } from './provider';

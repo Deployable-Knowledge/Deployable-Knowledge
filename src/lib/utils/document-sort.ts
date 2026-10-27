@@ -1,4 +1,4 @@
-import type { DocumentSortMode } from '$lib/types';
+import type { DocumentSortMode } from '#lib/types';
 
 export type { DocumentSortMode };
 

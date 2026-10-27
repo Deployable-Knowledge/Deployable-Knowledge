@@ -6,14 +6,14 @@ import type {
 } from '../providers/provider';
 import { toolRegistry } from '../tools';
 import type { ToolExecutionContext, ToolExecutionResult } from '../tools/types';
-import type { AgentOutput, AgentProgressEvent, AgentTraceItem } from '$lib/types';
-import { createReasoningTrace, createToolTrace } from '$lib/utils/agent-trace';
+import type { AgentOutput, AgentProgressEvent, AgentTraceItem } from '#lib/types';
+import { createReasoningTrace, createToolTrace } from '#lib/utils/agent-trace';
 import {
 	AGENT_MAX_TURNS_MIN,
 	CONTEXT_WINDOW_TOKENS_MAX,
 	DEFAULT_ASSISTANT_CONFIG,
 	ESTIMATED_CHARACTERS_PER_TOKEN
-} from '$lib/constants';
+} from '#lib/constants';
 import { readObject } from '../utils/values';
 import { createGoalNudger, unfinishedGoals } from '../tools/goals';
 import {

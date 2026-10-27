@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { asc, eq } from 'drizzle-orm';
-import type { ApiNotebookSourcesRequest } from '$lib/types';
-import { db } from '$lib/server/database/database';
+import type { ApiNotebookSourcesRequest } from '#lib/types';
+import { db } from '#lib/server/database/database';
 import {
 	documentChunks,
 	documents,
@@ -10,7 +10,7 @@ import {
 	type Document,
 	type DocumentChunk,
 	type NotebookSource
-} from '$lib/server/database/schema';
+} from '#lib/server/database/schema';
 
 const PREVIEW_CHARS = 220;
 

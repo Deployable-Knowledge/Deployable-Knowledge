@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { and, asc, eq, max } from 'drizzle-orm';
-import type { NotebookStateResponse } from '$lib/types';
-import { db } from '$lib/server/database/database';
+import type { NotebookStateResponse } from '#lib/types';
+import { db } from '#lib/server/database/database';
 import {
 	notebookPages,
 	notebookState,
@@ -12,8 +12,8 @@ import {
 	type Notebook,
 	type NotebookPage,
 	type NotebookWithPages
-} from '$lib/server/database/schema';
-import { hasExactIds } from '$lib/server/utils/reorder';
+} from '#lib/server/database/schema';
+import { hasExactIds } from '#lib/server/utils/reorder';
 
 export interface NotebookPageInput {
 	content: string;

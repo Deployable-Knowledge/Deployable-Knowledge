@@ -2,14 +2,14 @@
 	import Plus from '@lucide/svelte/icons/plus';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import { toast } from 'svelte-sonner';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import { DialogConfirmation } from '$lib/components/app/dialogs';
-	import { Button } from '$lib/components/ui/button';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import * as Select from '$lib/components/ui/select';
-	import { settingsStore } from '$lib/stores';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import { DialogConfirmation } from '#lib/components/app/dialogs';
+	import { Button } from '#lib/components/ui/button';
+	import * as Dialog from '#lib/components/ui/dialog';
+	import { Input } from '#lib/components/ui/input';
+	import { Label } from '#lib/components/ui/label';
+	import * as Select from '#lib/components/ui/select';
+	import { settingsStore } from '#lib/stores';
 	import { profileDisplayName } from './settings-profiles';
 
 	let createOpen = $state(false);

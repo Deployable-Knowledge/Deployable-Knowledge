@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { TranscriptChunkRow } from '$lib/types';
+	import type { TranscriptChunkRow } from '#lib/types';
 	import { formatTimestamp } from './timestamp';
 
 	interface Props {

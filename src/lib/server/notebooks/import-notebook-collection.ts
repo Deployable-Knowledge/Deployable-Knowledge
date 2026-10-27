@@ -1,6 +1,6 @@
 import { extname } from 'node:path';
-import { NOTEBOOK_TEXT_CHARACTER_LIMIT } from '$lib/constants';
-import { parseNotebookPageContent } from '$lib/server/notebooks/import-notebook-page';
+import { NOTEBOOK_TEXT_CHARACTER_LIMIT } from '#lib/constants';
+import { parseNotebookPageContent } from '#lib/server/notebooks/import-notebook-page';
 
 const MAX_COLLECTION_BYTES = NOTEBOOK_TEXT_CHARACTER_LIMIT * 4;
 const MAX_PAGE_COUNT = 100;

@@ -1,6 +1,6 @@
-import { API_PROMPT_TEMPLATES } from '$lib/constants';
-import type { ApiPromptTemplateRequest, PromptTemplate } from '$lib/types';
-import { apiDelete, apiFetch, apiPatch, apiPost } from '$lib/utils';
+import { API_PROMPT_TEMPLATES } from '#lib/constants';
+import type { ApiPromptTemplateRequest, PromptTemplate } from '#lib/types';
+import { apiDelete, apiFetch, apiPatch, apiPost } from '#lib/utils';
 
 export class PromptTemplatesService {
 	static list() {

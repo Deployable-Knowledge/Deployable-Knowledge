@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { buttonVariants, type ButtonSize, type ButtonVariant } from '$lib/components/ui/button';
-	import * as Tooltip from '$lib/components/ui/tooltip';
-	import { cn } from '$lib/components/ui/utils';
+	import { buttonVariants, type ButtonSize, type ButtonVariant } from '#lib/components/ui/button';
+	import * as Tooltip from '#lib/components/ui/tooltip';
+	import { cn } from '#lib/components/ui/utils';
 	import { mergeProps } from 'bits-ui';
 	import type { ComponentProps, Snippet } from 'svelte';
 	import type { HTMLButtonAttributes } from 'svelte/elements';

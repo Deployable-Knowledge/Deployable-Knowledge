@@ -1,5 +1,5 @@
 <script lang="ts">
-	import favicon from '$lib/assets/icon.svg';
+	import favicon from '#lib/assets/icon.svg';
 
 	interface Props {
 		ready?: boolean;

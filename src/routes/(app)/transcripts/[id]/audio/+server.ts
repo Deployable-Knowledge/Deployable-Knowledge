@@ -4,8 +4,8 @@ import { extname, resolve } from 'node:path';
 import { Readable } from 'node:stream';
 import { error } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
-import { db } from '$lib/server/database/database';
-import { documents } from '$lib/server/database/schema';
+import { db } from '#lib/server/database/database';
+import { documents } from '#lib/server/database/schema';
 import type { RequestHandler } from './$types';
 
 const CONTENT_TYPES: Record<string, string> = {

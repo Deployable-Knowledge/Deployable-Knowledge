@@ -7,18 +7,18 @@
 	import Pencil from '@lucide/svelte/icons/pencil';
 	import Plus from '@lucide/svelte/icons/plus';
 	import X from '@lucide/svelte/icons/x';
-	import { ActionIcon } from '$lib/components/app/actions';
+	import { ActionIcon } from '#lib/components/app/actions';
 	import {
 		WorkspaceToolbarActions,
 		WorkspaceToolsMenu,
 		WorkspaceWindowControls
-	} from '$lib/components/app/navigation';
-	import { Button } from '$lib/components/ui/button';
-	import * as ContextMenu from '$lib/components/ui/context-menu';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import { Input } from '$lib/components/ui/input';
-	import { LAYOUT_NAME_MAX_LENGTH } from '$lib/constants';
-	import { workspaceStore } from '$lib/stores';
+	} from '#lib/components/app/navigation';
+	import { Button } from '#lib/components/ui/button';
+	import * as ContextMenu from '#lib/components/ui/context-menu';
+	import * as Dialog from '#lib/components/ui/dialog';
+	import { Input } from '#lib/components/ui/input';
+	import { LAYOUT_NAME_MAX_LENGTH } from '#lib/constants';
+	import { workspaceStore } from '#lib/stores';
 
 	// Distance between tabs (gap-1) and how far a pointer travels before a click becomes a drag
 	const TAB_GAP = 4;

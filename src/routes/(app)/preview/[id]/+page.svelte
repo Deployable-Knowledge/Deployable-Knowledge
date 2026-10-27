@@ -1,8 +1,8 @@
 <script lang="ts">
 	import FileText from '@lucide/svelte/icons/file-text';
-	import { browser } from '$app/environment';
-	import { MarkdownContent } from '$lib/components/app/content/MarkdownContent';
-	import { API_DOCUMENT_FILES } from '$lib/constants';
+	import { browser } from '$app/env';
+	import { MarkdownContent } from '#lib/components/app/content/MarkdownContent';
+	import { API_DOCUMENT_FILES } from '#lib/constants';
 	import type { PageData } from './$types';
 
 	interface Props {

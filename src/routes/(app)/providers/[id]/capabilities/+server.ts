@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { findProvider } from '$lib/server/providers/registry';
+import { findProvider } from '#lib/server/providers/registry';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ params, url }) => {

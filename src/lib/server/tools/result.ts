@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
-import type { ImageArtifact } from '$lib/types';
-import type { SourceArtifact, ToolOutput } from '$lib/types';
+import type { ImageArtifact } from '#lib/types';
+import type { SourceArtifact, ToolOutput } from '#lib/types';
 import type { ToolExecutionResult } from './types';
 
 export function createToolResult<TData>(

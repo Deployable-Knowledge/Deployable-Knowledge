@@ -1,4 +1,4 @@
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 
 const DB_NAME = 'dk-folder-sync';
 const STORE = 'folders';

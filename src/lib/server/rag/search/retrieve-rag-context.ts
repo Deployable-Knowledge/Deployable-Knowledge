@@ -3,9 +3,9 @@ import { searchHybrid } from './hybrid-search';
 import { searchBm25 } from './bm25-search';
 import { getChunkPositions, type ChunkPosition } from './chunk-positions';
 import type { ScoredSearchMatch, SearchChunkType, SearchMatchBase } from './search-shared';
-import { DEFAULT_ASSISTANT_CONFIG, RAG_CHUNK_CHARACTER_LIMIT } from '$lib/constants';
-import { RetrievalMode } from '$lib/enums';
-import { compactText } from '$lib/server/utils/values';
+import { DEFAULT_ASSISTANT_CONFIG, RAG_CHUNK_CHARACTER_LIMIT } from '#lib/constants';
+import { RetrievalMode } from '#lib/enums';
+import { compactText } from '#lib/server/utils/values';
 
 const MAX_PREVIEW_CHARS = 200;
 const ENV_RETRIEVAL_MODES: readonly RetrievalMode[] = [RetrievalMode.BM25, RetrievalMode.SEMANTIC];

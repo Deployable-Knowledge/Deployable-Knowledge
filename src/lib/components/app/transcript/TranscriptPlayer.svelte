@@ -4,9 +4,9 @@
 	import Play from '@lucide/svelte/icons/play';
 	import Volume2 from '@lucide/svelte/icons/volume-2';
 	import VolumeX from '@lucide/svelte/icons/volume-x';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import { Button } from '$lib/components/ui/button';
-	import type { ApiTranscriptResponse } from '$lib/types';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import { Button } from '#lib/components/ui/button';
+	import type { ApiTranscriptResponse } from '#lib/types';
 	import TranscriptChunk from './TranscriptChunk.svelte';
 	import { formatTimestamp } from './timestamp';
 

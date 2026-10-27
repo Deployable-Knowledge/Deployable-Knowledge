@@ -1,7 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
-import { db } from '$lib/server/database/database';
-import { notebookSources } from '$lib/server/database/schema';
+import { db } from '#lib/server/database/database';
+import { notebookSources } from '#lib/server/database/schema';
 
 // Remove a single attached source from a notebook.
 export const DELETE: RequestHandler = async ({ params }) => {

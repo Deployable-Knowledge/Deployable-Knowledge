@@ -1,5 +1,5 @@
-import { RetrievalMode } from '$lib/enums';
-import type { AssistantConfig } from '$lib/types';
+import { RetrievalMode } from '#lib/enums';
+import type { AssistantConfig } from '#lib/types';
 import { REASONING_PRESETS } from './reasoning-presets';
 
 export const AGENT_MAX_TURNS_MIN = 1;

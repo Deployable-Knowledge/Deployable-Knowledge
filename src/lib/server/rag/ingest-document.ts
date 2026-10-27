@@ -1,10 +1,10 @@
 import { basename } from 'node:path';
-import type { ApiDocumentIngestProgress, Document } from '$lib/types';
-import { diagnosticEvents } from '$lib/server/diagnostics/events';
-import { handlerForPath, handlerForType } from '$lib/server/documents/source-types';
-import { chunkPages } from '$lib/server/rag/chunk/chunker';
-import { assembleChunks } from '$lib/server/rag/chunk/assemble-chunks';
-import type { Source } from '$lib/server/rag/chunk/parse-shared';
+import type { ApiDocumentIngestProgress, Document } from '#lib/types';
+import { diagnosticEvents } from '#lib/server/diagnostics/events';
+import { handlerForPath, handlerForType } from '#lib/server/documents/source-types';
+import { chunkPages } from '#lib/server/rag/chunk/chunker';
+import { assembleChunks } from '#lib/server/rag/chunk/assemble-chunks';
+import type { Source } from '#lib/server/rag/chunk/parse-shared';
 import { storeDocumentChunks } from './embedding';
 
 export type IngestDocumentInput = {

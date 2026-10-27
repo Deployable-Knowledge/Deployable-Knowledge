@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Clock from '@lucide/svelte/icons/clock';
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
-	import { Progress } from '$lib/components/ui/progress';
-	import type { ApiDocumentIngestProgress } from '$lib/types';
+	import { Progress } from '#lib/components/ui/progress';
+	import type { ApiDocumentIngestProgress } from '#lib/types';
 
 	interface Props {
 		/** Absent while the document is still waiting its turn. */

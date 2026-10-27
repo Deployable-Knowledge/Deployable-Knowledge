@@ -1,4 +1,4 @@
-import type { ApiDiagnosticsSnapshot, DiagnosticEvent } from '$lib/types';
+import type { ApiDiagnosticsSnapshot, DiagnosticEvent } from '#lib/types';
 
 function eventLine(event: DiagnosticEvent): string {
 	const details = Object.entries(event.details)

@@ -4,16 +4,16 @@ import type {
 	ApiDocumentAutotagEntry,
 	ApiDocumentAutotagResult,
 	ApiDocumentIngestProgress
-} from '$lib/types';
-import { db } from '$lib/server/database/database';
-import { documentTags, documents } from '$lib/server/database/schema';
+} from '#lib/types';
+import { db } from '#lib/server/database/database';
+import { documentTags, documents } from '#lib/server/database/schema';
 import {
 	embedTexts,
 	getActiveEmbedding,
 	type EmbeddingBatch
-} from '$lib/server/rag/embedding-model';
-import { getVectorIndex } from '$lib/server/rag/search/vector-index';
-import type { VectorIndex } from '$lib/server/rag/search/vector-store';
+} from '#lib/server/rag/embedding-model';
+import { getVectorIndex } from '#lib/server/rag/search/vector-index';
+import type { VectorIndex } from '#lib/server/rag/search/vector-store';
 
 // A tag's raw similarity says little on its own: the similarity of unrelated words to a
 // document swings with its length and vocabulary (0.47 to 0.56 across one small corpus).

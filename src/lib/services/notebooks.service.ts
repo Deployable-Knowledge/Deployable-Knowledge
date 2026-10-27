@@ -1,4 +1,4 @@
-import { API_NOTEBOOKS } from '$lib/constants';
+import { API_NOTEBOOKS } from '#lib/constants';
 import type {
 	ApiNotebookPageContentRequest,
 	ApiNotebookPageImportRequest,
@@ -10,8 +10,8 @@ import type {
 	ApiReorderResponse,
 	NotebookSourceItem,
 	NotebookStateResponse
-} from '$lib/types';
-import { apiDelete, apiDownload, apiFetch, apiPatch, apiPost } from '$lib/utils';
+} from '#lib/types';
+import { apiDelete, apiDownload, apiFetch, apiPatch, apiPost } from '#lib/utils';
 
 export class NotebooksService {
 	static list() {

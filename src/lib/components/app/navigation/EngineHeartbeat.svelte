@@ -30,7 +30,7 @@
 
 		try {
 			if (!navigator.onLine) throw new Error('Browser is offline');
-			const response = await fetch(resolve('/heartbeat'), {
+			const response = await fetch(resolve('/(app)/heartbeat'), {
 				cache: 'no-store',
 				headers: { Accept: 'application/json' },
 				signal: controller.signal

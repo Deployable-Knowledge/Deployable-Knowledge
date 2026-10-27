@@ -1,16 +1,16 @@
 import { error, json } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 
-import type { ApiWorkspaceLayoutUpdateRequest } from '$lib/types';
-import { db } from '$lib/server/database/database';
+import type { ApiWorkspaceLayoutUpdateRequest } from '#lib/types';
+import { db } from '#lib/server/database/database';
 import {
 	clearActiveLayoutId,
 	getActiveLayoutId,
 	setActiveLayoutId
-} from '$lib/server/database/app-state';
-import { workspaceLayouts } from '$lib/server/database/schema';
-import { WorkspaceLayoutsRepository } from '$lib/server/repositories';
-import { normalizeLayoutName, normalizeLayoutSnapshot } from '$lib/server/workspace/layout-values';
+} from '#lib/server/database/app-state';
+import { workspaceLayouts } from '#lib/server/database/schema';
+import { WorkspaceLayoutsRepository } from '#lib/server/repositories';
+import { normalizeLayoutName, normalizeLayoutSnapshot } from '#lib/server/workspace/layout-values';
 import type { RequestHandler } from './$types';
 
 export const PATCH: RequestHandler = async ({ params, request }) => {

@@ -1,5 +1,5 @@
 import type { RagRetrievalMode } from '../rag/search/retrieve-rag-context';
-import type { AgentGoal, ApiAgentTool, ToolOutput } from '$lib/types';
+import type { AgentGoal, ApiAgentTool, ToolOutput } from '#lib/types';
 
 export type ToolExecutionContext = {
 	[key: string]: unknown;

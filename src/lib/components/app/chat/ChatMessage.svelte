@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { MarkdownContent } from '$lib/components/app/content';
-	import type { SessionMessage } from '$lib/types';
+	import { MarkdownContent } from '#lib/components/app/content';
+	import type { SessionMessage } from '#lib/types';
 	import ChatMessageToolbar from './ChatMessageToolbar.svelte';
 	import { ChatMessageContext } from './ChatMessageContext';
 	import { messageMetadata, messageTrace } from './chat-message';

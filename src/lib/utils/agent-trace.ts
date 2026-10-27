@@ -1,4 +1,4 @@
-import type { AgentTraceItem, StoredToolCall } from '$lib/types';
+import type { AgentTraceItem, StoredToolCall } from '#lib/types';
 
 type TraceStatus = NonNullable<AgentTraceItem['status']>;
 

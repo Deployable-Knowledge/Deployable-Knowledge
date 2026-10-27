@@ -1,10 +1,10 @@
-import { NotebooksService } from '$lib/services';
+import { NotebooksService } from '#lib/services';
 import type {
 	NotebookPage,
 	NotebookSourceItem,
 	NotebookStateResponse,
 	NotebookWithPages
-} from '$lib/types';
+} from '#lib/types';
 
 class NotebooksStore {
 	private _notebooks = $state<NotebookWithPages[]>([]);

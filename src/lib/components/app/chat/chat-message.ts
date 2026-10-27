@@ -3,8 +3,8 @@ import type {
 	AssistantMessageMetadata,
 	SessionMessage,
 	StoredAgentRun
-} from '$lib/types';
-import { legacyToolCallTrace } from '$lib/utils/agent-trace';
+} from '#lib/types';
+import { legacyToolCallTrace } from '#lib/utils/agent-trace';
 
 export function messageMetadata(message: SessionMessage): AssistantMessageMetadata {
 	return message.metadata && typeof message.metadata === 'object'

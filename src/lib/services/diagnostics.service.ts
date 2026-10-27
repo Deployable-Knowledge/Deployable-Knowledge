@@ -1,6 +1,6 @@
-import { API_DIAGNOSTICS } from '$lib/constants';
-import type { ApiDiagnosticEventsResponse, ApiDiagnosticsSnapshot } from '$lib/types';
-import { apiDownload, apiFetch } from '$lib/utils';
+import { API_DIAGNOSTICS } from '#lib/constants';
+import type { ApiDiagnosticEventsResponse, ApiDiagnosticsSnapshot } from '#lib/types';
+import { apiDownload, apiFetch } from '#lib/utils';
 
 export class DiagnosticsService {
 	static getSnapshot() {

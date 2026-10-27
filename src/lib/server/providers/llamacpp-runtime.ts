@@ -4,8 +4,8 @@ import { basename, join, resolve } from 'node:path';
 
 import type { Llama, LlamaChat, LlamaContext, LlamaModel, ModelDownloader } from 'node-llama-cpp';
 
-import type { DownloadableModel, LocalModel } from '$lib/constants/local-models';
-import type { LlamaGpuMode } from '$lib/types';
+import type { DownloadableModel, LocalModel } from '#lib/constants/local-models';
+import type { LlamaGpuMode } from '#lib/types';
 
 export type SupportedGpuType = Exclude<LlamaGpuMode, 'auto' | 'cpu'>;
 

@@ -1,5 +1,5 @@
-import type { EmbeddingDevice, EmbeddingTask } from '$lib/constants';
-import type { EmbeddingBackend } from '$lib/types';
+import type { EmbeddingDevice, EmbeddingTask } from '#lib/constants';
+import type { EmbeddingBackend } from '#lib/types';
 
 export abstract class EmbeddingProvider {
 	abstract id: string;

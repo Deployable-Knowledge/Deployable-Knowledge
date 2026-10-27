@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { RAG_CHUNK_CHARACTER_LIMIT } from '$lib/constants';
+import { RAG_CHUNK_CHARACTER_LIMIT } from '#lib/constants';
 import type { ExtractedChunk, ExtractionResult, Source } from './parse-shared';
 
 export function parseCsv(text: string): string[][] {

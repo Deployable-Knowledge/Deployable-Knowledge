@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm';
-import { NOTEBOOK_SOURCE_CONTEXT_CHARACTER_LIMIT, RAG_CHUNK_CHARACTER_LIMIT } from '$lib/constants';
-import { db } from '$lib/server/database/database';
-import { documentChunks, documents, notebookSources } from '$lib/server/database/schema';
+import { NOTEBOOK_SOURCE_CONTEXT_CHARACTER_LIMIT, RAG_CHUNK_CHARACTER_LIMIT } from '#lib/constants';
+import { db } from '#lib/server/database/database';
+import { documentChunks, documents, notebookSources } from '#lib/server/database/schema';
 
 export async function getNotebookSourceExcerpts(
 	notebookId: string,

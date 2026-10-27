@@ -1,4 +1,4 @@
-import { CONTEXT_WINDOW_TOKENS_MAX } from '$lib/constants';
+import { CONTEXT_WINDOW_TOKENS_MAX } from '#lib/constants';
 import {
 	Provider,
 	type ProviderChatChunk,

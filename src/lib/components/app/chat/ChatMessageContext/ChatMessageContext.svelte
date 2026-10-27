@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { AgentOutput, AgentTraceItem, StoredToolCall } from '$lib/types';
-	import { legacyToolCallTrace } from '$lib/utils/agent-trace';
+	import type { AgentOutput, AgentTraceItem, StoredToolCall } from '#lib/types';
+	import { legacyToolCallTrace } from '#lib/utils/agent-trace';
 	import AgentTrace from './AgentTrace.svelte';
 	import Context from './Context.svelte';
 	import ContextOutputs from './ContextOutputs.svelte';

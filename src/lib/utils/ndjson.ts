@@ -1,4 +1,4 @@
-import { NDJSON_LINE_SEPARATOR } from '$lib/constants';
+import { NDJSON_LINE_SEPARATOR } from '#lib/constants';
 
 export async function* parseNdjsonStream<T>(
 	response: Response,

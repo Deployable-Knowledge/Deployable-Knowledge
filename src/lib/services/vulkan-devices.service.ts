@@ -1,6 +1,6 @@
-import { API_VULKAN_DEVICES } from '$lib/constants';
-import type { ApiVulkanDevicesStatus, ApiVulkanDeviceUpdate } from '$lib/types';
-import { apiFetch, apiPatch } from '$lib/utils';
+import { API_VULKAN_DEVICES } from '#lib/constants';
+import type { ApiVulkanDevicesStatus, ApiVulkanDeviceUpdate } from '#lib/types';
+import { apiFetch, apiPatch } from '#lib/utils';
 
 export class VulkanDevicesService {
 	static getStatus() {

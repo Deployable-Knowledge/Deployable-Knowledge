@@ -3,7 +3,7 @@ Xenova Whisper Tiny English model. While it handles English audio transcription 
 as accurately on complex/chaotic audio scenarios. Looking into using larger models*/
 
 import { pipeline, type AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers';
-import { TRANSFORMERS_CACHE_DIR } from '$lib/server/utils/transformers-env';
+import { TRANSFORMERS_CACHE_DIR } from '#lib/server/utils/transformers-env';
 
 export const TRANSCRIPTION_MODEL = 'Xenova/whisper-tiny.en';
 

@@ -1,5 +1,5 @@
 import { and, asc, count, eq } from 'drizzle-orm';
-import { db } from '$lib/server/database/database';
+import { db } from '#lib/server/database/database';
 import {
 	syncedFiles,
 	syncedFolders,
@@ -7,7 +7,7 @@ import {
 	type SyncedFile,
 	type SyncedFileState,
 	type SyncedFolder
-} from '$lib/server/database/schema';
+} from '#lib/server/database/schema';
 
 export interface SyncedFileStat {
 	relativePath: string;

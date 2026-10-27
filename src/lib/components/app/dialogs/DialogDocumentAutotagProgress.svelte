@@ -1,16 +1,16 @@
 <script lang="ts">
 	import Check from '@lucide/svelte/icons/check';
 	import Minus from '@lucide/svelte/icons/minus';
-	import { Badge } from '$lib/components/ui/badge';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import { Progress } from '$lib/components/ui/progress';
-	import { ScrollArea } from '$lib/components/ui/scroll-area';
+	import { Badge } from '#lib/components/ui/badge';
+	import * as Dialog from '#lib/components/ui/dialog';
+	import { Progress } from '#lib/components/ui/progress';
+	import { ScrollArea } from '#lib/components/ui/scroll-area';
 	import type {
 		ApiDocumentAutotagEntry,
 		ApiDocumentAutotagStatus,
 		ApiDocumentIngestProgress
-	} from '$lib/types';
-	import { documentTagHue } from '$lib/utils';
+	} from '#lib/types';
+	import { documentTagHue } from '#lib/utils';
 
 	interface Props {
 		entries: ApiDocumentAutotagEntry[];

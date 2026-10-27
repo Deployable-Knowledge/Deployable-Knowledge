@@ -1,8 +1,8 @@
 import { error } from '@sveltejs/kit';
-import { findLocalEmbeddingModel } from '$lib/constants';
-import { localEmbeddingProvider } from '$lib/server/embeddings/registry';
-import { refreshStaleEmbeddings } from '$lib/server/rag/embedding';
-import { modelDownloadResponse } from '$lib/server/utils/model-download-response';
+import { findLocalEmbeddingModel } from '#lib/constants';
+import { localEmbeddingProvider } from '#lib/server/embeddings/registry';
+import { refreshStaleEmbeddings } from '#lib/server/rag/embedding';
+import { modelDownloadResponse } from '#lib/server/utils/model-download-response';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {

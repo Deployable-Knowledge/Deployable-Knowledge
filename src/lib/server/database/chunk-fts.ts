@@ -1,5 +1,5 @@
 import { setImmediate as yieldEventLoop } from 'node:timers/promises';
-import { diagnosticEvents } from '$lib/server/diagnostics/events';
+import { diagnosticEvents } from '#lib/server/diagnostics/events';
 import { databaseClient } from './database';
 
 const BACKFILL_BATCH_SIZE = 5000;

@@ -1,8 +1,8 @@
 import { error } from '@sveltejs/kit';
-import { PROVIDER_NAME_MAX_LENGTH } from '$lib/constants';
-import type { CustomProviderRecord } from '$lib/server/database/schema';
-import type { ApiCustomProviderRequest, ApiProviderInfo } from '$lib/types';
-import { normalizeProviderBaseUrl } from '$lib/utils';
+import { PROVIDER_NAME_MAX_LENGTH } from '#lib/constants';
+import type { CustomProviderRecord } from '#lib/server/database/schema';
+import type { ApiCustomProviderRequest, ApiProviderInfo } from '#lib/types';
+import { normalizeProviderBaseUrl } from '#lib/utils';
 
 export function toApiProviderInfo(record: CustomProviderRecord): ApiProviderInfo {
 	return {

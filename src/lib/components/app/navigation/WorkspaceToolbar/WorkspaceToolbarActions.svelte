@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Settings from '@lucide/svelte/icons/settings';
-	import { Button } from '$lib/components/ui/button';
-	import * as Tooltip from '$lib/components/ui/tooltip';
-	import { settingsDialogStore } from '$lib/stores';
+	import { Button } from '#lib/components/ui/button';
+	import * as Tooltip from '#lib/components/ui/tooltip';
+	import { settingsDialogStore } from '#lib/stores';
 </script>
 
 <div

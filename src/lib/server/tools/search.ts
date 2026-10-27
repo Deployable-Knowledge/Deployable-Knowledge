@@ -10,8 +10,8 @@ import {
 } from '../rag/search/retrieve-rag-context';
 import type { AgentTool } from './types';
 import { createToolResult, sourceOutput } from './result';
-import { DEFAULT_ASSISTANT_CONFIG } from '$lib/constants';
-import { RetrievalMode } from '$lib/enums';
+import { DEFAULT_ASSISTANT_CONFIG } from '#lib/constants';
+import { RetrievalMode } from '#lib/enums';
 import { clampInteger, clampText, readObject } from '../utils/values';
 
 type SearchMode = RagRetrievalMode | 'all';

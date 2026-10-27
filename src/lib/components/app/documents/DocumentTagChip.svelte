@@ -1,8 +1,8 @@
 <script lang="ts">
 	import X from '@lucide/svelte/icons/x';
-	import { Badge } from '$lib/components/ui/badge';
-	import * as Tooltip from '$lib/components/ui/tooltip';
-	import { documentTagHue } from '$lib/utils';
+	import { Badge } from '#lib/components/ui/badge';
+	import * as Tooltip from '#lib/components/ui/tooltip';
+	import { documentTagHue } from '#lib/utils';
 
 	interface Props {
 		onRemove?: () => void;

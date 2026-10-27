@@ -1,5 +1,5 @@
-import { VulkanDevicesService } from '$lib/services';
-import type { ApiVulkanDevicesStatus } from '$lib/types';
+import { VulkanDevicesService } from '#lib/services';
+import type { ApiVulkanDevicesStatus } from '#lib/types';
 
 class VulkanDevicesStore {
 	status = $state<ApiVulkanDevicesStatus | null>(null);

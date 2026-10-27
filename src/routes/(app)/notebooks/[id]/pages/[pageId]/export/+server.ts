@@ -2,8 +2,8 @@ import { error } from '@sveltejs/kit';
 import {
 	notebookPageMarkdown,
 	notebookPageMarkdownFilename
-} from '$lib/server/notebooks/export-notebook';
-import { NotebooksRepository } from '$lib/server/repositories';
+} from '#lib/server/notebooks/export-notebook';
+import { NotebooksRepository } from '#lib/server/repositories';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ params }) => {

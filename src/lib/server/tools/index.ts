@@ -19,4 +19,4 @@ export { ToolRegistry } from './registry';
 export { createToolResult, dataOutput, imageOutput, sourceOutput, textOutput } from './result';
 export { clampInteger, clampText, compactText, readObject, toJsonValue } from '../utils/values';
 export type { AgentTool, ToolExecutionContext, ToolExecutionResult } from './types';
-export type { AgentOutput, ToolOutput } from '$lib/types';
+export type { AgentOutput, ToolOutput } from '#lib/types';

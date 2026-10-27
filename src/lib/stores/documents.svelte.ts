@@ -1,7 +1,7 @@
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
-import { LOOSE_DOCUMENT_GROUPS, type LooseDocumentGroup } from '$lib/constants';
-import { DocumentsService } from '$lib/services';
-import { DEFAULT_DOCUMENT_SORT } from '$lib/utils';
+import { LOOSE_DOCUMENT_GROUPS, type LooseDocumentGroup } from '#lib/constants';
+import { DocumentsService } from '#lib/services';
+import { DEFAULT_DOCUMENT_SORT } from '#lib/utils';
 import type {
 	ApiDocumentAutotagEntry,
 	ApiDocumentAutotagResult,
@@ -13,7 +13,7 @@ import type {
 	DocumentListMode,
 	DocumentSortMode,
 	PendingDocument
-} from '$lib/types';
+} from '#lib/types';
 
 const PAGE_SIZE = 50;
 const MAX_REFRESH_SIZE = 200;

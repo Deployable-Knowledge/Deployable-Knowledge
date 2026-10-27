@@ -3,9 +3,9 @@
 	import Minus from '@lucide/svelte/icons/minus';
 	import Square from '@lucide/svelte/icons/square';
 	import X from '@lucide/svelte/icons/x';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import { DesktopWindowService } from '$lib/services';
-	import { desktopWindowStore } from '$lib/stores';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import { DesktopWindowService } from '#lib/services';
+	import { desktopWindowStore } from '#lib/stores';
 </script>
 
 {#if desktopWindowStore.available}

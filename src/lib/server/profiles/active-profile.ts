@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { asc } from 'drizzle-orm';
 
-import { db } from '$lib/server/database/database';
-import { getActiveProfileId, setActiveProfileId } from '$lib/server/database/app-state';
-import { profiles, type AssistantProfile } from '$lib/server/database/schema';
-import { ProfilesRepository } from '$lib/server/repositories';
-import { toolRegistry } from '$lib/server/tools';
+import { db } from '#lib/server/database/database';
+import { getActiveProfileId, setActiveProfileId } from '#lib/server/database/app-state';
+import { profiles, type AssistantProfile } from '#lib/server/database/schema';
+import { ProfilesRepository } from '#lib/server/repositories';
+import { toolRegistry } from '#lib/server/tools';
 
 export async function ensureActiveProfileId(): Promise<string> {
 	const activeProfileId = await getActiveProfileId();

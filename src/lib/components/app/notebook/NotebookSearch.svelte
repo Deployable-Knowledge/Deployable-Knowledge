@@ -1,11 +1,11 @@
 <script lang="ts">
 	import Search from '@lucide/svelte/icons/search';
 	import type { Snippet } from 'svelte';
-	import { Button } from '$lib/components/ui/button';
-	import * as Empty from '$lib/components/ui/empty';
-	import { Input } from '$lib/components/ui/input';
-	import { ScrollArea } from '$lib/components/ui/scroll-area';
-	import type { NotebookWithPages } from '$lib/types';
+	import { Button } from '#lib/components/ui/button';
+	import * as Empty from '#lib/components/ui/empty';
+	import { Input } from '#lib/components/ui/input';
+	import { ScrollArea } from '#lib/components/ui/scroll-area';
+	import type { NotebookWithPages } from '#lib/types';
 	import { searchNotebookPages, type NotebookSearchResult } from './notebook-search';
 
 	interface Props {

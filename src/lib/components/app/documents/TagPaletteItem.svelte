@@ -1,6 +1,6 @@
 <script lang="ts">
 	import X from '@lucide/svelte/icons/x';
-	import { documentTagHue } from '$lib/utils';
+	import { documentTagHue } from '#lib/utils';
 
 	interface Props {
 		onDelete?: () => void;

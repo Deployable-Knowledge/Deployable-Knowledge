@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { toast } from 'svelte-sonner';
-	import { WorkspaceWindow } from '$lib/components/app/workspace/WorkspaceWindow';
-	import * as Empty from '$lib/components/ui/empty';
-	import { ScrollArea } from '$lib/components/ui/scroll-area';
-	import { Skeleton } from '$lib/components/ui/skeleton';
-	import { documentViewerHref } from '$lib/constants';
-	import { RetrievalMode } from '$lib/enums';
-	import { SearchService } from '$lib/services';
-	import { documentsStore, notebooksStore, settingsStore } from '$lib/stores';
-	import type { ApiSearchMatch, ApiSearchResults } from '$lib/types';
-	import { describeDocumentLocation } from '$lib/utils';
-	import { notebookSourceHeading } from '$lib/utils/notebook-citations';
+	import { WorkspaceWindow } from '#lib/components/app/workspace/WorkspaceWindow';
+	import * as Empty from '#lib/components/ui/empty';
+	import { ScrollArea } from '#lib/components/ui/scroll-area';
+	import { Skeleton } from '#lib/components/ui/skeleton';
+	import { documentViewerHref } from '#lib/constants';
+	import { RetrievalMode } from '#lib/enums';
+	import { SearchService } from '#lib/services';
+	import { documentsStore, notebooksStore, settingsStore } from '#lib/stores';
+	import type { ApiSearchMatch, ApiSearchResults } from '#lib/types';
+	import { describeDocumentLocation } from '#lib/utils';
+	import { notebookSourceHeading } from '#lib/utils/notebook-citations';
 	import SearchForm from './SearchForm.svelte';
 	import SearchResultCard from './SearchResultCard.svelte';
 

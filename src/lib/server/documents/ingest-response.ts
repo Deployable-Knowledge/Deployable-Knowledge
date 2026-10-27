@@ -2,8 +2,8 @@ import type {
 	ApiDocumentIngestEvent,
 	ApiDocumentIngestProgress,
 	ApiDocumentIngestResult
-} from '$lib/types';
-import { ndjsonTaskResponse } from '$lib/server/utils/ndjson-response';
+} from '#lib/types';
+import { ndjsonTaskResponse } from '#lib/server/utils/ndjson-response';
 
 export type IngestTask = (
 	onProgress: (progress: ApiDocumentIngestProgress) => void

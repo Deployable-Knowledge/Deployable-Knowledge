@@ -1,4 +1,4 @@
-import { API_PROFILES } from '$lib/constants';
+import { API_PROFILES } from '#lib/constants';
 import type {
 	ActiveAssistantProfile,
 	AssistantProfile,
@@ -7,8 +7,8 @@ import type {
 	AssistantProfileListResponse,
 	AssistantProfileUpdateValues,
 	AssistantProfileValues
-} from '$lib/types';
-import { apiDelete, apiFetch, apiPatch, apiPost } from '$lib/utils';
+} from '#lib/types';
+import { apiDelete, apiFetch, apiPatch, apiPost } from '#lib/utils';
 
 export class ProfilesService {
 	static list() {

@@ -1,4 +1,4 @@
-import type { DesktopWindowBridge } from '$lib/types';
+import type { DesktopWindowBridge } from '#lib/types';
 
 export class DesktopWindowService {
 	static get available(): boolean {

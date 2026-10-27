@@ -1,12 +1,12 @@
 <script lang="ts">
 	import Plus from '@lucide/svelte/icons/plus';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import * as Popover from '$lib/components/ui/popover';
-	import * as Tooltip from '$lib/components/ui/tooltip';
-	import { cn } from '$lib/components/ui/utils';
-	import { DOCUMENT_TAG_PATTERN, normalizeDocumentTag } from '$lib/utils';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import { Button, buttonVariants } from '#lib/components/ui/button';
+	import { Input } from '#lib/components/ui/input';
+	import * as Popover from '#lib/components/ui/popover';
+	import * as Tooltip from '#lib/components/ui/tooltip';
+	import { cn } from '#lib/components/ui/utils';
+	import { DOCUMENT_TAG_PATTERN, normalizeDocumentTag } from '#lib/utils';
 	import { mergeProps } from 'bits-ui';
 	import TagPaletteItem from './TagPaletteItem.svelte';
 

@@ -1,17 +1,17 @@
 import { basename, extname } from 'node:path';
 import { error, json } from '@sveltejs/kit';
-import type { ApiNotebookPageImportRequest } from '$lib/types';
-import { NOTEBOOK_TEXT_CHARACTER_LIMIT } from '$lib/constants';
+import type { ApiNotebookPageImportRequest } from '#lib/types';
+import { NOTEBOOK_TEXT_CHARACTER_LIMIT } from '#lib/constants';
 import {
 	isNotebookPageImportPath,
 	parseNotebookPageContent
-} from '$lib/server/notebooks/import-notebook-page';
+} from '#lib/server/notebooks/import-notebook-page';
 import {
 	loadNotebookState,
 	setActiveNotebook,
 	NotebooksRepository
-} from '$lib/server/repositories/notebooks.repository';
-import { countNotebookText } from '$lib/utils/notebook-text';
+} from '#lib/server/repositories/notebooks.repository';
+import { countNotebookText } from '#lib/utils/notebook-text';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ params, request }) => {

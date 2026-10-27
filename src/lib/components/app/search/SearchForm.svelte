@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Search from '@lucide/svelte/icons/search';
-	import { Button } from '$lib/components/ui/button';
-	import * as ButtonGroup from '$lib/components/ui/button-group';
-	import { Input } from '$lib/components/ui/input';
-	import { RetrievalMode } from '$lib/enums';
+	import { Button } from '#lib/components/ui/button';
+	import * as ButtonGroup from '#lib/components/ui/button-group';
+	import { Input } from '#lib/components/ui/input';
+	import { RetrievalMode } from '#lib/enums';
 
 	interface Props {
 		loading?: boolean;

@@ -1,6 +1,6 @@
 import { error, json } from '@sveltejs/kit';
-import type { ApiDocumentListQuery, DocumentListMode, DocumentSortMode } from '$lib/types';
-import { DocumentsRepository } from '$lib/server/repositories';
+import type { ApiDocumentListQuery, DocumentListMode, DocumentSortMode } from '#lib/types';
+import { DocumentsRepository } from '#lib/server/repositories';
 import type { RequestHandler } from './$types';
 
 const MAX_PAGE_SIZE = 200;

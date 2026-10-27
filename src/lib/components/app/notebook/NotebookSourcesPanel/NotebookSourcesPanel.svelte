@@ -4,14 +4,14 @@
 	import Quote from '@lucide/svelte/icons/quote';
 	import Table from '@lucide/svelte/icons/table';
 	import X from '@lucide/svelte/icons/x';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import { DialogConfirmation } from '$lib/components/app/dialogs';
-	import { Badge } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button';
-	import * as Popover from '$lib/components/ui/popover';
-	import { Skeleton } from '$lib/components/ui/skeleton';
-	import { APP_PREVIEW } from '$lib/constants';
-	import type { NotebookSourceItem } from '$lib/types';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import { DialogConfirmation } from '#lib/components/app/dialogs';
+	import { Badge } from '#lib/components/ui/badge';
+	import { Button } from '#lib/components/ui/button';
+	import * as Popover from '#lib/components/ui/popover';
+	import { Skeleton } from '#lib/components/ui/skeleton';
+	import { APP_PREVIEW } from '#lib/constants';
+	import type { NotebookSourceItem } from '#lib/types';
 
 	interface Props {
 		loading?: boolean;

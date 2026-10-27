@@ -5,10 +5,10 @@
 	import FileText from '@lucide/svelte/icons/file-text';
 	import Globe from '@lucide/svelte/icons/globe';
 	import Video from '@lucide/svelte/icons/video';
-	import { buttonVariants } from '$lib/components/ui/button';
-	import { cn } from '$lib/components/ui/utils';
-	import { documentViewerHref } from '$lib/constants';
-	import type { AgentOutput } from '$lib/types';
+	import { buttonVariants } from '#lib/components/ui/button';
+	import { cn } from '#lib/components/ui/utils';
+	import { documentViewerHref } from '#lib/constants';
+	import type { AgentOutput } from '#lib/types';
 
 	// One style for every source action; only the icon and behaviour differ
 	const ACTION_CLASS = cn(

@@ -1,7 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 
-import { WorkspaceLayoutsRepository } from '$lib/server/repositories';
-import { parseReorderRequest } from '$lib/server/utils/reorder';
+import { WorkspaceLayoutsRepository } from '#lib/server/repositories';
+import { parseReorderRequest } from '#lib/server/utils/reorder';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {

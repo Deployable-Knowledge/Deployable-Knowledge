@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { WindowColumn } from '$lib/enums';
-	import { columnSplitter, windowDragLayout } from '$lib/actions';
-	import { workspaceStore } from '$lib/stores';
+	import { WindowColumn } from '#lib/enums';
+	import { columnSplitter, windowDragLayout } from '#lib/actions';
+	import { workspaceStore } from '#lib/stores';
 	import WorkspacePaneResizer from './WorkspacePaneResizer.svelte';
 	import { windowDefinitionsById, type WindowDefinition } from './window-registry';
-	import type { WindowPlacement } from '$lib/types';
+	import type { WindowPlacement } from '#lib/types';
 
 	type WorkspaceWindow = Omit<WindowDefinition, 'column'> & WindowPlacement;
 	let columnsElement: HTMLElement;
@@ -27,7 +27,7 @@
 	onMount(() => {
 		const onWindowDrop = (event: Event) => {
 			workspaceStore.placeWindowFromDrop(
-				(event as CustomEvent<import('$lib/types').WindowDropPlacement>).detail
+				(event as CustomEvent<import('#lib/types').WindowDropPlacement>).detail
 			);
 		};
 		columnsElement.addEventListener('windowdrop', onWindowDrop);

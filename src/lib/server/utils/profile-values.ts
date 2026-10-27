@@ -1,4 +1,4 @@
-import type { LlamaGpuMode } from '$lib/types';
+import type { LlamaGpuMode } from '#lib/types';
 
 const GPU_MODES: readonly LlamaGpuMode[] = ['auto', 'cpu', 'cuda', 'vulkan'];
 

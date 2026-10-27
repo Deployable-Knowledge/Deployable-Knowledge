@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { Worker } from 'node:worker_threads';
 
-import type { ImageArtifact } from '$lib/types';
+import type { ImageArtifact } from '#lib/types';
 import type { AgentTool, ToolExecutionContext } from './types';
 import { createToolResult, imageOutput } from './result';
 import { clampText, readObject, toJsonValue } from '../utils/values';

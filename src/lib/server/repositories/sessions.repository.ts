@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { asc, desc, eq } from 'drizzle-orm';
-import { NEW_CHAT_TITLE } from '$lib/constants';
-import { db } from '$lib/server/database/database';
-import { sessionMessages, sessions } from '$lib/server/database/schema';
+import { NEW_CHAT_TITLE } from '#lib/constants';
+import { db } from '#lib/server/database/database';
+import { sessionMessages, sessions } from '#lib/server/database/schema';
 
 export class SessionsRepository {
 	static list() {

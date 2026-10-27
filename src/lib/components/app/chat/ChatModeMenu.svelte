@@ -3,8 +3,8 @@
 	import EllipsisVertical from '@lucide/svelte/icons/ellipsis-vertical';
 	import Search from '@lucide/svelte/icons/search';
 	import Wrench from '@lucide/svelte/icons/wrench';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import * as DropdownMenu from '#lib/components/ui/dropdown-menu';
 
 	interface Props {
 		disabled?: boolean;

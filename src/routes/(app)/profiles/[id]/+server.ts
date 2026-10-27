@@ -1,11 +1,11 @@
 import { error, json } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 
-import { toolRegistry } from '$lib/server/tools';
-import { db } from '$lib/server/database/database';
-import { clearActiveProfileId } from '$lib/server/database/app-state';
-import { profiles, type AssistantProfileUpdateValues } from '$lib/server/database/schema';
-import { sanitizeGpuMode } from '$lib/server/utils/profile-values';
+import { toolRegistry } from '#lib/server/tools';
+import { db } from '#lib/server/database/database';
+import { clearActiveProfileId } from '#lib/server/database/app-state';
+import { profiles, type AssistantProfileUpdateValues } from '#lib/server/database/schema';
+import { sanitizeGpuMode } from '#lib/server/utils/profile-values';
 import type { RequestHandler } from './$types';
 
 export const PATCH: RequestHandler = async ({ params, request }) => {

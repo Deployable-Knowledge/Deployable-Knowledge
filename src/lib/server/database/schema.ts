@@ -20,8 +20,8 @@ import {
 	SYNCED_FILE_STATES,
 	THEME_COLORS,
 	THEME_MODES
-} from '$lib/constants';
-import type { WorkspaceLayoutSnapshot } from '$lib/types/workspace';
+} from '#lib/constants';
+import type { WorkspaceLayoutSnapshot } from '#lib/types/workspace';
 
 export const appState = sqliteTable('app_state', {
 	id: text('id').primaryKey().default('app'),

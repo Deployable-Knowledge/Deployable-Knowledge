@@ -3,11 +3,11 @@ import {
 	DEFAULT_EMBEDDING_SETTINGS,
 	LOCAL_MODEL_PROVIDER_ID,
 	type EmbeddingTask
-} from '$lib/constants';
-import type { EmbeddingSettings } from '$lib/types';
-import { getEmbeddingSettings, setEmbeddingSettings } from '$lib/server/database/app-state';
-import type { EmbeddingProvider } from '$lib/server/embeddings/provider';
-import { findEmbeddingProvider } from '$lib/server/embeddings/registry';
+} from '#lib/constants';
+import type { EmbeddingSettings } from '#lib/types';
+import { getEmbeddingSettings, setEmbeddingSettings } from '#lib/server/database/app-state';
+import type { EmbeddingProvider } from '#lib/server/embeddings/provider';
+import { findEmbeddingProvider } from '#lib/server/embeddings/registry';
 
 const EMBEDDING_BATCH_SIZE = 16;
 

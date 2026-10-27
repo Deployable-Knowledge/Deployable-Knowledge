@@ -3,10 +3,10 @@ import type {
 	ApiDocumentFolderReconcileRequest,
 	ApiDocumentFolderReconcileResponse,
 	ApiSyncFileStat
-} from '$lib/types';
-import { isSettledSyncFile } from '$lib/server/documents/folder-file-sync';
-import { isSyncableFile } from '$lib/server/documents/source-types';
-import { SyncedFoldersRepository } from '$lib/server/repositories';
+} from '#lib/types';
+import { isSettledSyncFile } from '#lib/server/documents/folder-file-sync';
+import { isSyncableFile } from '#lib/server/documents/source-types';
+import { SyncedFoldersRepository } from '#lib/server/repositories';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ params, request }) => {

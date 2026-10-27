@@ -1,6 +1,6 @@
-import { LOCAL_MODEL_PROVIDER_ID } from '$lib/constants';
-import { LocalModelsService } from '$lib/services';
-import type { ApiDocumentIngestProgress, ApiLocalModelsStatus } from '$lib/types';
+import { LOCAL_MODEL_PROVIDER_ID } from '#lib/constants';
+import { LocalModelsService } from '#lib/services';
+import type { ApiDocumentIngestProgress, ApiLocalModelsStatus } from '#lib/types';
 import { settingsStore } from './settings.svelte';
 
 class LocalModelsStore {

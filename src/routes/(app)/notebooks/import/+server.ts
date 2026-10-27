@@ -3,12 +3,12 @@ import {
 	buildNotebookCollection,
 	NotebookCollectionImportError,
 	type ImportedNotebookFile
-} from '$lib/server/notebooks/import-notebook-collection';
-import { isNotebookPageImportPath } from '$lib/server/notebooks/import-notebook-page';
+} from '#lib/server/notebooks/import-notebook-collection';
+import { isNotebookPageImportPath } from '#lib/server/notebooks/import-notebook-page';
 import {
 	loadNotebookState,
 	NotebooksRepository
-} from '$lib/server/repositories/notebooks.repository';
+} from '#lib/server/repositories/notebooks.repository';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {

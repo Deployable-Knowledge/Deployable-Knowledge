@@ -1,5 +1,5 @@
 import type { WorkerConverter } from '@matbee/libreoffice-converter/server';
-import { withTimeout } from '$lib/server/utils/with-timeout';
+import { withTimeout } from '#lib/server/utils/with-timeout';
 
 export type OfficeInputFormat = 'docx' | 'pptx' | 'xlsx';
 

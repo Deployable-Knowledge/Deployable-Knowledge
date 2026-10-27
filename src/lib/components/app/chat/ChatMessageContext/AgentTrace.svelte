@@ -4,7 +4,7 @@
 	import CircleAlert from '@lucide/svelte/icons/circle-alert';
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 	import Wrench from '@lucide/svelte/icons/wrench';
-	import type { AgentTraceItem } from '$lib/types';
+	import type { AgentTraceItem } from '#lib/types';
 
 	interface Props {
 		trace: AgentTraceItem[];

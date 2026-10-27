@@ -1,15 +1,15 @@
 import { json } from '@sveltejs/kit';
 
-import { LOCAL_MODELS, findLocalModelByFile } from '$lib/constants/local-models';
+import { LOCAL_MODELS, findLocalModelByFile } from '#lib/constants/local-models';
 import {
 	cancelActiveDownload,
 	downloadLocalModel,
 	getActiveDownloadFile,
 	getSupportedGpuTypes,
 	listLocalModelFiles
-} from '$lib/server/providers/llamacpp-runtime';
-import { modelDownloadResponse } from '$lib/server/utils/model-download-response';
-import type { ApiLocalModelInfo, ApiLocalModelsStatus } from '$lib/types';
+} from '#lib/server/providers/llamacpp-runtime';
+import { modelDownloadResponse } from '#lib/server/utils/model-download-response';
+import type { ApiLocalModelInfo, ApiLocalModelsStatus } from '#lib/types';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async () => {

@@ -2,11 +2,11 @@ import { access, readFile } from 'node:fs/promises';
 import { extname, resolve } from 'node:path';
 import { error, redirect } from '@sveltejs/kit';
 import { and, asc, eq } from 'drizzle-orm';
-import { APP_TRANSCRIPTS } from '$lib/constants';
-import { db } from '$lib/server/database/database';
-import { documentChunks, documents } from '$lib/server/database/schema';
-import { previewPathFor } from '$lib/server/documents/managed-artifacts';
-import { splitMarkdownByChunks, splitTextByChunks } from '$lib/server/documents/text-preview';
+import { APP_TRANSCRIPTS } from '#lib/constants';
+import { db } from '#lib/server/database/database';
+import { documentChunks, documents } from '#lib/server/database/schema';
+import { previewPathFor } from '#lib/server/documents/managed-artifacts';
+import { splitMarkdownByChunks, splitTextByChunks } from '#lib/server/documents/text-preview';
 import type { PageServerLoad } from './$types';
 
 const MAX_PREVIEW_TEXT_BYTES = 1024 * 1024;

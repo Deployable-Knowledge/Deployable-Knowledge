@@ -1,4 +1,4 @@
-import { SUPPORTED_AUDIO_EXTENSIONS } from '$lib/utils/audio-format';
+import { SUPPORTED_AUDIO_EXTENSIONS } from '#lib/utils/audio-format';
 
 export type DocumentSourceKind =
 	| 'pdf'

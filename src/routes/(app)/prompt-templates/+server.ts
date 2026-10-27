@@ -3,9 +3,9 @@ import { randomUUID } from 'node:crypto';
 import { error, json } from '@sveltejs/kit';
 import { asc } from 'drizzle-orm';
 
-import type { ApiPromptTemplateRequest } from '$lib/types';
-import { db } from '$lib/server/database/database';
-import { promptTemplates } from '$lib/server/database/schema';
+import type { ApiPromptTemplateRequest } from '#lib/types';
+import { db } from '#lib/server/database/database';
+import { promptTemplates } from '#lib/server/database/schema';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async () => {

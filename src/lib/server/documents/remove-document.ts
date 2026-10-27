@@ -1,9 +1,9 @@
 import { unlink } from 'node:fs/promises';
 import { isAbsolute, relative, resolve, sep } from 'node:path';
 import { eq } from 'drizzle-orm';
-import { db } from '$lib/server/database/database';
-import { documents, syncedFiles } from '$lib/server/database/schema';
-import { removeDocumentVectors } from '$lib/server/rag/search/vector-index';
+import { db } from '#lib/server/database/database';
+import { documents, syncedFiles } from '#lib/server/database/schema';
+import { removeDocumentVectors } from '#lib/server/rag/search/vector-index';
 import { previewPathFor } from './managed-artifacts';
 
 export type SyncedFileDisposition = 'ignore' | 'remove';

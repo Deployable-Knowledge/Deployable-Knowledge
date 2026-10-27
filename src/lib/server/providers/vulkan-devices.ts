@@ -2,8 +2,8 @@ import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 
-import type { ApiVulkanDevice, ApiVulkanDevicesStatus } from '$lib/types';
-import { getVulkanDevice } from '$lib/server/database/app-state';
+import type { ApiVulkanDevice, ApiVulkanDevicesStatus } from '#lib/types';
+import { getVulkanDevice } from '#lib/server/database/app-state';
 import { getSupportedGpuTypes } from './llamacpp-runtime';
 
 const VISIBLE_DEVICES_ENV = 'GGML_VK_VISIBLE_DEVICES';

@@ -4,15 +4,15 @@ import {
 	findLocalEmbeddingModel,
 	LOCAL_EMBEDDING_MODELS,
 	LOCAL_MODEL_PROVIDER_ID
-} from '$lib/constants';
-import type { ApiEmbeddingStatus, EmbeddingSettings } from '$lib/types';
+} from '#lib/constants';
+import type { ApiEmbeddingStatus, EmbeddingSettings } from '#lib/types';
 import {
 	findEmbeddingProvider,
 	listEmbeddingProviders,
 	localEmbeddingProvider
-} from '$lib/server/embeddings/registry';
-import { countStaleEmbeddings, refreshStaleEmbeddings } from '$lib/server/rag/embedding';
-import { getActiveEmbedding, updateEmbeddingSettings } from '$lib/server/rag/embedding-model';
+} from '#lib/server/embeddings/registry';
+import { countStaleEmbeddings, refreshStaleEmbeddings } from '#lib/server/rag/embedding';
+import { getActiveEmbedding, updateEmbeddingSettings } from '#lib/server/rag/embedding-model';
 import type { RequestHandler } from './$types';
 
 async function embeddingStatus(): Promise<ApiEmbeddingStatus> {

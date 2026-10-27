@@ -2,8 +2,8 @@
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import CircleCheck from '@lucide/svelte/icons/circle-check';
 	import Circle from '@lucide/svelte/icons/circle';
-	import { cn } from '$lib/components/ui/utils';
-	import type { AgentGoal } from '$lib/types';
+	import { cn } from '#lib/components/ui/utils';
+	import type { AgentGoal } from '#lib/types';
 
 	interface Props {
 		goals: AgentGoal[];

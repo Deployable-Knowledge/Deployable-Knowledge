@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Label } from '$lib/components/ui/label';
-	import * as Select from '$lib/components/ui/select';
-	import { vulkanDevicesStore } from '$lib/stores';
+	import { Label } from '#lib/components/ui/label';
+	import * as Select from '#lib/components/ui/select';
+	import { vulkanDevicesStore } from '#lib/stores';
 
 	const AUTOMATIC = 'auto';
 

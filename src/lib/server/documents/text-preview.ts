@@ -1,4 +1,4 @@
-import type { DocumentChunk } from '$lib/server/database/schema';
+import type { DocumentChunk } from '#lib/server/database/schema';
 
 export type TextPreviewSegment = {
 	chunkIndexes: number[];

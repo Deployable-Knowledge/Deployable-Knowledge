@@ -1,4 +1,4 @@
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 
 interface PersistedValue<T> {
 	get value(): T;

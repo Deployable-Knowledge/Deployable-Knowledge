@@ -10,21 +10,21 @@
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import WandSparkles from '@lucide/svelte/icons/wand-sparkles';
 	import { SvelteSet } from 'svelte/reactivity';
-	import { infiniteScroll } from '$lib/actions';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import type { FolderSyncStatus } from '$lib/client/folder-sync/sync-engine.svelte';
-	import { Checkbox } from '$lib/components/ui/checkbox';
-	import * as Empty from '$lib/components/ui/empty';
-	import { ScrollArea } from '$lib/components/ui/scroll-area';
-	import { cn } from '$lib/components/ui/utils';
-	import { LOOSE_DOCUMENT_GROUPS, type LooseDocumentGroup } from '$lib/constants';
+	import { infiniteScroll } from '#lib/actions';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import type { FolderSyncStatus } from '#lib/client/folder-sync/sync-engine.svelte';
+	import { Checkbox } from '#lib/components/ui/checkbox';
+	import * as Empty from '#lib/components/ui/empty';
+	import { ScrollArea } from '#lib/components/ui/scroll-area';
+	import { cn } from '#lib/components/ui/utils';
+	import { LOOSE_DOCUMENT_GROUPS, type LooseDocumentGroup } from '#lib/constants';
 	import type {
 		ApiDocumentIngestProgress,
 		ApiDocumentListResponse,
 		ApiSyncedFolder,
 		DocumentRow,
 		PendingDocument
-	} from '$lib/types';
+	} from '#lib/types';
 	import DocumentListItem from './DocumentListItem.svelte';
 	import DocumentPendingItem from './DocumentPendingItem.svelte';
 

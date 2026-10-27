@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { Checkbox } from '$lib/components/ui/checkbox';
-	import { Label } from '$lib/components/ui/label';
-	import { Slider } from '$lib/components/ui/slider';
-	import { AGENT_MAX_TURNS_MIN, AGENT_MAX_TURNS_UNLIMITED } from '$lib/constants';
-	import { settingsStore } from '$lib/stores';
+	import { Checkbox } from '#lib/components/ui/checkbox';
+	import { Label } from '#lib/components/ui/label';
+	import { Slider } from '#lib/components/ui/slider';
+	import { AGENT_MAX_TURNS_MIN, AGENT_MAX_TURNS_UNLIMITED } from '#lib/constants';
+	import { settingsStore } from '#lib/stores';
 
 	const maxTurns = Math.max(
 		32,

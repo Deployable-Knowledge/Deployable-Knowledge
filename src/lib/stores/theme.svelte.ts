@@ -1,4 +1,4 @@
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import { toast } from 'svelte-sonner';
 import {
 	DEFAULT_THEME,
@@ -6,8 +6,8 @@ import {
 	parseThemeMode,
 	type ThemeColor,
 	type ThemeMode
-} from '$lib/constants';
-import { ThemeService } from '$lib/services';
+} from '#lib/constants';
+import { ThemeService } from '#lib/services';
 
 class ThemeStore {
 	private initialized = false;

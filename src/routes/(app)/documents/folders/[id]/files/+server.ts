@@ -2,9 +2,9 @@ import { error, json } from '@sveltejs/kit';
 import type {
 	ApiDocumentFolderFileDeleteRequest,
 	ApiDocumentFolderFileDeleteResponse
-} from '$lib/types';
-import { removeSyncedFiles, syncUploadedFile } from '$lib/server/documents/folder-file-sync';
-import { ingestStreamResponse } from '$lib/server/documents/ingest-response';
+} from '#lib/types';
+import { removeSyncedFiles, syncUploadedFile } from '#lib/server/documents/folder-file-sync';
+import { ingestStreamResponse } from '#lib/server/documents/ingest-response';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ params, request }) => {

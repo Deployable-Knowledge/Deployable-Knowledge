@@ -1,6 +1,6 @@
 import { error, json } from '@sveltejs/kit';
-import { removeDocument, removeManagedDocumentFile } from '$lib/server/documents/remove-document';
-import { SyncedFoldersRepository } from '$lib/server/repositories';
+import { removeDocument, removeManagedDocumentFile } from '#lib/server/documents/remove-document';
+import { SyncedFoldersRepository } from '#lib/server/repositories';
 import type { RequestHandler } from './$types';
 
 export const DELETE: RequestHandler = async ({ params, url }) => {

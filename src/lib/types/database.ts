@@ -39,4 +39,4 @@ export type {
 	SyncedFolder,
 	Tag,
 	WorkspaceLayout
-} from '$lib/server/database/schema';
+} from '#lib/server/database/schema';

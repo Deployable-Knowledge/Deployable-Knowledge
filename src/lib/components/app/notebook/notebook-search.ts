@@ -1,4 +1,4 @@
-import type { NotebookWithPages } from '$lib/types';
+import type { NotebookWithPages } from '#lib/types';
 
 export interface NotebookSearchResult {
 	notebookId: string;

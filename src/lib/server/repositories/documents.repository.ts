@@ -17,9 +17,9 @@ import type {
 	ApiTranscriptResponse,
 	DocumentRow,
 	DocumentSortMode
-} from '$lib/types';
-import { db } from '$lib/server/database/database';
-import { documentChunks, documentTags, documents, syncedFiles } from '$lib/server/database/schema';
+} from '#lib/types';
+import { db } from '#lib/server/database/database';
+import { documentChunks, documentTags, documents, syncedFiles } from '#lib/server/database/schema';
 
 function likePattern(token: string): string {
 	return `%${token.replace(/[\\%_]/g, '\\$&')}%`;

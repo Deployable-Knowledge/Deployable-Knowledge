@@ -3,8 +3,8 @@ import type {
 	ApiDocumentFolderRegisterRequest,
 	ApiDocumentFolderRegisterResponse,
 	ApiDocumentFoldersResponse
-} from '$lib/types';
-import { SyncedFoldersRepository } from '$lib/server/repositories';
+} from '#lib/types';
+import { SyncedFoldersRepository } from '#lib/server/repositories';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async () => {

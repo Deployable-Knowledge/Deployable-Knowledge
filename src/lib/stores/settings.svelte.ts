@@ -4,14 +4,14 @@ import {
 	REASONING_PRESETS,
 	reasoningEffortForBudget,
 	type ReasoningEffort
-} from '$lib/constants';
-import { RetrievalMode } from '$lib/enums';
+} from '#lib/constants';
+import { RetrievalMode } from '#lib/enums';
 import {
 	ProfilesService,
 	PromptTemplatesService,
 	ProvidersService,
 	ToolsService
-} from '$lib/services';
+} from '#lib/services';
 import type {
 	AssistantConfig,
 	AssistantProfile,
@@ -23,7 +23,7 @@ import type {
 	ApiPromptTemplateRequest,
 	ApiProviderModelGroup,
 	PromptTemplate
-} from '$lib/types';
+} from '#lib/types';
 
 class SettingsStore {
 	private initialized = false;

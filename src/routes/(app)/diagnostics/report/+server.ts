@@ -2,7 +2,7 @@ import {
 	buildDiagnosticsSnapshot,
 	formatDiagnosticsReport,
 	readDiagnosticEvents
-} from '$lib/server/diagnostics';
+} from '#lib/server/diagnostics';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async () => {

@@ -7,22 +7,22 @@
 		pickDirectory,
 		pickFiles,
 		supportsFolderSync
-	} from '$lib/utils';
-	import { collectFiles } from '$lib/client/folder-sync/walk';
-	import { DialogConfirmation } from '$lib/components/app/dialogs';
-	import { WorkspaceWindow } from '$lib/components/app/workspace/WorkspaceWindow';
-	import { Button } from '$lib/components/ui/button';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
+	} from '#lib/utils';
+	import { collectFiles } from '#lib/client/folder-sync/walk';
+	import { DialogConfirmation } from '#lib/components/app/dialogs';
+	import { WorkspaceWindow } from '#lib/components/app/workspace/WorkspaceWindow';
+	import { Button } from '#lib/components/ui/button';
+	import * as Dialog from '#lib/components/ui/dialog';
+	import { Input } from '#lib/components/ui/input';
+	import { Label } from '#lib/components/ui/label';
 	import {
 		isNotebookImportFileName,
 		NOTEBOOK_IMPORT_EXTENSIONS,
 		NOTEBOOK_TEXT_CHARACTER_LIMIT,
 		NOTEBOOK_TEXT_WARNING_CHARACTER_COUNT
-	} from '$lib/constants';
-	import { notebooksStore } from '$lib/stores';
-	import type { NotebookPage, NotebookSourceItem, NotebookWithPages } from '$lib/types';
+	} from '#lib/constants';
+	import { notebooksStore } from '#lib/stores';
+	import type { NotebookPage, NotebookSourceItem, NotebookWithPages } from '#lib/types';
 	import { notebookCountLabel } from './notebook-format';
 	import type { NotebookDeleteTarget, NotebookRenameTarget, NotebookView } from './notebook-types';
 	import NotebookEditor from './NotebookEditor.svelte';
@@ -34,7 +34,7 @@
 	import {
 		insertNotebookCitationsTable,
 		insertNotebookSourceCitation
-	} from '$lib/utils/notebook-citations';
+	} from '#lib/utils/notebook-citations';
 
 	interface Props {
 		collapsed?: boolean;

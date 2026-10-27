@@ -1,4 +1,4 @@
-import type { CustomProviderRecord } from '$lib/server/database/schema';
+import type { CustomProviderRecord } from '#lib/server/database/schema';
 import {
 	Provider,
 	type ProviderChatChunk,

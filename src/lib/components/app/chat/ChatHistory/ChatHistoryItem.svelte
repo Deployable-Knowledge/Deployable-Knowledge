@@ -2,9 +2,9 @@
 	import Ellipsis from '@lucide/svelte/icons/ellipsis';
 	import Pencil from '@lucide/svelte/icons/pencil';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import type { Session } from '$lib/types';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import * as DropdownMenu from '#lib/components/ui/dropdown-menu';
+	import type { Session } from '#lib/types';
 
 	interface Props {
 		active?: boolean;

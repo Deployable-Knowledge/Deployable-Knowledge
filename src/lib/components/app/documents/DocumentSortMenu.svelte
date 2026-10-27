@@ -1,11 +1,11 @@
 <script lang="ts">
 	import ArrowUpDown from '@lucide/svelte/icons/arrow-up-down';
 	import { mergeProps } from 'bits-ui';
-	import { buttonVariants } from '$lib/components/ui/button';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import * as Tooltip from '$lib/components/ui/tooltip';
-	import { cn } from '$lib/components/ui/utils';
-	import { DOCUMENT_SORT_OPTIONS, type DocumentSortMode } from '$lib/utils';
+	import { buttonVariants } from '#lib/components/ui/button';
+	import * as DropdownMenu from '#lib/components/ui/dropdown-menu';
+	import * as Tooltip from '#lib/components/ui/tooltip';
+	import { cn } from '#lib/components/ui/utils';
+	import { DOCUMENT_SORT_OPTIONS, type DocumentSortMode } from '#lib/utils';
 
 	interface Props {
 		onChange: (value: DocumentSortMode) => void;

@@ -1,4 +1,4 @@
-import type { ApiSyncFileStat } from '$lib/types';
+import type { ApiSyncFileStat } from '#lib/types';
 
 export interface RenamePlan {
 	replaces: Map<string, string>;

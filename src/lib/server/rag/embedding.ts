@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { and, asc, count, eq, gt, isNull, ne, or } from 'drizzle-orm';
-import { LOCAL_MODEL_PROVIDER_ID } from '$lib/constants';
+import { LOCAL_MODEL_PROVIDER_ID } from '#lib/constants';
 import { db } from '../database/database';
 import {
 	documentChunks,

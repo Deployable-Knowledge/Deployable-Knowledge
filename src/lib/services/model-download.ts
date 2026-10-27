@@ -2,8 +2,8 @@ import type {
 	ApiDocumentIngestProgress,
 	ApiLocalModelDownloadEvent,
 	ApiLocalModelDownloadRequest
-} from '$lib/types';
-import { apiStream, formatBytes, parseNdjsonStream } from '$lib/utils';
+} from '#lib/types';
+import { apiStream, formatBytes, parseNdjsonStream } from '#lib/utils';
 
 export async function streamModelDownload(
 	endpoint: string,

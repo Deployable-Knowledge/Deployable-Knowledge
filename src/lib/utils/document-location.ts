@@ -1,4 +1,4 @@
-import type { Document } from '$lib/types';
+import type { Document } from '#lib/types';
 
 export function describeDocumentLocation(
 	sourceType: Document['sourceType'] | undefined,

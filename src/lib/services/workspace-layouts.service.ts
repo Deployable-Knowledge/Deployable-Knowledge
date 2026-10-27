@@ -1,12 +1,12 @@
-import { API_WORKSPACE_LAYOUTS } from '$lib/constants';
+import { API_WORKSPACE_LAYOUTS } from '#lib/constants';
 import type {
 	ApiReorderRequest,
 	ApiWorkspaceLayoutCreateRequest,
 	ApiWorkspaceLayoutUpdateRequest,
 	WorkspaceLayout,
 	WorkspaceLayoutStateResponse
-} from '$lib/types';
-import { apiDelete, apiFetch, apiPatch, apiPost, type ApiFetchOptions } from '$lib/utils';
+} from '#lib/types';
+import { apiDelete, apiFetch, apiPatch, apiPost, type ApiFetchOptions } from '#lib/utils';
 
 export class WorkspaceLayoutsService {
 	static list() {

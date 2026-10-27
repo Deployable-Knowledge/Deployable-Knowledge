@@ -1,6 +1,6 @@
-import type { CustomProviderType } from '$lib/constants';
-import type { CustomProviderRecord } from '$lib/server/database/schema';
-import { CustomProvidersRepository } from '$lib/server/repositories';
+import type { CustomProviderType } from '#lib/constants';
+import type { CustomProviderRecord } from '#lib/server/database/schema';
+import { CustomProvidersRepository } from '#lib/server/repositories';
 import { LlamaCpp } from './llamacpp';
 import { Ollama } from './ollama';
 import { OpenAiCompatible } from './openai-compatible';

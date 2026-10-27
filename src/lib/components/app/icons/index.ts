@@ -1,5 +1,5 @@
 import type { Component } from 'svelte';
-import type { ModelIconId } from '$lib/constants';
+import type { ModelIconId } from '#lib/constants';
 import GemmaIcon from './GemmaIcon.svelte';
 import NomicIcon from './NomicIcon.svelte';
 

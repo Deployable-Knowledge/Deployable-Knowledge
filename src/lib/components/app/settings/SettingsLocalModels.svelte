@@ -1,9 +1,9 @@
 <script lang="ts">
 	import HardDrive from '@lucide/svelte/icons/hard-drive';
 	import { onMount } from 'svelte';
-	import { DialogConfirmation } from '$lib/components/app/dialogs';
-	import { LOCAL_MODEL_PROVIDER_ID, LOCAL_MODELS, findLocalModelByFile } from '$lib/constants';
-	import { localModelsStore, settingsStore } from '$lib/stores';
+	import { DialogConfirmation } from '#lib/components/app/dialogs';
+	import { LOCAL_MODEL_PROVIDER_ID, LOCAL_MODELS, findLocalModelByFile } from '#lib/constants';
+	import { localModelsStore, settingsStore } from '#lib/stores';
 	import { catalogModelCard, type LocalModelCardData } from './local-model-catalog';
 	import SettingsFieldGroup from './SettingsFieldGroup.svelte';
 	import SettingsModelCard from './SettingsModelCard.svelte';

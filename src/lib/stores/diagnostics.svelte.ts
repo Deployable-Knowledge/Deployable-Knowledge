@@ -1,6 +1,6 @@
-import { browser } from '$app/environment';
-import { DiagnosticsService } from '$lib/services';
-import type { ApiDiagnosticsSnapshot, DiagnosticEvent } from '$lib/types';
+import { browser } from '$app/env';
+import { DiagnosticsService } from '#lib/services';
+import type { ApiDiagnosticsSnapshot, DiagnosticEvent } from '#lib/types';
 
 const CLIENT_EVENT_LIMIT = 500;
 const EVENT_POLL_INTERVAL_MS = 2_000;

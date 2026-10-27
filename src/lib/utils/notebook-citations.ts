@@ -1,5 +1,5 @@
-import { APP_PREVIEW } from '$lib/constants';
-import type { NotebookSourceItem } from '$lib/types';
+import { APP_PREVIEW } from '#lib/constants';
+import type { NotebookSourceItem } from '#lib/types';
 
 export interface CitationInsertion {
 	text: string;

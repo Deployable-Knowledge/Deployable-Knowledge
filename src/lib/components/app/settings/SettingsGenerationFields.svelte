@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import { settingsStore } from '$lib/stores';
+	import { Input } from '#lib/components/ui/input';
+	import { Label } from '#lib/components/ui/label';
+	import { settingsStore } from '#lib/stores';
 
 	function numberValue(event: Event, fallback: number): number {
 		const value =

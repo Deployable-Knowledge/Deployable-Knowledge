@@ -13,9 +13,9 @@
 	import SquareCode from '@lucide/svelte/icons/square-code';
 	import Strikethrough from '@lucide/svelte/icons/strikethrough';
 	import TextQuote from '@lucide/svelte/icons/text-quote';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import * as Popover from '$lib/components/ui/popover';
-	import { Separator } from '$lib/components/ui/separator';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import * as Popover from '#lib/components/ui/popover';
+	import { Separator } from '#lib/components/ui/separator';
 	import type { RibbonCommand } from './notebook-editing';
 
 	interface Props {

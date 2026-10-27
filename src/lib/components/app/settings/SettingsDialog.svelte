@@ -26,11 +26,11 @@
 	import SettingsProviders from './SettingsProviders.svelte';
 	import SettingsRetrievalSection from './SettingsRetrievalSection.svelte';
 	import SettingsToolsSection from './SettingsToolsSection.svelte';
-	import { DiagnosticsConsole } from '$lib/components/app/diagnostics';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import { Input } from '$lib/components/ui/input';
-	import { Skeleton } from '$lib/components/ui/skeleton';
-	import { settingsDialogStore, settingsStore, type SettingsSection } from '$lib/stores';
+	import { DiagnosticsConsole } from '#lib/components/app/diagnostics';
+	import * as Dialog from '#lib/components/ui/dialog';
+	import { Input } from '#lib/components/ui/input';
+	import { Skeleton } from '#lib/components/ui/skeleton';
+	import { settingsDialogStore, settingsStore, type SettingsSection } from '#lib/stores';
 
 	interface SectionDefinition {
 		id: SettingsSection;

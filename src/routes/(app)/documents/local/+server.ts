@@ -1,7 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
-import type { ApiDocumentLocalOnlyRequest } from '$lib/types';
-import { refreshStaleEmbeddings } from '$lib/server/rag/embedding';
-import { DocumentsRepository } from '$lib/server/repositories';
+import type { ApiDocumentLocalOnlyRequest } from '#lib/types';
+import { refreshStaleEmbeddings } from '#lib/server/rag/embedding';
+import { DocumentsRepository } from '#lib/server/repositories';
 
 export const PATCH: RequestHandler = async ({ request }) => {
 	const body = (await request.json()) as ApiDocumentLocalOnlyRequest;

@@ -1,4 +1,4 @@
-import type { ApiLocalModelDownloadEvent } from '$lib/types';
+import type { ApiLocalModelDownloadEvent } from '#lib/types';
 import { ndjsonTaskResponse } from './ndjson-response';
 
 const PROGRESS_INTERVAL_MS = 300;

@@ -3,13 +3,13 @@
 	import Pencil from '@lucide/svelte/icons/pencil';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import { toast } from 'svelte-sonner';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import { DialogConfirmation, DialogPromptTemplate } from '$lib/components/app/dialogs';
-	import { Label } from '$lib/components/ui/label';
-	import * as Select from '$lib/components/ui/select';
-	import { DEFAULT_PROMPT_TEMPLATE } from '$lib/constants';
-	import { settingsStore } from '$lib/stores';
-	import type { ApiPromptTemplateRequest, PromptTemplate } from '$lib/types';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import { DialogConfirmation, DialogPromptTemplate } from '#lib/components/app/dialogs';
+	import { Label } from '#lib/components/ui/label';
+	import * as Select from '#lib/components/ui/select';
+	import { DEFAULT_PROMPT_TEMPLATE } from '#lib/constants';
+	import { settingsStore } from '#lib/stores';
+	import type { ApiPromptTemplateRequest, PromptTemplate } from '#lib/types';
 
 	let editorOpen = $state(false);
 	let deleteOpen = $state(false);

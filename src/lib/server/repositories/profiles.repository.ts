@@ -1,6 +1,6 @@
 import { asc, eq } from 'drizzle-orm';
-import { db } from '$lib/server/database/database';
-import { profiles } from '$lib/server/database/schema';
+import { db } from '#lib/server/database/database';
+import { profiles } from '#lib/server/database/schema';
 
 export class ProfilesRepository {
 	static list() {

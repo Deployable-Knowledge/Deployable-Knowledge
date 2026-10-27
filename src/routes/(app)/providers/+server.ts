@@ -1,13 +1,13 @@
 import { error, json } from '@sveltejs/kit';
 
-import { CUSTOM_PROVIDER_TYPES } from '$lib/constants';
-import type { ApiCustomProviderCreateRequest, ApiProviderInfo } from '$lib/types';
+import { CUSTOM_PROVIDER_TYPES } from '#lib/constants';
+import type { ApiCustomProviderCreateRequest, ApiProviderInfo } from '#lib/types';
 import {
 	parseCustomProviderRequest,
 	toApiProviderInfo
-} from '$lib/server/providers/custom-provider-values';
-import { listBuiltInProviders } from '$lib/server/providers/registry';
-import { CustomProvidersRepository } from '$lib/server/repositories';
+} from '#lib/server/providers/custom-provider-values';
+import { listBuiltInProviders } from '#lib/server/providers/registry';
+import { CustomProvidersRepository } from '#lib/server/repositories';
 
 import type { RequestHandler } from './$types';
 

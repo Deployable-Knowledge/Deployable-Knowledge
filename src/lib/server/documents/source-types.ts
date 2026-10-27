@@ -2,19 +2,19 @@
 // plus a sourceType enum member and a viewer if the format needs one.
 
 import { extname } from 'node:path';
-import { INGEST_FORMATS, type DocumentSourceKind } from '$lib/constants/ingest-formats';
-import type { Document } from '$lib/types';
-import { assertIngestableAudioSize } from '$lib/utils';
-import type { ExtractionResult, ParsedChunk, Source } from '$lib/server/rag/chunk/parse-shared';
-import { extractText } from '$lib/server/rag/chunk/text-extract';
-import { extractPlainText } from '$lib/server/rag/chunk/text-file-extract';
-import { extractCsv } from '$lib/server/rag/chunk/tabular-extract';
-import { extractSpreadsheet } from '$lib/server/rag/chunk/spreadsheet-extract';
+import { INGEST_FORMATS, type DocumentSourceKind } from '#lib/constants/ingest-formats';
+import type { Document } from '#lib/types';
+import { assertIngestableAudioSize } from '#lib/utils';
+import type { ExtractionResult, ParsedChunk, Source } from '#lib/server/rag/chunk/parse-shared';
+import { extractText } from '#lib/server/rag/chunk/text-extract';
+import { extractPlainText } from '#lib/server/rag/chunk/text-file-extract';
+import { extractCsv } from '#lib/server/rag/chunk/tabular-extract';
+import { extractSpreadsheet } from '#lib/server/rag/chunk/spreadsheet-extract';
 import {
 	attachTranscriptTimings,
 	extractTranscript
-} from '$lib/server/rag/chunk/transcript-extract';
-import { extractYoutubeTranscript } from '$lib/server/rag/chunk/youtube-extract';
+} from '#lib/server/rag/chunk/transcript-extract';
+import { extractYoutubeTranscript } from '#lib/server/rag/chunk/youtube-extract';
 import { convertOfficeToPdf } from './office-converter';
 
 export type SourceTypeHandler = {

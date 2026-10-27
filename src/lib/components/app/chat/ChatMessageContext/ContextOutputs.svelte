@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { AgentOutput } from '$lib/types';
+	import type { AgentOutput } from '#lib/types';
 
 	interface Props {
 		outputs: Exclude<AgentOutput, { type: 'source' }>[];

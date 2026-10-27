@@ -1,6 +1,6 @@
 import type { ProviderToolCall, ProviderToolDefinition } from '../providers/provider';
 import type { AgentTool, ToolExecutionContext, ToolExecutionResult } from './types';
-import type { ApiAgentTool, ChatMode } from '$lib/types';
+import type { ApiAgentTool, ChatMode } from '#lib/types';
 import { createToolResult } from './result';
 
 export class ToolRegistry {

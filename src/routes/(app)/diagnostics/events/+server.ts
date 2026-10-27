@@ -1,5 +1,5 @@
 import { error, json } from '@sveltejs/kit';
-import { readDiagnosticEvents } from '$lib/server/diagnostics';
+import { readDiagnosticEvents } from '#lib/server/diagnostics';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ url }) => {

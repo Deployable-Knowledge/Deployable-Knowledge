@@ -1,13 +1,13 @@
 import { randomUUID } from 'node:crypto';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { and, asc, eq, max } from 'drizzle-orm';
-import type { ApiNotebookPageMoveRequest } from '$lib/types';
-import { db } from '$lib/server/database/database';
-import { notebookPages, notebooks, type NewNotebookPage } from '$lib/server/database/schema';
+import type { ApiNotebookPageMoveRequest } from '#lib/types';
+import { db } from '#lib/server/database/database';
+import { notebookPages, notebooks, type NewNotebookPage } from '#lib/server/database/schema';
 import {
 	loadNotebookState,
 	setActiveNotebook
-} from '$lib/server/repositories/notebooks.repository';
+} from '#lib/server/repositories/notebooks.repository';
 
 export const PATCH: RequestHandler = async ({ params, request }) => {
 	const sourceNotebookId = params.id;

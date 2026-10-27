@@ -1,6 +1,6 @@
-import { API_LOCAL_MODELS } from '$lib/constants';
-import type { ApiDocumentIngestProgress, ApiLocalModelsStatus } from '$lib/types';
-import { apiDelete, apiFetch } from '$lib/utils';
+import { API_LOCAL_MODELS } from '#lib/constants';
+import type { ApiDocumentIngestProgress, ApiLocalModelsStatus } from '#lib/types';
+import { apiDelete, apiFetch } from '#lib/utils';
 import { streamModelDownload } from './model-download';
 
 export class LocalModelsService {

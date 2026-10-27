@@ -1,12 +1,12 @@
-import { API_PROVIDERS } from '$lib/constants';
+import { API_PROVIDERS } from '#lib/constants';
 import type {
 	ApiCustomProviderCreateRequest,
 	ApiCustomProviderRequest,
 	ApiProviderInfo,
 	ApiProviderModelCapabilities,
 	ApiProviderModelGroup
-} from '$lib/types';
-import { apiDelete, apiFetch, apiPatch, apiPost } from '$lib/utils';
+} from '#lib/types';
+import { apiDelete, apiFetch, apiPatch, apiPost } from '#lib/utils';
 
 export class ProvidersService {
 	static list() {

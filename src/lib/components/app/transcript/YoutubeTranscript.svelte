@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Video from '@lucide/svelte/icons/video';
-	import { Button } from '$lib/components/ui/button';
-	import type { ApiTranscriptResponse } from '$lib/types';
-	import { watchUrl, watchUrlAtMs } from '$lib/utils';
+	import { Button } from '#lib/components/ui/button';
+	import type { ApiTranscriptResponse } from '#lib/types';
+	import { watchUrl, watchUrlAtMs } from '#lib/utils';
 	import TranscriptChunk from './TranscriptChunk.svelte';
 	import { formatTimestamp } from './timestamp';
 

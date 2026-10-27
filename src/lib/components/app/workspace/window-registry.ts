@@ -3,13 +3,13 @@ import Files from '@lucide/svelte/icons/files';
 import History from '@lucide/svelte/icons/history';
 import MessageSquare from '@lucide/svelte/icons/message-square';
 import Search from '@lucide/svelte/icons/search';
-import ChatWindow from '$lib/components/app/chat/ChatWindow.svelte';
-import ChatHistoryWindow from '$lib/components/app/chat/ChatHistory/ChatHistoryWindow.svelte';
-import DocumentsWindow from '$lib/components/app/documents/DocumentsWindow.svelte';
-import NotebookWindow from '$lib/components/app/notebook/NotebookWindow.svelte';
-import SearchWindow from '$lib/components/app/search/SearchWindow.svelte';
-import { WORKSPACE_WINDOW_IDS } from '$lib/constants';
-import { WindowColumn } from '$lib/enums';
+import ChatWindow from '#lib/components/app/chat/ChatWindow.svelte';
+import ChatHistoryWindow from '#lib/components/app/chat/ChatHistory/ChatHistoryWindow.svelte';
+import DocumentsWindow from '#lib/components/app/documents/DocumentsWindow.svelte';
+import NotebookWindow from '#lib/components/app/notebook/NotebookWindow.svelte';
+import SearchWindow from '#lib/components/app/search/SearchWindow.svelte';
+import { WORKSPACE_WINDOW_IDS } from '#lib/constants';
+import { WindowColumn } from '#lib/enums';
 import type { Component } from 'svelte';
 
 export interface WindowInstanceProps {

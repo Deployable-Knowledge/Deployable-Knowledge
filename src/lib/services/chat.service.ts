@@ -1,12 +1,12 @@
-import { API_SESSIONS } from '$lib/constants';
+import { API_SESSIONS } from '#lib/constants';
 import type {
 	ApiChatMessageRequest,
 	ApiChatStreamEvent,
 	ApiSessionTitleRequest,
 	Session,
 	SessionMessage
-} from '$lib/types';
-import { apiDelete, apiFetch, apiPatch, apiStream, parseNdjsonStream } from '$lib/utils';
+} from '#lib/types';
+import { apiDelete, apiFetch, apiPatch, apiStream, parseNdjsonStream } from '#lib/utils';
 
 export class ChatService {
 	static listSessions() {

@@ -1,6 +1,6 @@
 import Server from '@lucide/svelte/icons/server';
 import type { Component } from 'svelte';
-import type { CustomProviderType } from '$lib/constants';
+import type { CustomProviderType } from '#lib/constants';
 
 export interface CustomProviderTypeOption {
 	baseUrlPlaceholder: string;

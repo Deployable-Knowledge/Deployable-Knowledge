@@ -5,7 +5,7 @@ import {
 	type ExtractedChunk,
 	type ParsedChunk
 } from './parse-shared';
-import { RAG_CHUNK_CHARACTER_LIMIT } from '$lib/constants';
+import { RAG_CHUNK_CHARACTER_LIMIT } from '#lib/constants';
 
 const MIN_WORDS = 5;
 const OVERLAP_SENTENCES = 1;

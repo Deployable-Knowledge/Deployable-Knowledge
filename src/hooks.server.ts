@@ -1,9 +1,9 @@
-import type { Handle, ServerInit } from '@sveltejs/kit';
-import { getThemeSettings } from '$lib/server/database/app-state';
-import { bootstrapSchema } from '$lib/server/database/bootstrap-schema';
-import { configureDatabase } from '$lib/server/database/database';
-import { applyVulkanDevice } from '$lib/server/providers/vulkan-devices';
-import { refreshStaleEmbeddings } from '$lib/server/rag/embedding';
+import type { Handle, ServerInit } from '@sveltejs/kit/hooks';
+import { getThemeSettings } from '#lib/server/database/app-state';
+import { bootstrapSchema } from '#lib/server/database/bootstrap-schema';
+import { configureDatabase } from '#lib/server/database/database';
+import { applyVulkanDevice } from '#lib/server/providers/vulkan-devices';
+import { refreshStaleEmbeddings } from '#lib/server/rag/embedding';
 
 // The theme lives in the database, so it cannot be read before paint the way a
 // localStorage value can. Stamping it onto <html> during render keeps the boot

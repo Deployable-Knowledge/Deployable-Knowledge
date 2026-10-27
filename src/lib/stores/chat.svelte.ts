@@ -1,6 +1,6 @@
-import { STORAGE_KEYS } from '$lib/constants';
+import { STORAGE_KEYS } from '#lib/constants';
 import { SvelteMap } from 'svelte/reactivity';
-import { ChatService } from '$lib/services';
+import { ChatService } from '#lib/services';
 import { persisted } from './persisted.svelte';
 import type {
 	AgentGoal,
@@ -10,7 +10,7 @@ import type {
 	ApiChatStreamEvent,
 	Session,
 	SessionMessage
-} from '$lib/types';
+} from '#lib/types';
 
 class ChatConversation {
 	session = $state<Session | undefined>(undefined);

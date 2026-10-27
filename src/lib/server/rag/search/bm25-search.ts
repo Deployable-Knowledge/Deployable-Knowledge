@@ -1,6 +1,6 @@
 // DB-backed BM25 search.
 
-import { DEFAULT_ASSISTANT_CONFIG } from '$lib/constants';
+import { DEFAULT_ASSISTANT_CONFIG } from '#lib/constants';
 import { databaseClient } from '../../database/database';
 import { ensureChunkFts } from '../../database/chunk-fts';
 import {

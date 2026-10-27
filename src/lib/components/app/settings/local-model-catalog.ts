@@ -1,6 +1,6 @@
 import type { Component } from 'svelte';
-import { MODEL_ICONS } from '$lib/components/app/icons';
-import type { DownloadableModel } from '$lib/constants';
+import { MODEL_ICONS } from '#lib/components/app/icons';
+import type { DownloadableModel } from '#lib/constants';
 
 export interface LocalModelCardData {
 	fileName: string;

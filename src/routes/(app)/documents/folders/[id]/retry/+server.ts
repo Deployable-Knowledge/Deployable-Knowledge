@@ -1,6 +1,6 @@
 import { error, json } from '@sveltejs/kit';
-import type { ApiDocumentFolderRetryResponse } from '$lib/types';
-import { SyncedFoldersRepository } from '$lib/server/repositories';
+import type { ApiDocumentFolderRetryResponse } from '#lib/types';
+import { SyncedFoldersRepository } from '#lib/server/repositories';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ params }) => {

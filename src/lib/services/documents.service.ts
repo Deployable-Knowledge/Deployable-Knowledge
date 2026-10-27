@@ -1,4 +1,4 @@
-import { API_DOCUMENTS } from '$lib/constants';
+import { API_DOCUMENTS } from '#lib/constants';
 import type {
 	ApiDocumentActivationRequest,
 	ApiDocumentAutotagEntry,
@@ -27,8 +27,8 @@ import type {
 	ApiDocumentTextRequest,
 	ApiDocumentUrlRequest,
 	ApiSyncFileStat
-} from '$lib/types';
-import { apiDelete, apiFetch, apiPatch, apiPost, apiStream, parseNdjsonStream } from '$lib/utils';
+} from '#lib/types';
+import { apiDelete, apiFetch, apiPatch, apiPost, apiStream, parseNdjsonStream } from '#lib/utils';
 
 function searchString(entries: [string, string | number | string[] | undefined][]): string {
 	const params = new URLSearchParams();

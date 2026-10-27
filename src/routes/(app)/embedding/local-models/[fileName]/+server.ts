@@ -1,7 +1,7 @@
 import { error, json } from '@sveltejs/kit';
-import { findLocalEmbeddingModel, LOCAL_MODEL_PROVIDER_ID } from '$lib/constants';
-import { localEmbeddingProvider } from '$lib/server/embeddings/registry';
-import { getCurrentEmbeddingSettings } from '$lib/server/rag/embedding-model';
+import { findLocalEmbeddingModel, LOCAL_MODEL_PROVIDER_ID } from '#lib/constants';
+import { localEmbeddingProvider } from '#lib/server/embeddings/registry';
+import { getCurrentEmbeddingSettings } from '#lib/server/rag/embedding-model';
 import type { RequestHandler } from './$types';
 
 export const DELETE: RequestHandler = async ({ params }) => {

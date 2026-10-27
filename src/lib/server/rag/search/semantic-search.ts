@@ -1,7 +1,7 @@
 import { setImmediate as yieldEventLoop } from 'node:timers/promises';
 import { and, eq, inArray } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
-import { DEFAULT_ASSISTANT_CONFIG } from '$lib/constants';
+import { DEFAULT_ASSISTANT_CONFIG } from '#lib/constants';
 import { db } from '../../database/database';
 import { documentChunks, documents } from '../../database/schema';
 import { embedTexts, getActiveEmbedding } from '../embedding-model';

@@ -2,10 +2,10 @@
 	import Plus from '@lucide/svelte/icons/plus';
 	import Search from '@lucide/svelte/icons/search';
 	import Upload from '@lucide/svelte/icons/upload';
-	import { ActionIcon } from '$lib/components/app/actions';
-	import * as Tooltip from '$lib/components/ui/tooltip';
-	import type { NotebookSourceItem } from '$lib/types';
-	import { FOLDER_IMPORT_UNSUPPORTED_MESSAGE } from '$lib/utils';
+	import { ActionIcon } from '#lib/components/app/actions';
+	import * as Tooltip from '#lib/components/ui/tooltip';
+	import type { NotebookSourceItem } from '#lib/types';
+	import { FOLDER_IMPORT_UNSUPPORTED_MESSAGE } from '#lib/utils';
 	import { NotebookSourcesPanel } from './NotebookSourcesPanel';
 	import type { NotebookView } from './notebook-types';
 

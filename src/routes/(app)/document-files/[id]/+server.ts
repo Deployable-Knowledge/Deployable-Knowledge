@@ -2,9 +2,9 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { error } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
-import { db } from '$lib/server/database/database';
-import { documents } from '$lib/server/database/schema';
-import { previewPathFor } from '$lib/server/documents/managed-artifacts';
+import { db } from '#lib/server/database/database';
+import { documents } from '#lib/server/database/schema';
+import { previewPathFor } from '#lib/server/documents/managed-artifacts';
 import type { RequestHandler } from './$types';
 
 const PDF_BACKED_SOURCE_TYPES = ['PDF', 'DOCX', 'PPTX'];

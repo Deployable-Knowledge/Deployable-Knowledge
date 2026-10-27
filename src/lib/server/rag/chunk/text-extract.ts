@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { setImmediate as yieldEventLoop } from 'node:timers/promises';
 import { PDFParse, type TableArray } from 'pdf-parse';
 import { createWorker, OEM, PSM, type Worker } from 'tesseract.js';
-import { TimeoutError, withTimeout } from '$lib/server/utils/with-timeout';
+import { TimeoutError, withTimeout } from '#lib/server/utils/with-timeout';
 import { extractPageImages, type PageImage, type PdfDocument } from './page-images.ts';
 import {
 	normalizeWhitespace,

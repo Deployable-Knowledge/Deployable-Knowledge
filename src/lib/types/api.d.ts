@@ -1,7 +1,7 @@
-import type { EmbeddingDevice } from '$lib/constants/embedding';
-import type { CustomProviderType } from '$lib/constants/providers';
-import type { ThemeColor, ThemeMode } from '$lib/constants/theme-defaults';
-import type { RetrievalMode } from '$lib/enums';
+import type { EmbeddingDevice } from '#lib/constants/embedding';
+import type { CustomProviderType } from '#lib/constants/providers';
+import type { ThemeColor, ThemeMode } from '#lib/constants/theme-defaults';
+import type { RetrievalMode } from '#lib/enums';
 import type { AgentGoal, AgentProgressEvent } from './agent';
 import type {
 	AssistantProfile,

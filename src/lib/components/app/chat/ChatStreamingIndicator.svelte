@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Streamdown } from 'svelte-streamdown';
-	import type { AgentTraceItem } from '$lib/types';
+	import type { AgentTraceItem } from '#lib/types';
 	import { ChatMessageContext } from './ChatMessageContext';
 
 	interface Props {

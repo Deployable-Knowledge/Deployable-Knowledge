@@ -8,11 +8,11 @@ import {
 	type EmbeddingDevice,
 	type EmbeddingTask,
 	type LocalEmbeddingModel
-} from '$lib/constants';
-import type { EmbeddingBackend } from '$lib/types';
-import { diagnosticEvents } from '$lib/server/diagnostics/events';
-import { createGgufDownloader } from '$lib/server/providers/llamacpp-runtime';
-import { INFERENCE_THREADS } from '$lib/server/utils/inference-threads';
+} from '#lib/constants';
+import type { EmbeddingBackend } from '#lib/types';
+import { diagnosticEvents } from '#lib/server/diagnostics/events';
+import { createGgufDownloader } from '#lib/server/providers/llamacpp-runtime';
+import { INFERENCE_THREADS } from '#lib/server/utils/inference-threads';
 import { EmbeddingProvider, normalizeVector } from './provider';
 
 // Kept apart from `models/`, which the chat provider lists as chat models.

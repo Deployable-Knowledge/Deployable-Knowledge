@@ -1,6 +1,6 @@
-import { API_EMBEDDING } from '$lib/constants';
-import type { ApiDocumentIngestProgress, ApiEmbeddingStatus, EmbeddingSettings } from '$lib/types';
-import { apiDelete, apiFetch, apiPatch } from '$lib/utils';
+import { API_EMBEDDING } from '#lib/constants';
+import type { ApiDocumentIngestProgress, ApiEmbeddingStatus, EmbeddingSettings } from '#lib/types';
+import { apiDelete, apiFetch, apiPatch } from '#lib/utils';
 import { streamModelDownload } from './model-download';
 
 export class EmbeddingService {

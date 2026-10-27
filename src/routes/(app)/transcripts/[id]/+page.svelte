@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { TranscriptPlayer, YoutubeTranscript } from '$lib/components/app/transcript';
-	import { parseYoutubeVideoId } from '$lib/utils';
+	import { TranscriptPlayer, YoutubeTranscript } from '#lib/components/app/transcript';
+	import { parseYoutubeVideoId } from '#lib/utils';
 	import type { PageData } from './$types';
 
 	interface Props {

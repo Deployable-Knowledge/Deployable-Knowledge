@@ -3,7 +3,7 @@ import { createToolResult, sourceOutput } from './result';
 import { clampInteger, clampText, compactText, readObject } from '../utils/values';
 import { ChunksRepository, type ChunkWindow } from '../repositories/chunks.repository';
 import { describeChunkLocation } from '../rag/search/retrieve-rag-context';
-import { RAG_CHUNK_CHARACTER_LIMIT } from '$lib/constants';
+import { RAG_CHUNK_CHARACTER_LIMIT } from '#lib/constants';
 
 const MAX_WINDOW_CHUNKS = 8;
 const DEFAULT_WINDOW_CHUNKS = 4;

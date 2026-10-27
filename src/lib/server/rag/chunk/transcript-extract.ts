@@ -1,10 +1,10 @@
 // Speech has no pages, so a whole transcript enters the chunk pipeline as a single text page.
 
-import { decodeAudioFile } from '$lib/server/transcription/audio-decoder';
+import { decodeAudioFile } from '#lib/server/transcription/audio-decoder';
 import {
 	transcribeAudio,
 	type TranscriptSegment
-} from '$lib/server/transcription/transcription-model';
+} from '#lib/server/transcription/transcription-model';
 import type {
 	ExtractionResult,
 	ParsedChunk,

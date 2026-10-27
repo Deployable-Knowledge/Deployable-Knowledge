@@ -1,5 +1,5 @@
-import { browser } from '$app/environment';
-import { DesktopWindowService } from '$lib/services';
+import { browser } from '$app/env';
+import { DesktopWindowService } from '#lib/services';
 
 class DesktopWindowStore {
 	private initialized = false;

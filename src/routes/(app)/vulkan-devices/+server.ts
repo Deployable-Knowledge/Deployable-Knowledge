@@ -1,8 +1,8 @@
 import { error, json } from '@sveltejs/kit';
 
-import type { ApiVulkanDeviceUpdate } from '$lib/types';
-import { setVulkanDevice } from '$lib/server/database/app-state';
-import { getVulkanDevicesStatus, listVulkanDevices } from '$lib/server/providers/vulkan-devices';
+import type { ApiVulkanDeviceUpdate } from '#lib/types';
+import { setVulkanDevice } from '#lib/server/database/app-state';
+import { getVulkanDevicesStatus, listVulkanDevices } from '#lib/server/providers/vulkan-devices';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async () => json(await getVulkanDevicesStatus());

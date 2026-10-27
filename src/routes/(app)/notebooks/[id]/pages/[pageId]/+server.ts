@@ -1,20 +1,20 @@
 import { randomUUID } from 'node:crypto';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { and, asc, eq } from 'drizzle-orm';
-import { NOTEBOOK_TEXT_CHARACTER_LIMIT } from '$lib/constants';
-import type { ApiNotebookPageContentRequest, ApiNotebookPageTitleRequest } from '$lib/types';
-import { db } from '$lib/server/database/database';
+import { NOTEBOOK_TEXT_CHARACTER_LIMIT } from '#lib/constants';
+import type { ApiNotebookPageContentRequest, ApiNotebookPageTitleRequest } from '#lib/types';
+import { db } from '#lib/server/database/database';
 import {
 	notebookPages,
 	notebooks,
 	type NewNotebookPage,
 	type NotebookPage
-} from '$lib/server/database/schema';
+} from '#lib/server/database/schema';
 import {
 	loadNotebookState,
 	setActiveNotebook
-} from '$lib/server/repositories/notebooks.repository';
-import { countNotebookText } from '$lib/utils/notebook-text';
+} from '#lib/server/repositories/notebooks.repository';
+import { countNotebookText } from '#lib/utils/notebook-text';
 
 type PagePatch = Partial<ApiNotebookPageContentRequest & ApiNotebookPageTitleRequest>;
 

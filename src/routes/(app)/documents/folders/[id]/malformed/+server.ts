@@ -1,7 +1,7 @@
 import { error, json } from '@sveltejs/kit';
-import type { ApiDocumentFolderMalformedRequest } from '$lib/types';
-import { markMalformed } from '$lib/server/documents/folder-file-sync';
-import { SyncedFoldersRepository } from '$lib/server/repositories';
+import type { ApiDocumentFolderMalformedRequest } from '#lib/types';
+import { markMalformed } from '#lib/server/documents/folder-file-sync';
+import { SyncedFoldersRepository } from '#lib/server/repositories';
 import type { RequestHandler } from './$types';
 
 /**

@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 
-import { deleteLocalModel } from '$lib/server/providers/llamacpp-runtime';
+import { deleteLocalModel } from '#lib/server/providers/llamacpp-runtime';
 import type { RequestHandler } from './$types';
 
 export const DELETE: RequestHandler = async ({ params }) => {

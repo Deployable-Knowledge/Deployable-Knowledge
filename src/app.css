@@ -3,7 +3,7 @@
 @source '../node_modules/svelte-streamdown/**/*';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
-@import 'tw-animate-css';
+@import '../node_modules/tw-animate-css/dist/tw-animate.css';
 /* Global so the notebook's table widget is styled even when no chat is mounted */
 @import './lib/components/app/content/MarkdownContent/markdown-content.css';
 

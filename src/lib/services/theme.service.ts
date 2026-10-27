@@ -1,6 +1,6 @@
-import { API_THEME } from '$lib/constants';
-import type { ThemeSettings } from '$lib/types';
-import { apiPatch } from '$lib/utils';
+import { API_THEME } from '#lib/constants';
+import type { ThemeSettings } from '#lib/types';
+import { apiPatch } from '#lib/utils';
 
 export class ThemeService {
 	static update(values: ThemeSettings) {

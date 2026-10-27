@@ -1,7 +1,7 @@
-import { executeToolCall } from '$lib/server/agent/runner';
-import type { ToolExecutionContext } from '$lib/server/tools/types';
-import { readObject } from '$lib/server/utils/values';
-import type { AgentOutput, AgentProgressEvent, AgentTraceItem } from '$lib/types';
+import { executeToolCall } from '#lib/server/agent/runner';
+import type { ToolExecutionContext } from '#lib/server/tools/types';
+import { readObject } from '#lib/server/utils/values';
+import type { AgentOutput, AgentProgressEvent, AgentTraceItem } from '#lib/types';
 
 export type AutoSearchResult = {
 	context: string;

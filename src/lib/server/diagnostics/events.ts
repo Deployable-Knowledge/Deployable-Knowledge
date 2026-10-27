@@ -4,8 +4,8 @@ import type {
 	DiagnosticLevel,
 	DiagnosticSubsystem,
 	EmbeddingBackend
-} from '$lib/types';
-import type { Document } from '$lib/server/database/schema';
+} from '#lib/types';
+import type { Document } from '#lib/server/database/schema';
 
 const MAX_EVENTS = 500;
 

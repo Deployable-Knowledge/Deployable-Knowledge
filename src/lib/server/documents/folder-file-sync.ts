@@ -1,11 +1,11 @@
 import { createHash } from 'node:crypto';
 import { mkdir } from 'node:fs/promises';
 import { and, eq } from 'drizzle-orm';
-import type { ApiDocumentIngestProgress, ApiDocumentIngestResult } from '$lib/types';
-import { db } from '$lib/server/database/database';
-import { documents, syncedFiles, type SyncedFile } from '$lib/server/database/schema';
-import { DocumentsRepository, SyncedFoldersRepository } from '$lib/server/repositories';
-import { ingestDocument } from '$lib/server/rag/ingest-document';
+import type { ApiDocumentIngestProgress, ApiDocumentIngestResult } from '#lib/types';
+import { db } from '#lib/server/database/database';
+import { documents, syncedFiles, type SyncedFile } from '#lib/server/database/schema';
+import { DocumentsRepository, SyncedFoldersRepository } from '#lib/server/repositories';
+import { ingestDocument } from '#lib/server/rag/ingest-document';
 import { managedPathForHash, titleFor } from './ingest-file';
 import { managedExtensionFor, writeManagedArtifacts } from './managed-artifacts';
 import { removeDocument, removeManagedDocumentFile } from './remove-document';

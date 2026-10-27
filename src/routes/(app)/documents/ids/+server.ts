@@ -1,6 +1,6 @@
 import { error, json } from '@sveltejs/kit';
-import type { ApiDocumentListQuery, DocumentListMode } from '$lib/types';
-import { DocumentsRepository } from '$lib/server/repositories';
+import type { ApiDocumentListQuery, DocumentListMode } from '#lib/types';
+import { DocumentsRepository } from '#lib/server/repositories';
 import type { RequestHandler } from './$types';
 
 const MODES: DocumentListMode[] = ['all', 'active', 'inactive'];

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Plug from '@lucide/svelte/icons/plug';
-	import { Button } from '$lib/components/ui/button';
-	import { Label } from '$lib/components/ui/label';
-	import * as Select from '$lib/components/ui/select';
-	import { settingsDialogStore, settingsStore } from '$lib/stores';
+	import { Button } from '#lib/components/ui/button';
+	import { Label } from '#lib/components/ui/label';
+	import * as Select from '#lib/components/ui/select';
+	import { settingsDialogStore, settingsStore } from '#lib/stores';
 
 	const selectedValue = $derived(`${settingsStore.config.provider}::${settingsStore.config.model}`);
 

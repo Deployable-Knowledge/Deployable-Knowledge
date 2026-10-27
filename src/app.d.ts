@@ -1,6 +1,6 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
-import type { DesktopWindowBridge } from '$lib/types';
+import type { DesktopWindowBridge } from '#lib/types';
 
 declare global {
 	namespace App {

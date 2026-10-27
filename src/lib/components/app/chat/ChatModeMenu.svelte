@@ -59,7 +59,7 @@
 			value={mode}
 		>
 			{#each Object.entries(modes) as [value, { icon: Icon, title, description }] (value)}
-				<DropdownMenu.RadioItem {value}>
+				<DropdownMenu.RadioItem indicator={false} {value}>
 					<Icon class="text-muted-foreground" />
 					<span class="grid min-w-0 gap-0.5">
 						<span class="font-medium">{title}</span>

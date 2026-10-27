@@ -20,12 +20,16 @@ if (typeof address !== 'object' || address === null) {
 	throw new Error('The local server did not bind to a TCP port.');
 }
 
-process.env.ORIGIN = `http://127.0.0.1:${address.port}`;
+const PROTOCOL_HEADER = 'x-forwarded-proto';
+process.env.PROTOCOL_HEADER = PROTOCOL_HEADER;
 
 const { handler }: { handler: RequestListener } = await import(
 	pathToFileURL(join(appRoot, 'build', 'handler.js')).href
 );
-server.on('request', handler);
+server.on('request', (request, response) => {
+	request.headers[PROTOCOL_HEADER] = 'http';
+	handler(request, response);
+});
 
 process.send?.({ type: 'listening', port: address.port } satisfies ServerMessage);
 

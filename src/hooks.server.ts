@@ -1,9 +1,13 @@
-import type { Handle, ServerInit } from '@sveltejs/kit/hooks';
+import type { Handle, HandleServerError, ServerInit } from '@sveltejs/kit/hooks';
+import packageMetadata from '../package.json';
 import { getThemeSettings } from '#lib/server/database/app-state';
 import { bootstrapSchema } from '#lib/server/database/bootstrap-schema';
 import { configureDatabase } from '#lib/server/database/database';
+import { createLogger, initializeLogging } from '#lib/server/logging';
 import { applyVulkanDevice } from '#lib/server/providers/vulkan-devices';
 import { refreshStaleEmbeddings } from '#lib/server/rag/embedding';
+
+const log = createLogger('application');
 
 // The theme lives in the database, so it cannot be read before paint the way a
 // localStorage value can. Stamping it onto <html> during render keeps the boot
@@ -17,7 +21,18 @@ export const handle: Handle = async ({ event, resolve }) => {
 	});
 };
 
+export const handleError: HandleServerError = ({ error, event, kind }) => {
+	if (kind !== 'unknown') return;
+	log.error('Unhandled request error', { route: event.route.id }, error);
+};
+
 export const init: ServerInit = async () => {
+	await initializeLogging();
+	log.info('Server started', {
+		runtimeMode: process.env.NODE_ENV === 'development' ? 'development' : 'production',
+		version: packageMetadata.version
+	});
+
 	await configureDatabase();
 
 	// The desktop app has no `drizzle-kit` CLI to run `predev`, so it points the

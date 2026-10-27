@@ -3,6 +3,7 @@ import {
 	AutoTokenizer,
 	type Tensor
 } from '@huggingface/transformers';
+import { createLogger } from '#lib/server/logging';
 import { INFERENCE_THREADS } from '#lib/server/utils/inference-threads';
 import { TRANSFORMERS_CACHE_DIR } from '#lib/server/utils/transformers-env';
 import { sigmoidScore, type CrossEncoder } from './cross-encoder';
@@ -10,6 +11,8 @@ import { sigmoidScore, type CrossEncoder } from './cross-encoder';
 const MODEL_ID = 'Xenova/ms-marco-MiniLM-L-6-v2';
 const MAX_LENGTH = 512;
 const BATCH_SIZE = 32;
+
+const log = createLogger('search');
 
 type Tokenizer = Awaited<ReturnType<typeof AutoTokenizer.from_pretrained>>;
 
@@ -55,7 +58,7 @@ export class MsMarco implements CrossEncoder {
 		if (!this.runtimePromise) {
 			const started = Date.now();
 
-			console.log(`[CrossEncoder] Loading ${this.name}...`);
+			log.info('Loading reranker', { model: this.name });
 
 			this.runtimePromise = Promise.all([
 				AutoTokenizer.from_pretrained(MODEL_ID, {
@@ -70,10 +73,7 @@ export class MsMarco implements CrossEncoder {
 				})
 			])
 				.then(([tokenizer, model]) => {
-					console.log(
-						`[CrossEncoder] ${this.name} ready in ` +
-							`${((Date.now() - started) / 1000).toFixed(1)}s.`
-					);
+					log.info('Reranker ready', { durationMs: Date.now() - started, model: this.name });
 
 					return {
 						tokenizer,

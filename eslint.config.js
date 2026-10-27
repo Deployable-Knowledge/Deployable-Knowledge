@@ -38,6 +38,11 @@ export default defineConfig(
 		}
 	},
 	{
+		files: ['src/hooks.server.ts', 'src/lib/server/**', 'src/routes/**'],
+		ignores: ['src/lib/server/logging/**'],
+		rules: { 'no-console': 'error' }
+	},
+	{
 		files: ['**/*.cjs'],
 		languageOptions: { sourceType: 'commonjs' },
 		rules: { '@typescript-eslint/no-require-imports': 'off' }

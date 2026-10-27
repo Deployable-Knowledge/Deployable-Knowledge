@@ -27,4 +27,5 @@ app.db-*
 # runtime data directories
 /models/
 /documents/
+/logs/
 .cache/

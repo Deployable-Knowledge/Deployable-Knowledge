@@ -24,7 +24,7 @@ import { generateChatTitle } from '#lib/server/chat/generate-chat-title';
 import { getNotebookSourceExcerpts } from '#lib/server/chat/notebook-context';
 import { db } from '#lib/server/database/database';
 import { promptTemplates } from '#lib/server/database/schema';
-import { diagnosticEvents } from '#lib/server/diagnostics/events';
+import { createLogger } from '#lib/server/logging';
 import { getActiveProfile } from '#lib/server/profiles/active-profile';
 import { findProvider } from '#lib/server/providers/registry';
 import type { Provider, ProviderChatOptions } from '#lib/server/providers/provider';
@@ -34,6 +34,8 @@ import { readGoals } from '#lib/server/tools/goals';
 import type { ToolExecutionContext } from '#lib/server/tools/types';
 import { ndjsonTaskResponse } from '#lib/server/utils/ndjson-response';
 import type { RequestHandler } from './$types';
+
+const log = createLogger('chat');
 
 export const POST: RequestHandler = async ({ params, request }) => {
 	const body = (await request.json()) as ApiChatMessageRequest;
@@ -114,9 +116,8 @@ export const POST: RequestHandler = async ({ params, request }) => {
 			assistantContent,
 			metadata,
 			createdAt
-		}).catch(() => {
-			console.error('Failed to persist chat turn.');
-			diagnosticEvents.chatPersistenceFailed();
+		}).catch((cause: unknown) => {
+			log.error('Chat turn could not be saved', {}, cause);
 			return false;
 		}));
 
@@ -181,9 +182,11 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		});
 
 		send({ type: 'complete', modelTurns: result.modelTurns, toolCalls, saved });
-		diagnosticEvents.chatCompleted({
+		log.info('Chat generation completed', {
 			durationMs: Date.now() - started,
+			model: modelId,
 			modelTurns: result.modelTurns,
+			provider: providerId,
 			toolCalls,
 			toolTurns: result.toolTurns
 		});
@@ -193,20 +196,19 @@ export const POST: RequestHandler = async ({ params, request }) => {
 			const title = await generateChatTitle(message, provider, modelId, options);
 			await SessionsRepository.rename(params.id, title);
 			send({ type: 'title', title });
-		} catch {
-			console.error('Title generation error.');
-			diagnosticEvents.chatTitleFailed();
+		} catch (cause) {
+			log.warn('Conversation title generation failed', { model: modelId }, cause);
 		}
 	};
 
 	return ndjsonTaskResponse<ApiChatStreamEvent>(
+		log,
 		'Chat generation',
 		async (emit) => {
 			try {
 				await generate(emit);
 			} catch (error) {
 				if (abortController.signal.aborted) return;
-				diagnosticEvents.chatGenerationFailed();
 				throw error;
 			} finally {
 				finished = true;
@@ -214,7 +216,7 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		},
 		(error) => ({ type: 'error', message: error instanceof Error ? error.message : String(error) }),
 		() => {
-			if (!finished) diagnosticEvents.chatCancelled();
+			if (!finished) log.info('Chat generation cancelled');
 			abortController.abort();
 			void persistTurn(partialContent, null);
 		}

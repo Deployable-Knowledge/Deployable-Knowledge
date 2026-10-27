@@ -6,10 +6,12 @@ import type { Llama, LlamaChat, LlamaContext, LlamaModel, ModelDownloader } from
 
 import type { DownloadableModel, LocalModel } from '#lib/constants/local-models';
 import type { LlamaGpuMode } from '#lib/types';
+import { createLogger } from '#lib/server/logging';
 
 export type SupportedGpuType = Exclude<LlamaGpuMode, 'auto' | 'cpu'>;
 
 const MODELS_DIR = resolve(process.cwd(), 'models');
+const log = createLogger('models');
 
 const MODEL_FILE_PATTERN = /^[\w][\w.-]*\.gguf$/i;
 
@@ -39,7 +41,7 @@ async function createLlama(gpu: LlamaGpuMode): Promise<Llama> {
 	try {
 		return await mod.getLlama({ gpu });
 	} catch (error) {
-		console.warn(`[llamacpp] Failed to initialize ${gpu} backend, falling back to CPU:`, error);
+		log.warn('GPU backend failed to initialize; falling back to CPU', { gpu }, error);
 		return mod.getLlama({ gpu: false });
 	}
 }
@@ -166,9 +168,12 @@ async function getRuntime(modelPath: string, gpu: LlamaGpuMode): Promise<Runtime
 	const llama = await getLlamaFor(gpu);
 	const model = await llama.loadModel({ modelPath });
 	const context = await model.createContext({ contextSize: 'auto' });
-	console.info(
-		`[llamacpp] ${basename(modelPath)}: context ${context.contextSize} tokens, train max ${model.trainContextSize}, backend ${llama.gpu || 'cpu'}`
-	);
+	log.info('Chat model loaded', {
+		backend: llama.gpu || 'cpu',
+		contextTokens: context.contextSize,
+		model: basename(modelPath),
+		trainContextTokens: model.trainContextSize
+	});
 	const chat = new LlamaChat({
 		contextSequence: context.getSequence(),
 		autoDisposeSequence: false
@@ -197,9 +202,9 @@ export function withChat<T>(
 }
 
 async function resetRuntimeUnlocked(): Promise<void> {
-	console.warn('[llamacpp] Resetting the runtime after a failed generation.');
+	log.warn('Resetting the runtime after a failed generation');
 	await disposeRuntimeUnlocked().catch((error: unknown) => {
-		console.warn('[llamacpp] Failed to dispose the runtime:', error);
+		log.warn('Runtime failed to dispose', {}, error);
 	});
 	await disposeLlamaInstance();
 }

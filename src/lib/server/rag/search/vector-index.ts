@@ -2,6 +2,7 @@ import { setImmediate as yieldEventLoop } from 'node:timers/promises';
 import { and, asc, count, eq, gt, isNotNull, ne } from 'drizzle-orm';
 import { db } from '../../database/database';
 import { documentChunks, documents } from '../../database/schema';
+import { createLogger } from '../../logging';
 import {
 	VectorStore,
 	type VectorIndex,
@@ -11,6 +12,8 @@ import {
 
 const LOAD_BATCH_SIZE = 4000;
 const MAX_PENDING_ROWS = 8192;
+
+const log = createLogger('search');
 
 type IndexEntry = {
 	key: string;
@@ -114,7 +117,7 @@ async function build(key: string): Promise<VectorStore> {
 		for (const row of batch) {
 			const vector = toFloat32(row.embedding);
 			if (!vector) {
-				console.warn(`[Search] Chunk ${row.id} has no readable embedding; skipping it.`);
+				log.warn('Skipped a chunk with no readable embedding', { chunkId: row.id });
 				continue;
 			}
 			store.append({
@@ -129,8 +132,10 @@ async function build(key: string): Promise<VectorStore> {
 		await yieldEventLoop();
 	}
 
-	console.log(
-		`[Search] Vector index ready: ${store.size} chunk(s), ${store.view().dimensions} dims, in ${((Date.now() - started) / 1000).toFixed(1)}s.`
-	);
+	log.info('Vector index ready', {
+		chunks: store.size,
+		dimensions: store.view().dimensions,
+		durationMs: Date.now() - started
+	});
 	return store;
 }

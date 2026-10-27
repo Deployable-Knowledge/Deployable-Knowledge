@@ -4,4 +4,5 @@ export * from './database';
 export * from './documents';
 export * from './workspace';
 export * from './diagnostics';
+export * from './logs';
 export * from './desktop-window';

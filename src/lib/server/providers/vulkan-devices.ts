@@ -4,11 +4,14 @@ import { pathToFileURL } from 'node:url';
 
 import type { ApiVulkanDevice, ApiVulkanDevicesStatus } from '#lib/types';
 import { getVulkanDevice } from '#lib/server/database/app-state';
+import { createLogger } from '#lib/server/logging';
 import { getSupportedGpuTypes } from './llamacpp-runtime';
 
 const VISIBLE_DEVICES_ENV = 'GGML_VK_VISIBLE_DEVICES';
 const PROBE_TIMEOUT_MS = 60_000;
 const MAX_DEVICE_INDEX = 8;
+
+const log = createLogger('models');
 
 const PROBE_SOURCE = `
 import(process.argv[2]).then(async ({ getLlama, LlamaLogLevel }) => {
@@ -38,7 +41,7 @@ export async function applyVulkanDevice(): Promise<void> {
 	if (state.active === null) return;
 
 	process.env[VISIBLE_DEVICES_ENV] = String(state.active);
-	console.info(`[llamacpp] Vulkan limited to device ${state.active}.`);
+	log.info('Vulkan limited to one device', { device: state.active });
 }
 
 function probeDeviceNames(visibleDevices: string | undefined): Promise<string[] | null> {

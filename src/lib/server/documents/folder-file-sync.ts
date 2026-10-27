@@ -4,12 +4,15 @@ import { and, eq } from 'drizzle-orm';
 import type { ApiDocumentIngestProgress, ApiDocumentIngestResult } from '#lib/types';
 import { db } from '#lib/server/database/database';
 import { documents, syncedFiles, type SyncedFile } from '#lib/server/database/schema';
+import { createLogger } from '#lib/server/logging';
 import { DocumentsRepository, SyncedFoldersRepository } from '#lib/server/repositories';
 import { ingestDocument } from '#lib/server/rag/ingest-document';
 import { managedPathForHash, titleFor } from './ingest-file';
 import { managedExtensionFor, writeManagedArtifacts } from './managed-artifacts';
 import { removeDocument, removeManagedDocumentFile } from './remove-document';
 import { handlerForPath } from './source-types';
+
+const log = createLogger('folder-sync');
 
 export interface SyncFileStats {
 	lastModified: number;
@@ -56,9 +59,13 @@ export async function markMalformed(
 	file: UploadedSyncFile,
 	message: string
 ): Promise<void> {
-	console.error(`[Folder Sync] Marked malformed: ${file.relativePath} — ${message}`);
+	log.warn('File marked malformed', { folderId, relativePath: file.relativePath }, message);
 	await SyncedFoldersRepository.markFile(folderId, file, 'malformed', message).catch((error) =>
-		console.error(`[Folder Sync] Could not mark ${file.relativePath} malformed:`, error)
+		log.error(
+			'Could not mark a file malformed',
+			{ folderId, relativePath: file.relativePath },
+			error
+		)
 	);
 }
 
@@ -186,7 +193,11 @@ async function ingestSyncedFile(
 		if (!tracked && createdDocument) {
 			await removeDocument(ingestedDocumentId!, { syncedFileDisposition: 'remove' }).catch(
 				(cleanupError) =>
-					console.error(`[Folder Sync] Cleanup failed for ${file.relativePath}:`, cleanupError)
+					log.error(
+						'Cleanup after a failed sync failed',
+						{ folderId, relativePath: file.relativePath },
+						cleanupError
+					)
 			);
 		}
 		throw error;

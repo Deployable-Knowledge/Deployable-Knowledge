@@ -1,8 +1,10 @@
 import { json } from '@sveltejs/kit';
 import { DEFAULT_ASSISTANT_CONFIG } from '#lib/constants';
-import { diagnosticEvents } from '#lib/server/diagnostics/events';
+import { createLogger } from '#lib/server/logging';
 import { toolRegistry } from '#lib/server/tools';
 import type { RequestHandler } from './$types';
+
+const log = createLogger('search');
 
 export const GET: RequestHandler = async ({ url }) => {
 	const query = url.searchParams.get('query') ?? '';
@@ -28,11 +30,11 @@ export const GET: RequestHandler = async ({ url }) => {
 	);
 
 	if (result.isError) {
-		diagnosticEvents.searchFailed('all');
+		log.error('Search failed', { searchMode: 'all' });
 		return json(JSON.parse(result.content), { status: 400 });
 	}
 
-	diagnosticEvents.searchCompleted({
+	log.info('Search completed', {
 		durationMs: Date.now() - started,
 		resultCount: result.outputs?.length ?? 0,
 		searchMode: 'all'

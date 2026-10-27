@@ -1,15 +1,12 @@
-import {
-	buildDiagnosticsSnapshot,
-	formatDiagnosticsReport,
-	readDiagnosticEvents
-} from '#lib/server/diagnostics';
+import { buildDiagnosticsSnapshot, formatDiagnosticsReport } from '#lib/server/diagnostics';
+import { readLogs } from '#lib/server/logging';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async () => {
 	const snapshot = await buildDiagnosticsSnapshot();
-	const { events } = readDiagnosticEvents();
+	const { entries } = readLogs();
 
-	return new Response(formatDiagnosticsReport(snapshot, events), {
+	return new Response(formatDiagnosticsReport(snapshot, entries), {
 		headers: {
 			'Cache-Control': 'no-store',
 			'Content-Disposition': 'attachment; filename="deployable-knowledge-diagnostics.txt"',

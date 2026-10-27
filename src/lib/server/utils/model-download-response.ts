@@ -1,7 +1,10 @@
 import type { ApiLocalModelDownloadEvent } from '#lib/types';
+import { createLogger } from '#lib/server/logging';
 import { ndjsonTaskResponse } from './ndjson-response';
 
 const PROGRESS_INTERVAL_MS = 300;
+
+const log = createLogger('models');
 
 export function modelDownloadResponse(
 	name: string,
@@ -10,6 +13,7 @@ export function modelDownloadResponse(
 	onCancel?: () => void
 ): Response {
 	return ndjsonTaskResponse<ApiLocalModelDownloadEvent>(
+		log,
 		name,
 		async (send) => {
 			let lastSentAt = 0;

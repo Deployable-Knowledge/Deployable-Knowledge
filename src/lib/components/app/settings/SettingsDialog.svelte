@@ -155,9 +155,19 @@
 		{
 			id: 'diagnostics',
 			label: 'Diagnostics',
-			description: 'Inspect sanitized health checks and recent application activity.',
+			description: 'Inspect system health and application logs.',
 			icon: Bug,
-			keywords: ['console', 'debug', 'download', 'errors', 'events', 'health', 'logs', 'report']
+			keywords: [
+				'console',
+				'debug',
+				'download',
+				'errors',
+				'events',
+				'health',
+				'logging',
+				'logs',
+				'report'
+			]
 		}
 	]);
 
@@ -279,12 +289,7 @@
 				</header>
 
 				<div
-					class={[
-						'@container min-h-0 flex-1 bg-linear-to-b from-elevated/25 to-elevated/60 px-5 py-4',
-						activeSection.id === 'diagnostics'
-							? 'overflow-hidden'
-							: 'overflow-y-auto [scrollbar-gutter:stable]'
-					]}
+					class="@container min-h-0 flex-1 overflow-y-auto bg-linear-to-b from-elevated/25 to-elevated/60 px-5 py-4 [scrollbar-gutter:stable]"
 				>
 					{#if activeSection.id === 'agent'}
 						{#if !settingsStore.ready}

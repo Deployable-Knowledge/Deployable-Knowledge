@@ -8,7 +8,7 @@ import {
 	type NewDocument,
 	type NewDocumentChunk
 } from '../database/schema';
-import { diagnosticEvents } from '../diagnostics/events';
+import { createLogger } from '../logging';
 import { DocumentsRepository } from '../repositories';
 import type { ParsedChunk } from './chunk/parse-shared';
 import { embedTexts, getActiveEmbedding } from './embedding-model';
@@ -19,6 +19,8 @@ const INSERT_BATCH_SIZE = 100; //Can adjust later
 // Embed in bounded slices so a huge document never holds every raw vector at once
 const EMBED_SLICE_SIZE = 256;
 const REFRESH_BATCH_SIZE = 128;
+
+const log = createLogger('embedding');
 
 type StoreChunksResult = {
 	documentId: string;
@@ -207,8 +209,7 @@ async function reembedStaleChunks(): Promise<void> {
 	if (total === 0) return;
 
 	const started = Date.now();
-	console.log(`[Embedding] Re-embedding ${total} chunk(s) with ${key}...`);
-	diagnosticEvents.embeddingRefreshStarted(total);
+	log.info('Refreshing stored embeddings', { chunks: total, model: key });
 
 	let refreshed = 0;
 	let lastId = '';
@@ -259,11 +260,7 @@ async function reembedStaleChunks(): Promise<void> {
 		putChunkVectors(updated);
 	}
 
-	const durationMs = Date.now() - started;
-	console.log(
-		`[Embedding] Re-embedded ${refreshed} chunk(s) in ${(durationMs / 1000).toFixed(1)}s.`
-	);
-	diagnosticEvents.embeddingRefreshCompleted({ chunks: refreshed, durationMs });
+	log.info('Stored embeddings refreshed', { chunks: refreshed, durationMs: Date.now() - started });
 }
 
 let refresh: Promise<void> | null = null;
@@ -278,8 +275,7 @@ export function refreshStaleEmbeddings(): void {
 
 	refresh = reembedStaleChunks()
 		.catch((error) => {
-			console.error('[Embedding] Re-embedding stored chunks failed.', error);
-			diagnosticEvents.embeddingRefreshFailed();
+			log.error('Stored embedding refresh failed', {}, error);
 		})
 		.finally(() => {
 			refresh = null;

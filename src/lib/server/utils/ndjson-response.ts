@@ -1,4 +1,7 @@
+import type { Logger } from '#lib/server/logging';
+
 export function ndjsonTaskResponse<TEvent>(
+	log: Logger,
 	name: string,
 	run: (send: (event: TEvent) => void) => Promise<void>,
 	errorEvent: (cause: unknown) => TEvent,
@@ -22,7 +25,7 @@ export function ndjsonTaskResponse<TEvent>(
 				try {
 					await run(send);
 				} catch (cause) {
-					console.error(`${name} failed:`, cause);
+					log.error(`${name} failed`, {}, cause);
 					send(errorEvent(cause));
 				} finally {
 					if (!closed) {
@@ -33,8 +36,8 @@ export function ndjsonTaskResponse<TEvent>(
 						}
 					}
 				}
-			})().catch(() => {
-				console.error(`${name} stream failed.`);
+			})().catch((cause: unknown) => {
+				log.error(`${name} stream failed`, {}, cause);
 			});
 		},
 		cancel() {

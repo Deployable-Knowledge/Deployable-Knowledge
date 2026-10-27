@@ -10,13 +10,14 @@ import {
 	type LocalEmbeddingModel
 } from '#lib/constants';
 import type { EmbeddingBackend } from '#lib/types';
-import { diagnosticEvents } from '#lib/server/diagnostics/events';
+import { createLogger } from '#lib/server/logging';
 import { createGgufDownloader } from '#lib/server/providers/llamacpp-runtime';
 import { INFERENCE_THREADS } from '#lib/server/utils/inference-threads';
 import { EmbeddingProvider, normalizeVector } from './provider';
 
 // Kept apart from `models/`, which the chat provider lists as chat models.
 const MODELS_DIR = resolve(process.cwd(), '.cache', 'embeddings');
+const log = createLogger('embedding');
 
 type Runtime = {
 	fileName: string;
@@ -69,7 +70,7 @@ export class LlamaCppEmbeddingProvider extends EmbeddingProvider {
 				}
 			} catch (error) {
 				await this.release().catch((releaseError: unknown) => {
-					console.warn(`[Embedding] ${fileName} failed to unload:`, releaseError);
+					log.warn('Embedding model failed to unload', { model: fileName }, releaseError);
 				});
 				throw error;
 			}
@@ -118,16 +119,14 @@ export class LlamaCppEmbeddingProvider extends EmbeddingProvider {
 		try {
 			runtime = await this.createRuntime(fileName, device);
 		} catch (error) {
-			console.error(`[Embedding] ${fileName} failed to load:`, error);
-			diagnosticEvents.embeddingFailed(error);
+			log.error('Embedding model failed to load', { device, model: fileName }, error);
 			throw error;
 		}
 
 		this.runtime = runtime;
 		const backend = runtime.llama.gpu || 'cpu';
 		const durationMs = Date.now() - started;
-		console.log(`[Embedding] ${fileName} ready on ${backend} in ${durationMs}ms.`);
-		diagnosticEvents.embeddingReady({ backend, durationMs, model: fileName });
+		log.info('Embedding model ready', { backend, durationMs, model: fileName });
 		return runtime;
 	}
 

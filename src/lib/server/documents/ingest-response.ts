@@ -3,7 +3,10 @@ import type {
 	ApiDocumentIngestProgress,
 	ApiDocumentIngestResult
 } from '#lib/types';
+import { createLogger } from '#lib/server/logging';
 import { ndjsonTaskResponse } from '#lib/server/utils/ndjson-response';
+
+const log = createLogger('documents');
 
 export type IngestTask = (
 	onProgress: (progress: ApiDocumentIngestProgress) => void
@@ -11,6 +14,7 @@ export type IngestTask = (
 
 export function ingestStreamResponse(ingest: IngestTask, label = 'Ingesting file'): Response {
 	return ndjsonTaskResponse<ApiDocumentIngestEvent>(
+		log,
 		'Document ingestion',
 		async (send) => {
 			send({ status: 'progress', percent: 0, label, message: 'Preparing file' });

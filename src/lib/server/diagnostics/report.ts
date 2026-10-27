@@ -1,30 +1,14 @@
-import type { ApiDiagnosticsSnapshot, DiagnosticEvent } from '#lib/types';
-
-function eventLine(event: DiagnosticEvent): string {
-	const details = Object.entries(event.details)
-		.map(([key, value]) => `${key}=${String(value)}`)
-		.join(' ');
-
-	return [
-		event.timestamp,
-		event.level.toUpperCase().padEnd(7),
-		event.subsystem.toUpperCase().padEnd(12),
-		event.code,
-		`— ${event.message}`,
-		details
-	]
-		.filter(Boolean)
-		.join(' ');
-}
+import type { ApiDiagnosticsSnapshot, LogEntry } from '#lib/types';
+import { formatLogLine } from '#lib/server/logging';
 
 export function formatDiagnosticsReport(
 	snapshot: ApiDiagnosticsSnapshot,
-	events: DiagnosticEvent[]
+	entries: LogEntry[]
 ): string {
 	return [
 		'Deployable Knowledge Diagnostic Report',
 		`Generated: ${snapshot.generatedAt}`,
-		'Privacy: ingestion events include document names and synced-folder-relative paths; document content, absolute paths, prompts, messages, search queries, credentials, and raw errors are excluded.',
+		'Privacy: logs include document names, synced-folder-relative paths, and error messages with the data and home directories replaced by <data> and ~; document content, prompts, messages, search queries, and credentials are excluded.',
 		'',
 		'[Application]',
 		`Version: ${snapshot.application.version}`,
@@ -40,8 +24,8 @@ export function formatDiagnosticsReport(
 		'[Counts]',
 		...Object.entries(snapshot.counts).map(([key, value]) => `${key}: ${value ?? 'unavailable'}`),
 		'',
-		'[Events]',
-		...events.map(eventLine),
+		'[Logs]',
+		...entries.map(formatLogLine),
 		''
 	].join('\n');
 }

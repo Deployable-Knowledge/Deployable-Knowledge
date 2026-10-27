@@ -1,3 +1,4 @@
+import { createLogger } from '../../logging';
 import type { SearchChunkType } from './search-shared';
 
 // This is the in-memory copy of every chunk embedding for one model, and it's what semantic
@@ -16,6 +17,8 @@ import type { SearchChunkType } from './search-shared';
 // chunk out instead of adding it.
 const COMPACT_RATIO = 0.25;
 const GROWTH_FACTOR = 1.25;
+
+const log = createLogger('search');
 
 export type VectorIndexRow = {
 	chunkId: string;
@@ -87,9 +90,11 @@ export class VectorStore {
 	append(row: VectorIndexRow): void {
 		if (this.dimensions === 0) this.dimensions = row.vector.length;
 		if (row.vector.length !== this.dimensions) {
-			console.warn(
-				`[Search] Chunk ${row.chunkId} embedding has mismatched dimensions; skipping it.`
-			);
+			log.warn('Skipped a chunk with mismatched embedding dimensions', {
+				chunkId: row.chunkId,
+				dimensions: row.vector.length,
+				expectedDimensions: this.dimensions
+			});
 			return;
 		}
 		if (this.count === this.live.length) {

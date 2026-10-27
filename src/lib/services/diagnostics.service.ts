@@ -1,5 +1,5 @@
 import { API_DIAGNOSTICS } from '#lib/constants';
-import type { ApiDiagnosticEventsResponse, ApiDiagnosticsSnapshot } from '#lib/types';
+import type { ApiDiagnosticsSnapshot, ApiLogsResponse } from '#lib/types';
 import { apiDownload, apiFetch } from '#lib/utils';
 
 export class DiagnosticsService {
@@ -7,9 +7,9 @@ export class DiagnosticsService {
 		return apiFetch<ApiDiagnosticsSnapshot>(API_DIAGNOSTICS.BASE);
 	}
 
-	static getEvents(afterSequence: number) {
-		const query = new URLSearchParams({ after: String(afterSequence) });
-		return apiFetch<ApiDiagnosticEventsResponse>(`${API_DIAGNOSTICS.EVENTS}?${query}`);
+	static getLogs(afterId: number) {
+		const query = new URLSearchParams({ after: String(afterId) });
+		return apiFetch<ApiLogsResponse>(`${API_DIAGNOSTICS.LOGS}?${query}`);
 	}
 
 	static downloadReport() {

@@ -1,6 +1,9 @@
 import { writeFile } from 'node:fs/promises';
 import { extname } from 'node:path';
+import { createLogger } from '#lib/server/logging';
 import type { SourceTypeHandler } from './source-types';
+
+const log = createLogger('documents');
 
 export function managedExtensionFor(handler: SourceTypeHandler, name: string): string {
 	return handler.convert?.extension ?? extname(name).toLowerCase();
@@ -23,6 +26,6 @@ export async function writeManagedArtifacts(
 	try {
 		await writeFile(previewPathFor(managedPath), await handler.preview.run(originalBuffer));
 	} catch (error) {
-		console.warn(`[Documents] Could not write the preview PDF for ${managedPath}.`, error);
+		log.warn('Could not write the preview PDF', { managedPath }, error);
 	}
 }

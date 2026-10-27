@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { setImmediate as yieldEventLoop } from 'node:timers/promises';
 import { PDFParse, type TableArray } from 'pdf-parse';
 import { createWorker, OEM, PSM, type Worker } from 'tesseract.js';
+import { createLogger } from '#lib/server/logging';
 import { TimeoutError, withTimeout } from '#lib/server/utils/with-timeout';
 import { extractPageImages, type PageImage, type PdfDocument } from './page-images.ts';
 import {
@@ -21,9 +22,8 @@ const TABLE_DETECTION_TIMEOUT_MS = 120_000;
 const PARSER_TEARDOWN_TIMEOUT_MS = 10_000;
 const MAX_OCR_FAILURES = 3;
 
-function seconds(started: number): string {
-	return `${((Date.now() - started) / 1000).toFixed(1)}s`;
-}
+const ocrLog = createLogger('ocr');
+const pdfLog = createLogger('documents');
 
 function tableToText(table: TableArray): string {
 	return table
@@ -50,7 +50,7 @@ async function replaceParser(session: PdfSession): Promise<void> {
 		stalled.destroy(),
 		PARSER_TEARDOWN_TIMEOUT_MS,
 		'Parser teardown timed out.'
-	).catch((error) => console.warn('[PDF] Teardown of the replaced parser failed.', error));
+	).catch((error: unknown) => pdfLog.warn('Replaced PDF parser failed to tear down', {}, error));
 }
 
 type OcrSession = {
@@ -64,7 +64,7 @@ async function createOcrSession(): Promise<OcrSession> {
 		cachePath: process.cwd(),
 		gzip: false,
 		langPath: process.cwd(),
-		errorHandler: (error: unknown) => console.error('[OCR] Worker error.', error)
+		errorHandler: (error: unknown) => ocrLog.error('OCR worker error', {}, error)
 	}).then(async (worker) => {
 		await worker.setParameters({
 			tessedit_pageseg_mode: PSM.AUTO,
@@ -89,7 +89,7 @@ async function createOcrSession(): Promise<OcrSession> {
 		});
 	});
 	exited.catch(() => undefined);
-	thread?.on('error', (error: unknown) => console.error('[OCR] Worker thread crashed.', error));
+	thread?.on('error', (error: unknown) => ocrLog.error('OCR worker thread crashed', {}, error));
 
 	return { worker, exited };
 }
@@ -121,16 +121,22 @@ async function ocrEmbeddedImages(
 
 			if (images.length > 0) {
 				const sizes = images.map((image) => `${image.name} ${image.width}x${image.height}`);
-				console.log(
-					`[OCR] Page ${pageNumber}/${pageCount}: ${images.length} image(s): ${sizes.join(', ')}`
-				);
+				ocrLog.debug('Found page images', {
+					images: sizes.join(', '),
+					page: pageNumber,
+					pageCount
+				});
 			}
 
 			for (const image of images) {
+				const imageFields = {
+					height: image.height,
+					image: image.name,
+					page: pageNumber,
+					width: image.width
+				};
 				if (image.width * image.height > MAX_OCR_PIXELS) {
-					console.warn(
-						`[OCR] Page ${pageNumber}: skipped ${image.name} at ${image.width}x${image.height}; too large to OCR.`
-					);
+					ocrLog.warn('Skipped an image too large to OCR', imageFields);
 					continue;
 				}
 
@@ -143,32 +149,37 @@ async function ocrEmbeddedImages(
 					const confidence = result.data.confidence;
 					failures = 0;
 
-					if (Date.now() - recognizeStarted > 15_000) {
-						console.log(
-							`[OCR] Page ${pageNumber}: ${image.name} took ${seconds(recognizeStarted)} at ${Math.round(confidence)}% confidence.`
-						);
+					const durationMs = Date.now() - recognizeStarted;
+					if (durationMs > 15_000) {
+						ocrLog.info('Slow OCR image', {
+							...imageFields,
+							confidence: Math.round(confidence),
+							durationMs
+						});
 					}
 
 					if (text && confidence >= minConfidence) {
 						textByPage.set(pageNumber, [...(textByPage.get(pageNumber) ?? []), text]);
 					} else if (text) {
-						console.log(
-							`[OCR] Page ${pageNumber}: discarded ${image.name} at ${Math.round(confidence)}% confidence.`
-						);
+						ocrLog.debug('Discarded low-confidence OCR text', {
+							...imageFields,
+							confidence: Math.round(confidence)
+						});
 					}
 				} catch (error) {
 					failures += 1;
-					console.warn(
-						`[OCR] Page ${pageNumber}: ${image.name} failed (${failures}/${MAX_OCR_FAILURES}); replacing the worker.`,
+					ocrLog.warn(
+						'OCR image failed; replacing the worker',
+						{ ...imageFields, failures, maxFailures: MAX_OCR_FAILURES },
 						error
 					);
 					await session?.worker.terminate().catch(() => undefined);
 					session = undefined;
 
 					if (failures >= MAX_OCR_FAILURES) {
-						console.error(
-							`[OCR] Giving up after ${failures} consecutive failures; continuing without further image text.`
-						);
+						ocrLog.error('OCR stopped after repeated failures; continuing without image text', {
+							failures
+						});
 						return textByPage;
 					}
 				}
@@ -192,8 +203,7 @@ async function getPageImages(document: PdfDocument, pageNumber: number): Promise
 			`Image extraction timed out after ${PAGE_IMAGE_TIMEOUT_MS / 1000}s.`
 		);
 	} catch (error) {
-		const reason = error instanceof Error ? error.message : String(error);
-		console.warn(`[OCR] Page ${pageNumber}: image extraction failed; ${reason}`);
+		ocrLog.warn('Page image extraction failed', { page: pageNumber }, error);
 		return [];
 	}
 }
@@ -208,11 +218,10 @@ async function getPageTables(pdf: PdfSession, pageNumber: number): Promise<Table
 		return result.pages[0]?.tables ?? [];
 	} catch (error) {
 		if (error instanceof TimeoutError) {
-			console.warn(`[PDF] Page ${pageNumber}: table detection stalled; replacing the parser.`);
+			pdfLog.warn('Table detection stalled; replacing the parser', { page: pageNumber });
 			await replaceParser(pdf);
 		} else {
-			const reason = error instanceof Error ? error.message : String(error);
-			console.warn(`[PDF] Page ${pageNumber}: table detection failed; ${reason}`);
+			pdfLog.warn('Table detection failed', { page: pageNumber }, error);
 		}
 		return [];
 	}
@@ -248,9 +257,12 @@ export async function extractText(
 				pagesWithText.add(pageNumber);
 			}
 		}
-		console.log(
-			`[PDF] ${file.title}: ${textResult.total} page(s), native text on ${pagesWithText.size}, in ${seconds(textStarted)}.`
-		);
+		pdfLog.debug('Extracted native PDF text', {
+			document: file.title,
+			durationMs: Date.now() - textStarted,
+			pages: textResult.total,
+			pagesWithText: pagesWithText.size
+		});
 
 		const ocrStarted = Date.now();
 		const ocrTextByPage = await ocrEmbeddedImages(
@@ -259,14 +271,20 @@ export async function extractText(
 			pagesWithText,
 			onPageProgress
 		);
-		console.log(
-			`[PDF] ${file.title}: OCR pass added text on ${ocrTextByPage.size} page(s) in ${seconds(ocrStarted)}.`
-		);
+		ocrLog.debug('OCR pass finished', {
+			document: file.title,
+			durationMs: Date.now() - ocrStarted,
+			pagesWithText: ocrTextByPage.size
+		});
 
 		const tableStarted = Date.now();
 		const tablesByPage = await collectTables(pdf, textResult.total);
 		const tableCount = [...tablesByPage.values()].reduce((sum, tables) => sum + tables.length, 0);
-		console.log(`[PDF] ${file.title}: ${tableCount} table(s) in ${seconds(tableStarted)}.`);
+		pdfLog.debug('PDF table detection finished', {
+			document: file.title,
+			durationMs: Date.now() - tableStarted,
+			tables: tableCount
+		});
 
 		const chunks: Chunk[] = [];
 

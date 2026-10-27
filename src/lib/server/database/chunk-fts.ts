@@ -1,8 +1,10 @@
 import { setImmediate as yieldEventLoop } from 'node:timers/promises';
-import { diagnosticEvents } from '#lib/server/diagnostics/events';
+import { createLogger } from '#lib/server/logging';
 import { databaseClient } from './database';
 
 const BACKFILL_BATCH_SIZE = 5000;
+
+const log = createLogger('search');
 
 const SCHEMA_STATEMENTS = [
 	`CREATE VIRTUAL TABLE IF NOT EXISTS chunk_fts USING fts5(
@@ -45,7 +47,7 @@ async function initialize(): Promise<void> {
 	const { indexed, stored } = counts.rows[0] as unknown as { indexed: number; stored: number };
 	if (indexed === stored) return;
 
-	console.log(`[FTS] Rebuilding chunk index: ${indexed} indexed vs ${stored} stored...`);
+	log.info('Rebuilding search index', { indexedChunks: indexed, storedChunks: stored });
 	const started = Date.now();
 	await databaseClient.execute(`INSERT INTO chunk_fts(chunk_fts) VALUES ('delete-all')`);
 
@@ -69,8 +71,7 @@ async function initialize(): Promise<void> {
 		await yieldEventLoop();
 	}
 
-	console.log(`[FTS] Chunk index rebuilt in ${((Date.now() - started) / 1000).toFixed(1)}s.`);
-	diagnosticEvents.searchIndexRebuilt({
+	log.info('Search index rebuilt', {
 		durationMs: Date.now() - started,
 		indexedChunks: stored
 	});

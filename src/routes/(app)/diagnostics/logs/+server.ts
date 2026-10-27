@@ -1,5 +1,5 @@
 import { error, json } from '@sveltejs/kit';
-import { readDiagnosticEvents } from '#lib/server/diagnostics';
+import { readLogs } from '#lib/server/logging';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ url }) => {
@@ -10,7 +10,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		throw error(400, 'The after parameter must be a non-negative integer.');
 	}
 
-	return json(readDiagnosticEvents(after), {
+	return json(readLogs(after), {
 		headers: { 'Cache-Control': 'no-store' }
 	});
 };

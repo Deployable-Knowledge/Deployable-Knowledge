@@ -98,7 +98,7 @@ export const API_PROVIDERS = {
 
 export const API_DIAGNOSTICS = {
 	BASE: '/diagnostics',
-	EVENTS: '/diagnostics/events',
+	LOGS: '/diagnostics/logs',
 	REPORT: '/diagnostics/report'
 };
 

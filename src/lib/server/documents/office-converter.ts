@@ -1,4 +1,5 @@
 import type { WorkerConverter } from '@matbee/libreoffice-converter/server';
+import { createLogger } from '#lib/server/logging';
 import { withTimeout } from '#lib/server/utils/with-timeout';
 
 export type OfficeInputFormat = 'docx' | 'pptx' | 'xlsx';
@@ -6,6 +7,8 @@ export type OfficeInputFormat = 'docx' | 'pptx' | 'xlsx';
 const IDLE_TEARDOWN_MS = 5 * 60 * 1000;
 const CONVERSION_TIMEOUT_MS = 2 * 60 * 1000;
 const TEARDOWN_TIMEOUT_MS = 5 * 1000;
+
+const log = createLogger('documents');
 
 let converterPromise: Promise<WorkerConverter> | undefined;
 let conversionQueue: Promise<unknown> = Promise.resolve();
@@ -36,7 +39,7 @@ async function destroyConverter(): Promise<void> {
 			'Teardown timed out.'
 		);
 	} catch (error) {
-		console.warn('[Office Converter] Teardown failed.', error);
+		log.warn('Office converter teardown failed', {}, error);
 	}
 }
 
@@ -55,9 +58,7 @@ export function convertOfficeToPdf(
 ): Promise<Buffer> {
 	const task = conversionQueue.then(async () => {
 		const started = Date.now();
-		console.log(
-			`[Office Converter] Converting ${inputFormat} (${Math.round(buffer.length / 1024)} KB)...`
-		);
+		log.debug('Converting office document to PDF', { bytes: buffer.length, inputFormat });
 		try {
 			const converter = await getConverter();
 			const result = await withTimeout(
@@ -66,12 +67,13 @@ export function convertOfficeToPdf(
 				'Conversion timed out.'
 			);
 			scheduleIdleTeardown();
-			console.log(
-				`[Office Converter] ${inputFormat} to PDF in ${((Date.now() - started) / 1000).toFixed(1)}s.`
-			);
+			log.info('Office document converted to PDF', {
+				durationMs: Date.now() - started,
+				inputFormat
+			});
 			return Buffer.from(result.data);
 		} catch (error) {
-			console.error('[Office Converter] Conversion failed.', error);
+			log.error('Office conversion failed', { inputFormat }, error);
 			await destroyConverter();
 			throw new Error(
 				'Could not convert this file to PDF. It may be corrupt or password-protected.'

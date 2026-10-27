@@ -4,8 +4,11 @@ import type { ApiDocumentAutotagEvent } from '#lib/types';
 import { db } from '#lib/server/database/database';
 import { tags } from '#lib/server/database/schema';
 import { autotagDocuments } from '#lib/server/documents/autotag';
+import { createLogger } from '#lib/server/logging';
 import { ndjsonTaskResponse } from '#lib/server/utils/ndjson-response';
 import type { RequestHandler } from './$types';
+
+const log = createLogger('documents');
 
 export const POST: RequestHandler = async ({ request }) => {
 	const body = (await request.json().catch(() => null)) as { documentIds?: unknown } | null;
@@ -24,6 +27,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	if (tagNames.length === 0) throw error(400, 'Create a tag first.');
 
 	return ndjsonTaskResponse<ApiDocumentAutotagEvent>(
+		log,
 		'Autotagging',
 		async (send) => {
 			const result = await autotagDocuments(

@@ -4,7 +4,6 @@ import { createAppStateOnFirstRun, getThemeSettings } from '#lib/server/database
 import { bootstrapSchema } from '#lib/server/database/bootstrap-schema';
 import { configureDatabase } from '#lib/server/database/database';
 import { createLogger, initializeLogging } from '#lib/server/logging';
-import { convertLegacyNotebookStyles } from '#lib/server/notebooks/convert-legacy-styles';
 import { applyVulkanDevice } from '#lib/server/providers/vulkan-devices';
 import { refreshStaleEmbeddings } from '#lib/server/rag/embedding';
 
@@ -43,8 +42,6 @@ export const init: ServerInit = async () => {
 	if (migrationsFolder) await bootstrapSchema(migrationsFolder);
 
 	await createAppStateOnFirstRun();
-
-	await convertLegacyNotebookStyles();
 
 	await applyVulkanDevice();
 

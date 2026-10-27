@@ -1,6 +1,5 @@
 import AdmZip from 'adm-zip';
 import type { NotebookPage, NotebookWithPages } from '#lib/types';
-import { styledSyntaxToSpans } from '#lib/utils/notebook-styles';
 
 function filenameBase(title: string, fallback: string): string {
 	return (
@@ -16,8 +15,7 @@ function filenameBase(title: string, fallback: string): string {
 }
 
 export function notebookPageMarkdown(page: Pick<NotebookPage, 'content' | 'title'>): string {
-	// Other Markdown apps render <span style> but not the notebook's own syntax
-	const content = styledSyntaxToSpans(page.content.trimEnd());
+	const content = page.content.trimEnd();
 	return content ? `${content}\n` : '';
 }
 

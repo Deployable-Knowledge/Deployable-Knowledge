@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { and, asc, eq, like, max } from 'drizzle-orm';
+import { and, asc, eq, max } from 'drizzle-orm';
 import type { NotebookStateResponse } from '#lib/types';
 import { db } from '#lib/server/database/database';
 import {
@@ -18,11 +18,6 @@ import { hasExactIds } from '#lib/server/utils/reorder';
 export interface NotebookPageInput {
 	content: string;
 	title: string;
-}
-
-export interface NotebookPageContent {
-	id: string;
-	content: string;
 }
 
 const NOTEBOOK_STATE_ID = 'default';
@@ -217,24 +212,6 @@ export class NotebooksRepository {
 			}
 		});
 		return true;
-	}
-
-	static async findPageContentsContaining(fragment: string): Promise<NotebookPageContent[]> {
-		return db
-			.select({ id: notebookPages.id, content: notebookPages.content })
-			.from(notebookPages)
-			.where(like(notebookPages.content, `%${fragment}%`));
-	}
-
-	// Rewrites stored text in place without touching updatedAt, for format
-	// upgrades that should not reorder or re-date pages
-	static async replacePageContents(pages: NotebookPageContent[]): Promise<void> {
-		if (!pages.length) return;
-		await db.transaction(async (transaction) => {
-			for (const { id, content } of pages) {
-				await transaction.update(notebookPages).set({ content }).where(eq(notebookPages.id, id));
-			}
-		});
 	}
 
 	static async loadState(): Promise<NotebookStateResponse> {

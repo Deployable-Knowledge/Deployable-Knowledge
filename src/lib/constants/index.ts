@@ -10,7 +10,6 @@ export * from './ingest-formats';
 export * from './local-models';
 export * from './logs';
 export * from './ndjson';
-export * from './notebook-styles';
 export * from './prompt-template-presets';
 export * from './providers';
 export * from './reasoning-presets';

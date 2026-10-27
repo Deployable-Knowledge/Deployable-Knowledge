@@ -3,14 +3,16 @@
 
 	interface Props {
 		class?: string;
+		label?: string;
 		value?: number;
 	}
 
-	let { class: className, value = 0 }: Props = $props();
+	let { class: className, label, value = 0 }: Props = $props();
 	let percent = $derived(Math.max(0, Math.min(100, value)));
 </script>
 
 <div
+	aria-label={label}
 	class={cn('bg-primary/20 relative h-2 w-full overflow-hidden rounded-full', className)}
 	role="progressbar"
 	aria-valuemax="100"

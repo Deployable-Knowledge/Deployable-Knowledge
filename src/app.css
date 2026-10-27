@@ -37,6 +37,7 @@
 	--elevated: oklch(0.81 0.022 var(--theme-hue));
 	--field: oklch(0.9 0.017 var(--theme-hue));
 	--chrome-highlight: oklch(0.95 0.014 var(--theme-hue));
+	--sheet: color-mix(in oklab, var(--chrome-highlight) 70%, white);
 	--window-shadow: 0 10px 30px rgb(0 0 0 / 0.24), 0 2px 6px rgb(0 0 0 / 0.18);
 	--radius: 0.75rem;
 	--titlebar-height: 2.25rem;
@@ -68,6 +69,7 @@
 	--elevated: oklch(0.275 0.03 var(--theme-hue));
 	--field: oklch(0.18 0.024 var(--theme-hue));
 	--chrome-highlight: oklch(0.245 0.03 var(--theme-hue));
+	--sheet: color-mix(in oklab, var(--background) 60%, var(--card));
 	--window-shadow: 0 10px 30px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.35);
 }
 
@@ -199,7 +201,9 @@
 	--color-input: var(--input);
 	--color-ring: var(--ring);
 	--color-elevated: var(--elevated);
+	--color-sheet: var(--sheet);
 	--color-field: var(--field);
+	--shadow-window: var(--window-shadow);
 }
 
 @layer base {

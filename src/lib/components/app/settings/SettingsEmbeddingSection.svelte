@@ -180,7 +180,7 @@
 				</ActionIcon>
 			</div>
 
-			{#if embeddingStore.error && !embeddingStore.setupOpen}
+			{#if embeddingStore.error}
 				<p class="m-0 text-sm text-destructive">{embeddingStore.error}</p>
 			{/if}
 		</SettingsFieldGroup>

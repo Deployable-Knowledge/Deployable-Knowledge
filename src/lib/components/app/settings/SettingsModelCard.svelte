@@ -15,6 +15,7 @@
 		onDownload: () => void;
 		onUse: () => void;
 		percent: number;
+		recommended?: boolean;
 	}
 
 	let {
@@ -26,7 +27,8 @@
 		onDelete,
 		onDownload,
 		onUse,
-		percent
+		percent,
+		recommended = false
 	}: Props = $props();
 </script>
 
@@ -44,6 +46,9 @@
 				<span class="break-all">{model.name}</span>
 				{#if active}
 					<Badge variant="tertiary">Active</Badge>
+				{/if}
+				{#if recommended}
+					<Badge>Recommended</Badge>
 				{/if}
 			</span>
 			<span class="text-xs text-muted-foreground">{model.vendor}</span>

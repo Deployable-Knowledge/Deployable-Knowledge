@@ -15,10 +15,10 @@ export class EmbeddingService {
 	static download(
 		fileName: string,
 		onProgress: (progress: ApiDocumentIngestProgress) => void
-	): Promise<string> {
+	): Promise<void> {
 		return streamModelDownload(
 			API_EMBEDDING.LOCAL_MODELS,
-			fileName,
+			{ fileName },
 			'Downloading embedding model',
 			onProgress
 		);

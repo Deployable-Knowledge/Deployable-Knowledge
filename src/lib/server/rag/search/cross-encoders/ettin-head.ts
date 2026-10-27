@@ -1,6 +1,9 @@
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import type { FileProgressHandler } from '#lib/server/utils/download-progress';
+import { downloadVerifiedFile } from '#lib/server/utils/verified-download';
 
 const MODEL_ID = 'cross-encoder/ettin-reranker-32m-v1';
 const MODEL_REVISION = 'b33e5ceb5110773ea9cf5e00c9bedc83a8c2afdd';
@@ -63,36 +66,31 @@ function verifyChecksum(bytes: Uint8Array, expected: string, name: string): void
 	}
 }
 
-async function loadAsset(asset: HeadAsset): Promise<Uint8Array> {
-	const cachePath = resolve(HEAD_CACHE_DIR, asset.cacheName);
+function assetCachePath(asset: HeadAsset): string {
+	return resolve(HEAD_CACHE_DIR, asset.cacheName);
+}
 
-	try {
-		const cached = await readFile(cachePath);
-		verifyChecksum(cached, asset.sha256, asset.cacheName);
-		return cached;
-	} catch (error) {
-		if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-			throw error;
-		}
+export function isEttinHeadInstalled(): boolean {
+	return Object.values(HEAD_ASSETS).every((asset) => existsSync(assetCachePath(asset)));
+}
+
+async function loadAsset(
+	asset: HeadAsset,
+	onFileProgress: FileProgressHandler
+): Promise<Uint8Array> {
+	const cachePath = assetCachePath(asset);
+
+	if (!existsSync(cachePath)) {
+		await downloadVerifiedFile({
+			url: `https://huggingface.co/${MODEL_ID}/resolve/${MODEL_REVISION}/${asset.remotePath}`,
+			destination: cachePath,
+			sha256: asset.sha256,
+			onProgress: (loaded, total) => onFileProgress(asset.cacheName, loaded, total)
+		});
 	}
 
-	const url =
-		`https://huggingface.co/${MODEL_ID}/resolve/` + `${MODEL_REVISION}/${asset.remotePath}`;
-	const response = await fetch(url);
-
-	if (!response.ok) {
-		throw new Error(`Failed to download ${asset.remotePath}: HTTP ${response.status}`);
-	}
-
-	const bytes = new Uint8Array(await response.arrayBuffer());
+	const bytes = await readFile(cachePath);
 	verifyChecksum(bytes, asset.sha256, asset.cacheName);
-
-	await mkdir(dirname(cachePath), { recursive: true });
-
-	const temporaryPath = `${cachePath}.${process.pid}.tmp`;
-	await writeFile(temporaryPath, bytes);
-	await rename(temporaryPath, cachePath);
-
 	return bytes;
 }
 
@@ -147,12 +145,14 @@ function readFloatTensor(bytes: Uint8Array, name: string, expectedShape: number[
 	return values;
 }
 
-export function loadEttinHeadWeights(): Promise<EttinHeadWeights> {
+export function loadEttinHeadWeights(
+	onFileProgress: FileProgressHandler
+): Promise<EttinHeadWeights> {
 	if (!headWeightsPromise) {
 		headWeightsPromise = Promise.all([
-			loadAsset(HEAD_ASSETS.dense),
-			loadAsset(HEAD_ASSETS.layerNorm),
-			loadAsset(HEAD_ASSETS.output)
+			loadAsset(HEAD_ASSETS.dense, onFileProgress),
+			loadAsset(HEAD_ASSETS.layerNorm, onFileProgress),
+			loadAsset(HEAD_ASSETS.output, onFileProgress)
 		])
 			.then(([dense, layerNorm, output]) => ({
 				denseWeight: readFloatTensor(dense, 'linear.weight', [HIDDEN_SIZE, HIDDEN_SIZE]),

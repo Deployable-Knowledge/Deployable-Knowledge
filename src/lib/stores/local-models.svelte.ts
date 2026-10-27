@@ -10,7 +10,11 @@ class LocalModelsStore {
 	error = $state<string | null>(null);
 
 	async refresh(): Promise<void> {
-		this.status = await LocalModelsService.getStatus();
+		try {
+			this.status = await LocalModelsService.getStatus();
+		} catch (error) {
+			this.error = error instanceof Error ? error.message : 'Could not load the local models.';
+		}
 	}
 
 	async download(fileName: string): Promise<void> {
@@ -21,12 +25,9 @@ class LocalModelsStore {
 		this.progress = { percent: 0, label: 'Downloading model', message: 'Starting download.' };
 
 		try {
-			const downloadedFile = await LocalModelsService.download(
-				fileName,
-				(progress) => (this.progress = progress)
-			);
+			await LocalModelsService.download(fileName, (progress) => (this.progress = progress));
 
-			await this.activateModel(downloadedFile);
+			await this.activateModel(fileName);
 			await this.refresh();
 			await settingsStore.loadProviders();
 		} catch (error) {

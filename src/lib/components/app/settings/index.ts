@@ -5,6 +5,7 @@ export { default as SettingsFieldGroup } from './SettingsFieldGroup.svelte';
 export { default as SettingsGenerationFields } from './SettingsGenerationFields.svelte';
 export { default as SettingsLocalModels } from './SettingsLocalModels.svelte';
 export { default as SettingsLocalRuntimeSection } from './SettingsLocalRuntimeSection.svelte';
+export { default as SettingsModelCard } from './SettingsModelCard.svelte';
 export { default as SettingsModelSelector } from './SettingsModelSelector.svelte';
 export { default as SettingsPersonaField } from './SettingsPersonaField.svelte';
 export { default as SettingsProfileSelector } from './SettingsProfileSelector.svelte';
@@ -14,3 +15,4 @@ export { default as SettingsRetrievalSection } from './SettingsRetrievalSection.
 export { default as SettingsToolsSection } from './SettingsToolsSection.svelte';
 export { default as SettingsVulkanDeviceField } from './SettingsVulkanDeviceField.svelte';
 export * from './settings-profiles';
+export * from './local-model-catalog';

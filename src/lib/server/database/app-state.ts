@@ -90,6 +90,19 @@ export async function setVulkanDevice(vulkanDevice: number | null): Promise<void
 		.onConflictDoUpdate({ target: appState.id, set: { vulkanDevice } });
 }
 
+export async function isSetupComplete(): Promise<boolean> {
+	const state = await db.select().from(appState).where(eq(appState.id, APP_STATE_ID)).get();
+	return Boolean(state?.setupCompletedAt);
+}
+
+export async function completeSetup(): Promise<void> {
+	const setupCompletedAt = new Date();
+	await db
+		.insert(appState)
+		.values({ id: APP_STATE_ID, setupCompletedAt })
+		.onConflictDoUpdate({ target: appState.id, set: { setupCompletedAt } });
+}
+
 export async function clearActiveLayoutId(layoutId: string): Promise<void> {
 	await db
 		.update(appState)

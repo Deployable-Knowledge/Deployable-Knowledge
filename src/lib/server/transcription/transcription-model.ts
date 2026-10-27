@@ -2,12 +2,39 @@
 Xenova Whisper Tiny English model. While it handles English audio transcription well, it may not perform 
 as accurately on complex/chaotic audio scenarios. Looking into using larger models*/
 
-import { pipeline, type AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers';
+import {
+	ModelRegistry,
+	pipeline,
+	type AutomaticSpeechRecognitionPipeline
+} from '@huggingface/transformers';
+import {
+	combineFileProgress,
+	transformersProgress,
+	type DownloadProgressHandler
+} from '#lib/server/utils/download-progress';
 import { TRANSFORMERS_CACHE_DIR } from '#lib/server/utils/transformers-env';
 
 export const TRANSCRIPTION_MODEL = 'Xenova/whisper-tiny.en';
 
+const TRANSCRIPTION_TASK = 'automatic-speech-recognition';
+
 let transcriptionPipeline: Promise<AutomaticSpeechRecognitionPipeline> | undefined;
+
+export function isTranscriptionModelInstalled(): Promise<boolean> {
+	return ModelRegistry.is_pipeline_cached(TRANSCRIPTION_TASK, TRANSCRIPTION_MODEL, {
+		cache_dir: TRANSFORMERS_CACHE_DIR
+	});
+}
+
+export async function installTranscriptionModel(
+	onProgress: DownloadProgressHandler
+): Promise<void> {
+	const transcriber = await pipeline(TRANSCRIPTION_TASK, TRANSCRIPTION_MODEL, {
+		cache_dir: TRANSFORMERS_CACHE_DIR,
+		progress_callback: transformersProgress(combineFileProgress(onProgress))
+	});
+	await transcriber.dispose();
+}
 
 export type TranscriptSegment = {
 	startMs: number;
@@ -21,7 +48,7 @@ export type TranscriptionResult = {
 };
 
 export async function transcribeAudio(audioData: Float32Array): Promise<TranscriptionResult> {
-	transcriptionPipeline ??= pipeline('automatic-speech-recognition', TRANSCRIPTION_MODEL, {
+	transcriptionPipeline ??= pipeline(TRANSCRIPTION_TASK, TRANSCRIPTION_MODEL, {
 		cache_dir: TRANSFORMERS_CACHE_DIR
 	}).catch((error) => {
 		transcriptionPipeline = undefined;

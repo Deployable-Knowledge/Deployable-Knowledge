@@ -13,7 +13,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		throw error(409, 'An embedding model download is already running.');
 	}
 
-	return modelDownloadResponse('Embedding model download', model.fileName, async (onProgress) => {
+	return modelDownloadResponse('Embedding model download', async (onProgress) => {
 		await localEmbeddingProvider.download(model.fileName, onProgress);
 		refreshStaleEmbeddings();
 	});

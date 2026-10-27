@@ -270,7 +270,7 @@
 	<!-- Keeps part of the strip draggable when the tabs overflow. -->
 	<div aria-hidden="true" class="h-full min-w-10 flex-1"></div>
 	<WorkspaceToolbarActions />
-	<WorkspaceWindowControls />
+	<WorkspaceWindowControls class="ml-1 border-l pl-1" />
 </nav>
 
 <Dialog.Root

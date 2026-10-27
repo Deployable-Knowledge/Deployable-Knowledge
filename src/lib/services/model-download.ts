@@ -1,27 +1,27 @@
 import type {
 	ApiDocumentIngestProgress,
-	ApiLocalModelDownloadEvent,
-	ApiLocalModelDownloadRequest
+	ApiLocalModelDownloadRequest,
+	ApiModelDownloadEvent,
+	ApiSetupInstallRequest
 } from '#lib/types';
 import { apiStream, formatBytes, parseNdjsonStream } from '#lib/utils';
 
 export async function streamModelDownload(
 	endpoint: string,
-	fileName: string,
+	body: ApiLocalModelDownloadRequest | ApiSetupInstallRequest,
 	label: string,
 	onProgress?: (progress: ApiDocumentIngestProgress) => void,
 	signal?: AbortSignal
-): Promise<string> {
-	const body: ApiLocalModelDownloadRequest = { fileName };
+): Promise<void> {
 	const response = await apiStream(endpoint, {
 		method: 'POST',
 		body: JSON.stringify(body),
 		signal
 	});
 
-	let downloadedFile: string | null = null;
+	let ready = false;
 
-	for await (const event of parseNdjsonStream<ApiLocalModelDownloadEvent>(response, signal)) {
+	for await (const event of parseNdjsonStream<ApiModelDownloadEvent>(response, signal)) {
 		if (event.status === 'progress') {
 			onProgress?.({
 				percent: event.progress * 100,
@@ -29,13 +29,11 @@ export async function streamModelDownload(
 				message: `${formatBytes(event.loaded)} / ${formatBytes(event.total)}`
 			});
 		} else if (event.status === 'ready') {
-			downloadedFile = event.fileName;
+			ready = true;
 		} else if (event.status === 'error') {
 			throw new Error(event.message);
 		}
 	}
 
-	if (!downloadedFile) throw new Error('The model download ended unexpectedly.');
-
-	return downloadedFile;
+	if (!ready) throw new Error('The download ended unexpectedly.');
 }

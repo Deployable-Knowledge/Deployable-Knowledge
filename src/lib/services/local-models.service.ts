@@ -12,10 +12,10 @@ export class LocalModelsService {
 		fileName: string,
 		onProgress?: (progress: ApiDocumentIngestProgress) => void,
 		signal?: AbortSignal
-	): Promise<string> {
+	): Promise<void> {
 		return streamModelDownload(
 			API_LOCAL_MODELS.BASE,
-			fileName,
+			{ fileName },
 			'Downloading model',
 			onProgress,
 			signal

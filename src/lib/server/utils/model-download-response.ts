@@ -1,5 +1,6 @@
-import type { ApiLocalModelDownloadEvent } from '#lib/types';
+import type { ApiModelDownloadEvent } from '#lib/types';
 import { createLogger } from '#lib/server/logging';
+import type { DownloadProgressHandler } from './download-progress';
 import { ndjsonTaskResponse } from './ndjson-response';
 
 const PROGRESS_INTERVAL_MS = 300;
@@ -8,11 +9,10 @@ const log = createLogger('models');
 
 export function modelDownloadResponse(
 	name: string,
-	fileName: string,
-	download: (onProgress: (loaded: number, total: number) => void) => Promise<void>,
+	download: (onProgress: DownloadProgressHandler) => Promise<void>,
 	onCancel?: () => void
 ): Response {
-	return ndjsonTaskResponse<ApiLocalModelDownloadEvent>(
+	return ndjsonTaskResponse<ApiModelDownloadEvent>(
 		log,
 		name,
 		async (send) => {
@@ -23,7 +23,7 @@ export function modelDownloadResponse(
 				lastSentAt = now;
 				send({ status: 'progress', progress: loaded / total, loaded, total });
 			});
-			send({ status: 'ready', fileName });
+			send({ status: 'ready' });
 		},
 		(cause) => ({
 			status: 'error',

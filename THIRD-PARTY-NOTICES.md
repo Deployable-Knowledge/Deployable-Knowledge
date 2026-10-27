@@ -110,8 +110,8 @@ BSD-style/PSF-derived license). Each carries its own terms.
 - `tesseract.js@7.0.0`, the OCR engine used for scanned PDF pages
   (`src/lib/server/rag/chunk/text-extract.ts`). Upstream:
   <https://github.com/naptha/tesseract.js>.
-- `eng.traineddata`, the English trained-data model committed to this repository and shipped with
-  the application, obtained from <https://github.com/tesseract-ocr/tessdata>.
+- `eng.traineddata`, the English trained-data model, downloaded at runtime from
+  <https://github.com/tesseract-ocr/tessdata> (tag 4.1.0) rather than shipped with the application.
 
 **License:** Apache-2.0 for both, available at <https://www.apache.org/licenses/LICENSE-2.0>.
 Tesseract OCR is copyright Google Inc. and contributors. Attribution notices are retained per
@@ -119,10 +119,11 @@ Apache-2.0 §4.
 
 ---
 
-## 6. Language models downloaded at runtime
+## 6. Models downloaded at runtime
 
-Model weights are **not** bundled in the installer. They are downloaded on demand from Hugging Face
-when a user requests them, and each carries its own terms.
+Model weights and OCR language data are **not** bundled in the installer. The first-run setup page
+downloads them from Hugging Face and GitHub, or they download on first use when setup is skipped.
+Each carries its own terms.
 
 ### Gemma models — Google Gemma Terms of Use
 
@@ -142,7 +143,9 @@ By downloading a Gemma model through this application, you agree to those terms.
 
 - `nomic-ai/nomic-embed-text-v1.5` — embeddings. Apache-2.0.
 - `Xenova/whisper-tiny.en` — audio transcription. ONNX conversion of OpenAI Whisper (MIT).
-- `Xenova/ms-marco-MiniLM-L-6-v2` — cross-encoder reranking. Apache-2.0.
+- `cross-encoder/ettin-reranker-32m-v1` — default cross-encoder reranking. Apache-2.0.
+- `Xenova/ms-marco-MiniLM-L-6-v2` — alternative cross-encoder reranking. Apache-2.0.
+- `tesseract-ocr/tessdata` `eng.traineddata` (4.1.0) — OCR language data. Apache-2.0.
 
 ---
 

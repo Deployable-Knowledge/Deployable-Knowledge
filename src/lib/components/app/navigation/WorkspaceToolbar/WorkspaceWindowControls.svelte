@@ -4,14 +4,21 @@
 	import Square from '@lucide/svelte/icons/square';
 	import X from '@lucide/svelte/icons/x';
 	import { ActionIcon } from '#lib/components/app/actions';
+	import { cn } from '#lib/components/ui/utils';
 	import { DesktopWindowService } from '#lib/services';
 	import { desktopWindowStore } from '#lib/stores';
+
+	interface Props {
+		class?: string;
+	}
+
+	let { class: className }: Props = $props();
 </script>
 
 {#if desktopWindowStore.available}
 	<div
 		aria-label="Window controls"
-		class="dk-no-drag ml-1 flex shrink-0 items-center gap-0.5 border-l pl-1"
+		class={cn('dk-no-drag flex shrink-0 items-center gap-0.5', className)}
 		role="group"
 	>
 		<ActionIcon

@@ -1,0 +1,1 @@
+ALTER TABLE `app_state` ADD `setup_completed_at` integer;

@@ -19,6 +19,8 @@ export const APP_PREVIEW = {
 	page: (id: string, pageIndex: number) => `/preview/${segment(id)}#page=${pageIndex + 1}`
 };
 
+export const APP_SETUP = '/setup';
+
 export function documentViewerHref(
 	sourceType: Document['sourceType'] | undefined,
 	documentId: string,
@@ -109,6 +111,11 @@ export const API_EMBEDDING = {
 };
 
 export const API_SEARCH = '/search';
+
+export const API_SETUP = {
+	COMPLETE: '/setup/complete',
+	COMPONENTS: '/setup/components'
+};
 
 export const API_SESSIONS = {
 	BASE: '/sessions',

@@ -1,5 +1,6 @@
 import type { EmbeddingDevice } from '#lib/constants/embedding';
 import type { CustomProviderType } from '#lib/constants/providers';
+import type { SetupComponentId } from '#lib/constants/setup';
 import type { ThemeColor, ThemeMode } from '#lib/constants/theme-defaults';
 import type { RetrievalMode } from '#lib/enums';
 import type { AgentGoal, AgentProgressEvent } from './agent';
@@ -406,10 +407,24 @@ export interface ApiLocalModelDownloadRequest {
 	fileName: string;
 }
 
-export type ApiLocalModelDownloadEvent =
+export type ApiModelDownloadEvent =
 	| { status: 'progress'; progress: number; loaded: number; total: number }
-	| { status: 'ready'; fileName: string }
+	| { status: 'ready' }
 	| { status: 'error'; message: string };
+
+export interface ApiSetupComponentStatus {
+	id: SetupComponentId;
+	installed: boolean;
+}
+
+export interface ApiSetupStatus {
+	components: ApiSetupComponentStatus[];
+	memoryGiB: number;
+}
+
+export interface ApiSetupInstallRequest {
+	id: SetupComponentId;
+}
 
 interface ApiChatMessageBase {
 	message: string;

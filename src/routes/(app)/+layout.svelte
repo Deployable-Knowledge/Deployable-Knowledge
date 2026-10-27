@@ -4,18 +4,11 @@
 	import { Toaster } from 'svelte-sonner';
 	import packageMetadata from '../../../package.json';
 	import favicon from '#lib/assets/icon.svg';
-	import { DialogProgress } from '#lib/components/app/dialogs';
 	import { AppStartupOverlay } from '#lib/components/app/navigation';
 	import { SettingsDialog } from '#lib/components/app/settings';
 	import EngineHeartbeat from '#lib/components/app/navigation/EngineHeartbeat.svelte';
 	import * as Tooltip from '#lib/components/ui/tooltip';
-	import {
-		desktopWindowStore,
-		embeddingStore,
-		settingsStore,
-		themeStore,
-		workspaceStore
-	} from '#lib/stores';
+	import { desktopWindowStore, settingsStore, themeStore, workspaceStore } from '#lib/stores';
 
 	let { children } = $props();
 	let framesPainted = $state(false);
@@ -29,7 +22,6 @@
 		void desktopWindowStore.init();
 		void workspaceStore.init();
 		void settingsStore.init();
-		void embeddingStore.init();
 
 		let secondFrame = 0;
 		const firstFrame = requestAnimationFrame(() => {
@@ -55,17 +47,6 @@
 	<Toaster richColors />
 	<EngineHeartbeat />
 	<SettingsDialog />
-
-	<DialogProgress
-		open={embeddingStore.setupOpen}
-		title="Preparing semantic search"
-		progress={embeddingStore.progress}
-		error={embeddingStore.error ?? ''}
-		errorTitle="Semantic search setup failed"
-		errorDetail="You can continue without semantic search and retry later."
-		onRetry={() => void embeddingStore.retrySetup()}
-		onClose={() => (embeddingStore.setupOpen = false)}
-	/>
 
 	<AppStartupOverlay ready={layoutReady} version={packageMetadata.version} />
 </Tooltip.Provider>

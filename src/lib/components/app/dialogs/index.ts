@@ -3,7 +3,6 @@ export { default as DialogDocumentAutotagProgress } from './DialogDocumentAutota
 export { default as DialogDocumentTagPicker } from './DialogDocumentTagPicker.svelte';
 export { default as DialogDocumentTextEntry } from './DialogDocumentTextEntry.svelte';
 export { default as DialogDocumentYoutubeEntry } from './DialogDocumentYoutubeEntry.svelte';
-export { default as DialogProgress } from './DialogProgress.svelte';
 export { default as DialogPromptTemplate } from './DialogPromptTemplate.svelte';
 export { default as DialogProvider } from './DialogProvider.svelte';
 export * from './provider-types';

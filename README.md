@@ -72,8 +72,9 @@ npm run dev
 ```
 
 `npm run dev` syncs the local SQLite schema before Vite starts. The first time you open the app it
-downloads the embedding model that semantic and hybrid search need. Chat models come later, on
-demand, from settings.
+shows a setup page that downloads the OCR data, Whisper, the search reranker, and the embedding
+model, then offers a local chat model. Skipped components download the first time they are needed.
+More chat models can be downloaded later from settings.
 
 ### Desktop app
 
@@ -153,6 +154,7 @@ src/
 │   │   │   ├── content/  Shared Markdown rendering
 │   │   │   ├── dialogs/  Confirmation, progress, provider, and picker dialogs
 │   │   │   ├── documents/, notebook/, search/, settings/, transcript/
+│   │   │   ├── setup/    First-run component and local model setup
 │   │   │   ├── navigation/  Workspace toolbar, engine heartbeat, and startup overlay
 │   │   │   └── workspace/   Layout tabs, window registry, columns, frames, and resizers
 │   │   └── ui/           Reusable shadcn-svelte primitives

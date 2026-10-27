@@ -4,6 +4,7 @@ import { PDFParse, type TableArray } from 'pdf-parse';
 import { createWorker, OEM, PSM, type Worker } from 'tesseract.js';
 import { createLogger } from '#lib/server/logging';
 import { TimeoutError, withTimeout } from '#lib/server/utils/with-timeout';
+import { installOcrData, OCR_DATA_DIR } from './ocr-data.ts';
 import { extractPageImages, type PageImage, type PdfDocument } from './page-images.ts';
 import {
 	normalizeWhitespace,
@@ -59,11 +60,13 @@ type OcrSession = {
 };
 
 async function createOcrSession(): Promise<OcrSession> {
+	await installOcrData();
+
 	const creation = createWorker('eng', OEM.LSTM_ONLY, {
 		cacheMethod: 'readOnly',
-		cachePath: process.cwd(),
+		cachePath: OCR_DATA_DIR,
 		gzip: false,
-		langPath: process.cwd(),
+		langPath: OCR_DATA_DIR,
 		errorHandler: (error: unknown) => ocrLog.error('OCR worker error', {}, error)
 	}).then(async (worker) => {
 		await worker.setParameters({

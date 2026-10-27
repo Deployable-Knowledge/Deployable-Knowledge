@@ -1,9 +1,15 @@
 import {
 	AutoModelForSequenceClassification,
 	AutoTokenizer,
+	ModelRegistry,
 	type Tensor
 } from '@huggingface/transformers';
 import { createLogger } from '#lib/server/logging';
+import {
+	combineFileProgress,
+	transformersProgress,
+	type DownloadProgressHandler
+} from '#lib/server/utils/download-progress';
 import { INFERENCE_THREADS } from '#lib/server/utils/inference-threads';
 import { TRANSFORMERS_CACHE_DIR } from '#lib/server/utils/transformers-env';
 import { sigmoidScore, type CrossEncoder } from './cross-encoder';
@@ -31,6 +37,14 @@ export class MsMarco implements CrossEncoder {
 
 	private runtimePromise: Promise<MsMarcoRuntime> | undefined;
 
+	isInstalled(): Promise<boolean> {
+		return ModelRegistry.is_cached(MODEL_ID, { cache_dir: TRANSFORMERS_CACHE_DIR });
+	}
+
+	async prepare(onProgress: DownloadProgressHandler): Promise<void> {
+		await this.getRuntime(onProgress);
+	}
+
 	async predict(query: string, passages: readonly string[]): Promise<readonly number[]> {
 		if (passages.length === 0) {
 			return [];
@@ -54,18 +68,21 @@ export class MsMarco implements CrossEncoder {
 		});
 	}
 
-	private getRuntime(): Promise<MsMarcoRuntime> {
+	private getRuntime(onProgress: DownloadProgressHandler = () => {}): Promise<MsMarcoRuntime> {
 		if (!this.runtimePromise) {
 			const started = Date.now();
+			const progress_callback = transformersProgress(combineFileProgress(onProgress));
 
 			log.info('Loading reranker', { model: this.name });
 
 			this.runtimePromise = Promise.all([
 				AutoTokenizer.from_pretrained(MODEL_ID, {
-					cache_dir: TRANSFORMERS_CACHE_DIR
+					cache_dir: TRANSFORMERS_CACHE_DIR,
+					progress_callback
 				}),
 				AutoModelForSequenceClassification.from_pretrained(MODEL_ID, {
 					cache_dir: TRANSFORMERS_CACHE_DIR,
+					progress_callback,
 					session_options: {
 						intraOpNumThreads: INFERENCE_THREADS,
 						interOpNumThreads: 1

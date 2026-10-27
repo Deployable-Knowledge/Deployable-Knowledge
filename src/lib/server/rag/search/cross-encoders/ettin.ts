@@ -1,8 +1,24 @@
-import { AutoModel, AutoTokenizer, type Tensor } from '@huggingface/transformers';
+import {
+	AutoConfig,
+	AutoModel,
+	AutoTokenizer,
+	ModelRegistry,
+	type Tensor
+} from '@huggingface/transformers';
 import { createLogger } from '#lib/server/logging';
+import {
+	combineFileProgress,
+	transformersProgress,
+	type DownloadProgressHandler
+} from '#lib/server/utils/download-progress';
 import { INFERENCE_THREADS } from '#lib/server/utils/inference-threads';
 import { TRANSFORMERS_CACHE_DIR } from '#lib/server/utils/transformers-env';
-import { loadEttinHeadWeights, scoreEttinHiddenStates, type EttinHeadWeights } from './ettin-head';
+import {
+	isEttinHeadInstalled,
+	loadEttinHeadWeights,
+	scoreEttinHiddenStates,
+	type EttinHeadWeights
+} from './ettin-head';
 import { sigmoidScore, type CrossEncoder } from './cross-encoder';
 
 const MODEL_ID = 'cross-encoder/ettin-reranker-32m-v1';
@@ -10,6 +26,19 @@ const MODEL_REVISION = 'b33e5ceb5110773ea9cf5e00c9bedc83a8c2afdd';
 const MODEL_FILE_NAME = 'model_quint8_avx2';
 const MAX_LENGTH = 512;
 const BATCH_SIZE = 8;
+
+const HUB_OPTIONS = { revision: MODEL_REVISION, cache_dir: TRANSFORMERS_CACHE_DIR };
+
+const MODEL_OPTIONS = {
+	...HUB_OPTIONS,
+	model_file_name: MODEL_FILE_NAME,
+	dtype: 'fp32',
+	device: 'cpu'
+} as const;
+
+type CacheCheckOptions = NonNullable<Parameters<typeof ModelRegistry.is_cached>[1]> & {
+	model_file_name: string;
+};
 
 const log = createLogger('search');
 
@@ -32,6 +61,18 @@ export class Ettin implements CrossEncoder {
 	readonly name = 'Ettin 32M';
 
 	private runtimePromise: Promise<EttinRuntime> | undefined;
+
+	async isInstalled(): Promise<boolean> {
+		if (!isEttinHeadInstalled()) return false;
+
+		const config = await AutoConfig.from_pretrained(MODEL_ID, HUB_OPTIONS);
+		const options: CacheCheckOptions = { ...MODEL_OPTIONS, config };
+		return ModelRegistry.is_cached(MODEL_ID, options);
+	}
+
+	async prepare(onProgress: DownloadProgressHandler): Promise<void> {
+		await this.getRuntime(onProgress);
+	}
 
 	async predict(query: string, passages: readonly string[]): Promise<readonly number[]> {
 		if (passages.length === 0) {
@@ -56,29 +97,25 @@ export class Ettin implements CrossEncoder {
 		});
 	}
 
-	private getRuntime(): Promise<EttinRuntime> {
+	private getRuntime(onProgress: DownloadProgressHandler = () => {}): Promise<EttinRuntime> {
 		if (!this.runtimePromise) {
 			const started = Date.now();
+			const onFileProgress = combineFileProgress(onProgress);
+			const progress_callback = transformersProgress(onFileProgress);
 
 			log.info('Loading reranker', { model: this.name });
 
 			this.runtimePromise = Promise.all([
-				AutoTokenizer.from_pretrained(MODEL_ID, {
-					revision: MODEL_REVISION,
-					cache_dir: TRANSFORMERS_CACHE_DIR
-				}),
+				AutoTokenizer.from_pretrained(MODEL_ID, { ...HUB_OPTIONS, progress_callback }),
 				AutoModel.from_pretrained(MODEL_ID, {
-					revision: MODEL_REVISION,
-					cache_dir: TRANSFORMERS_CACHE_DIR,
-					model_file_name: MODEL_FILE_NAME,
-					dtype: 'fp32',
-					device: 'cpu',
+					...MODEL_OPTIONS,
+					progress_callback,
 					session_options: {
 						intraOpNumThreads: INFERENCE_THREADS,
 						interOpNumThreads: 1
 					}
 				}),
-				loadEttinHeadWeights()
+				loadEttinHeadWeights(onFileProgress)
 			])
 				.then(([tokenizer, encoder, head]) => {
 					log.info('Reranker ready', { durationMs: Date.now() - started, model: this.name });

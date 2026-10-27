@@ -29,7 +29,7 @@
 	}
 
 	onMount(() => {
-		if (!localModelsStore.status) void localModelsStore.refresh().catch(() => undefined);
+		if (!localModelsStore.status) void localModelsStore.refresh();
 	});
 </script>
 

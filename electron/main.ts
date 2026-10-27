@@ -1,6 +1,6 @@
 import { spawn, type ChildProcess } from 'node:child_process';
-import { constants, createWriteStream } from 'node:fs';
-import { copyFile, mkdir } from 'node:fs/promises';
+import { createWriteStream } from 'node:fs';
+import { mkdir } from 'node:fs/promises';
 import { createServer, type AddressInfo } from 'node:net';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,11 +12,11 @@ const SERVER_ENTRY = join(APP_ROOT, 'electron', 'server.ts');
 const PRELOAD_ENTRY = join(APP_ROOT, 'electron', 'preload.cjs');
 const SERVER_START_TIMEOUT_MS = 120_000;
 
-const SEEDED_RUNTIME_FILES = ['eng.traineddata'];
 const RUNTIME_DIRECTORIES = [
 	'documents',
 	'models',
 	join('.cache', 'embeddings'),
+	join('.cache', 'tessdata'),
 	join('.cache', 'transformersjs'),
 	'logs'
 ];
@@ -64,16 +64,6 @@ async function start(): Promise<void> {
 async function prepareDataDirectory(dataDirectory: string): Promise<void> {
 	for (const directory of RUNTIME_DIRECTORIES) {
 		await mkdir(join(dataDirectory, directory), { recursive: true });
-	}
-
-	for (const fileName of SEEDED_RUNTIME_FILES) {
-		await copyFile(
-			join(APP_ROOT, fileName),
-			join(dataDirectory, fileName),
-			constants.COPYFILE_EXCL
-		).catch((error: NodeJS.ErrnoException) => {
-			if (error.code !== 'EEXIST') throw error;
-		});
 	}
 }
 

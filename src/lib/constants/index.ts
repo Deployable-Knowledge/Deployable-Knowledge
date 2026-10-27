@@ -13,6 +13,7 @@ export * from './ndjson';
 export * from './prompt-template-presets';
 export * from './providers';
 export * from './reasoning-presets';
+export * from './setup';
 export * from './storage';
 export * from './theme-defaults';
 export * from './workspace-defaults';

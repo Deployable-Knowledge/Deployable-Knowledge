@@ -47,7 +47,6 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	return modelDownloadResponse(
 		'Model download',
-		model.fileName,
 		(onProgress) => downloadLocalModel(model, onProgress),
 		cancelActiveDownload
 	);

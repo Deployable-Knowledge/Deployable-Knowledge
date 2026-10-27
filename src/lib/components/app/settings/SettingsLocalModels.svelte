@@ -30,7 +30,7 @@
 		return [...catalogCards, ...customCards];
 	});
 
-	onMount(() => void localModelsStore.refresh().catch(() => {}));
+	onMount(() => void localModelsStore.refresh());
 </script>
 
 <SettingsFieldGroup

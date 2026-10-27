@@ -12,19 +12,6 @@ class EmbeddingStore {
 	downloadingFile = $state<string | null>(null);
 	progress = $state<ApiDocumentIngestProgress | null>(null);
 	error = $state<string | null>(null);
-	setupOpen = $state(false);
-
-	async init(): Promise<void> {
-		await this.refresh();
-		if (!this.status || this.status.ready) return;
-
-		this.setupOpen = true;
-		await this.retrySetup();
-	}
-
-	async retrySetup(): Promise<void> {
-		if (this.status) await this.download(this.status.settings.model);
-	}
 
 	async refresh(): Promise<void> {
 		try {
@@ -42,7 +29,6 @@ class EmbeddingStore {
 		this.progress = { percent: 0, label: 'Downloading embedding model', message: 'Starting.' };
 		try {
 			await EmbeddingService.download(fileName, (progress) => (this.progress = progress));
-			this.setupOpen = false;
 			await this.refresh();
 		} catch (error) {
 			this.error = errorMessage(error, 'Embedding model download failed.');

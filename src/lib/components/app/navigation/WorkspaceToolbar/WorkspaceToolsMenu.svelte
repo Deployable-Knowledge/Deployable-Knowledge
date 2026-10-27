@@ -17,7 +17,12 @@
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger>
 		{#snippet child({ props })}
-			<ActionIcon class="size-7 rounded-md" label="Workspace windows" triggerProps={props}>
+			<ActionIcon
+				class="size-7 rounded-md"
+				label="Workspace windows"
+				variant="ghost"
+				triggerProps={props}
+			>
 				<Eye />
 			</ActionIcon>
 		{/snippet}

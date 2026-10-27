@@ -176,7 +176,7 @@
 			class="size-7 rounded-md"
 			label={workspaceStore.leftPaneCollapsed ? 'Expand left column' : 'Collapse left column'}
 			pressed={workspaceStore.leftPaneCollapsed}
-			variant="outline"
+			variant="ghost"
 			onclick={() => workspaceStore.toggleLeftPaneCollapsed()}
 		>
 			{#if workspaceStore.leftPaneCollapsed}<PanelLeftOpen />{:else}<PanelLeftClose />{/if}

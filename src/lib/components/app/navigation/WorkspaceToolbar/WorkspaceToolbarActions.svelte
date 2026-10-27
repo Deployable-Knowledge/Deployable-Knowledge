@@ -17,7 +17,7 @@
 					aria-label="Settings"
 					class="size-7 rounded-md"
 					size="icon"
-					variant="outline"
+					variant="ghost"
 					onclick={() => settingsDialogStore.show()}
 				>
 					<Settings />

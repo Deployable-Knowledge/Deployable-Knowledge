@@ -1,8 +1,6 @@
 import { extname } from 'node:path';
-import { NOTEBOOK_TEXT_CHARACTER_LIMIT } from '#lib/constants';
 import { parseNotebookPageContent } from '#lib/server/notebooks/import-notebook-page';
 
-const MAX_COLLECTION_BYTES = NOTEBOOK_TEXT_CHARACTER_LIMIT * 4;
 const MAX_PAGE_COUNT = 100;
 
 export interface ImportedNotebookPage {
@@ -47,10 +45,6 @@ function importedPageContent(data: Buffer, label: string): string {
 		throw new NotebookCollectionImportError(`${label} is empty.`);
 	}
 
-	if (data.length > MAX_COLLECTION_BYTES) {
-		throw new NotebookCollectionImportError(`${label} is too large.`, 413);
-	}
-
 	const content = parseNotebookPageContent(label, data.toString('utf8'));
 
 	if (!content.trim()) {
@@ -71,15 +65,6 @@ function validatePages(pages: ImportedNotebookPage[]): void {
 			413
 		);
 	}
-
-	const characterCount = pages.reduce((total, page) => total + page.content.length, 0);
-
-	if (characterCount > NOTEBOOK_TEXT_CHARACTER_LIMIT) {
-		throw new NotebookCollectionImportError(
-			`Notebook text is limited to ${NOTEBOOK_TEXT_CHARACTER_LIMIT.toLocaleString()} characters.`,
-			413
-		);
-	}
 }
 
 export function buildNotebookCollection(
@@ -91,11 +76,6 @@ export function buildNotebookCollection(
 			`A notebook can import at most ${MAX_PAGE_COUNT} pages.`,
 			413
 		);
-	}
-
-	const totalBytes = files.reduce((total, file) => total + file.data.length, 0);
-	if (totalBytes > MAX_COLLECTION_BYTES) {
-		throw new NotebookCollectionImportError('The notebook collection is too large.', 413);
 	}
 
 	const sorted = [...files].sort((left, right) =>

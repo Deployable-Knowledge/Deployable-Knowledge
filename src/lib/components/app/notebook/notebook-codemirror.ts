@@ -8,8 +8,11 @@ import { HighlightStyle, syntaxHighlighting, syntaxTree } from '@codemirror/lang
 import {
 	Annotation,
 	EditorState,
+	Prec,
+	type Range,
 	StateEffect,
 	StateField,
+	Transaction,
 	type ChangeSpec,
 	type Extension
 } from '@codemirror/state';
@@ -26,10 +29,10 @@ import {
 } from '@codemirror/view';
 import { tags } from '@lezer/highlight';
 import { renderMarkdown } from '#lib/utils/markdown';
+import { formatTable, type TableAction } from '#lib/utils/markdown-table';
 import type { RibbonCommand } from './notebook-editing';
 
 export interface NotebookEditorHooks {
-	characterLimit(): number;
 	onCommand(command: RibbonCommand): void;
 	onOpenFind(): void;
 	onEscape(): boolean;
@@ -113,13 +116,50 @@ interface PendingDecoration {
 	deco: Decoration;
 }
 
+interface LineSpan {
+	from: number;
+	to: number;
+}
+
+function lineSpan(state: EditorState, from: number, to: number): LineSpan {
+	return { from: state.doc.lineAt(from).from, to: state.doc.lineAt(to).to };
+}
+
+// Only top-level tables are reformatted: a table inside a quote or list carries
+// prefixes on every line that the plain-table formatter would strip.
+function tableAt(state: EditorState, pos: number): LineSpan | null {
+	let table: LineSpan | null = null;
+	syntaxTree(state).iterate({
+		from: pos,
+		to: pos,
+		enter: (node) => {
+			if (node.name === 'Document') return;
+			if (node.name === 'Table') table = lineSpan(state, node.from, node.to);
+			return false;
+		}
+	});
+	return table;
+}
+
 function buildLivePreview(view: EditorView): DecorationSet {
 	const { state } = view;
 	const selection = state.selection.main;
 	const touches = (from: number, to: number) => selection.to >= from && selection.from <= to;
 	const pending: PendingDecoration[] = [];
+	const tables: LineSpan[] = [];
 	const hide = (from: number, to: number) => {
 		if (to > from && to <= state.doc.lineAt(from).to) pending.push({ from, to, deco: HIDE });
+	};
+	const blockLines = (from: number, to: number, baseClass: string) => {
+		const open = state.doc.lineAt(from).number;
+		const close = state.doc.lineAt(to).number;
+		for (let lineNumber = open; lineNumber <= close; lineNumber += 1) {
+			let lineClass = baseClass;
+			if (lineNumber === open) lineClass += ' nb-codeblock-first';
+			if (lineNumber === close) lineClass += ' nb-codeblock-last';
+			const line = state.doc.line(lineNumber);
+			pending.push({ from: line.from, to: line.from, deco: Decoration.line({ class: lineClass }) });
+		}
 	};
 
 	for (const range of view.visibleRanges) {
@@ -129,6 +169,14 @@ function buildLivePreview(view: EditorView): DecorationSet {
 			enter: (node) => {
 				const parent = node.node.parent;
 				switch (node.name) {
+					// A revealed table stays verbatim monospace source: hiding any
+					// markup inside it would knock its columns out of alignment
+					case 'Table': {
+						const span = lineSpan(state, node.from, node.to);
+						tables.push(span);
+						blockLines(span.from, span.to, 'nb-codeblock nb-table-source');
+						return false;
+					}
 					case 'HeaderMark': {
 						if (!parent || touches(parent.from, parent.to)) return;
 						const after = state.doc.sliceString(node.to, node.to + 1);
@@ -150,19 +198,9 @@ function buildLivePreview(view: EditorView): DecorationSet {
 						return;
 					}
 					case 'FencedCode': {
+						blockLines(node.from, node.to, 'nb-codeblock');
 						const open = state.doc.lineAt(node.from);
 						const close = state.doc.lineAt(node.to);
-						for (let lineNumber = open.number; lineNumber <= close.number; lineNumber += 1) {
-							const line = state.doc.line(lineNumber);
-							let lineClass = 'nb-codeblock';
-							if (lineNumber === open.number) lineClass += ' nb-codeblock-first';
-							if (lineNumber === close.number) lineClass += ' nb-codeblock-last';
-							pending.push({
-								from: line.from,
-								to: line.from,
-								deco: Decoration.line({ class: lineClass })
-							});
-						}
 						// With the cursor outside, the fence lines collapse into the
 						// block's top and bottom padding
 						const closed = node.node.getChildren('CodeMark').length >= 2;
@@ -243,7 +281,7 @@ function buildLivePreview(view: EditorView): DecorationSet {
 				}
 			}
 		});
-		collectStyleSpans(state, range.from, range.to, touches, pending);
+		collectStyleSpans(state, range.from, range.to, touches, tables, pending);
 	}
 
 	return Decoration.set(
@@ -254,30 +292,20 @@ function buildLivePreview(view: EditorView): DecorationSet {
 
 function buildTables(state: EditorState): DecorationSet {
 	const selection = state.selection.main;
-	const pending: PendingDecoration[] = [];
+	const widgets: Range<Decoration>[] = [];
 
 	syntaxTree(state).iterate({
 		enter: (node) => {
 			if (node.name !== 'Table') return;
-			const from = state.doc.lineAt(node.from).from;
-			const to = state.doc.lineAt(node.to).to;
-			if (selection.from < to && selection.to > from) return false;
-			pending.push({
-				from,
-				to,
-				deco: Decoration.replace({
-					widget: new TableWidget(state.doc.sliceString(from, to)),
-					block: true
-				})
-			});
+			const { from, to } = lineSpan(state, node.from, node.to);
+			if (selection.from <= to && selection.to >= from) return false;
+			const widget = new TableWidget(state.doc.sliceString(from, to));
+			widgets.push(Decoration.replace({ widget, block: true }).range(from, to));
 			return false;
 		}
 	});
 
-	return Decoration.set(
-		pending.map(({ from, to, deco }) => deco.range(from, to)),
-		true
-	);
+	return Decoration.set(widgets, true);
 }
 
 const tableField = StateField.define<DecorationSet>({
@@ -292,11 +320,83 @@ const tableField = StateField.define<DecorationSet>({
 	provide: (field) => EditorView.decorations.from(field)
 });
 
+// Vertical cursor motion skips block widgets entirely, so a rendered table is
+// jumped over and the caret lands on the line beyond it. Stop on the nearest
+// source row of the crossed table instead, which also reveals its markdown.
+function moveIntoTable(view: EditorView, forward: boolean): boolean {
+	const range = view.state.selection.main;
+	if (!range.empty) return false;
+	const { doc } = view.state;
+	const target = view.moveVertically(range, forward);
+	const low = Math.min(range.head, target.head);
+	const high = Math.max(range.head, target.head);
+	const column = range.head - doc.lineAt(range.head).from;
+	let entry = -1;
+	view.state.field(tableField).between(low, high, (from, to) => {
+		const row = doc.lineAt(forward ? from : to);
+		entry = Math.min(row.from + column, row.to);
+		if (forward) return false;
+	});
+	if (entry < 0) return false;
+	view.dispatch({ selection: { anchor: entry }, scrollIntoView: true, userEvent: 'select' });
+	return true;
+}
+
+// Moving the caret into a ragged table pads it into a grid before its source is
+// revealed. The padding stays out of undo history so undo never fights it.
+function alignTableOnEntry(): Extension {
+	return EditorState.transactionFilter.of((transaction) => {
+		const { selection, startState } = transaction;
+		if (!selection?.main.empty || transaction.docChanged) return transaction;
+		if (transaction.annotation(externalEdit)) return transaction;
+		if (transaction.isUserEvent('undo') || transaction.isUserEvent('redo')) return transaction;
+
+		const head = selection.main.head;
+		const table = tableAt(startState, head);
+		if (!table) return transaction;
+		const previous = startState.selection.main.head;
+		if (previous >= table.from && previous <= table.to) return transaction;
+
+		const source = startState.sliceDoc(table.from, table.to);
+		const edit = formatTable(source, head - table.from);
+		if (edit.text === source) return transaction;
+
+		return [
+			transaction,
+			{
+				changes: { from: table.from, to: table.to, insert: edit.text },
+				selection: { anchor: table.from + edit.cursor },
+				annotations: Transaction.addToHistory.of(false),
+				sequential: true
+			}
+		];
+	});
+}
+
+function runTableAction(view: EditorView, action: TableAction): boolean {
+	const range = view.state.selection.main;
+	if (!range.empty) return false;
+	const table = tableAt(view.state, range.head);
+	if (!table) return false;
+
+	const source = view.state.sliceDoc(table.from, table.to);
+	const edit = formatTable(source, range.head - table.from, action);
+	view.dispatch({
+		changes:
+			edit.text === source ? undefined : { from: table.from, to: table.to, insert: edit.text },
+		selection: { anchor: table.from + edit.cursor },
+		scrollIntoView: true,
+		userEvent: 'input'
+	});
+	return true;
+}
+
 function collectStyleSpans(
 	state: EditorState,
 	from: number,
 	to: number,
 	touches: (from: number, to: number) => boolean,
+	tables: LineSpan[],
 	pending: PendingDecoration[]
 ): void {
 	const text = state.doc.sliceString(from, to);
@@ -304,6 +404,7 @@ function collectStyleSpans(
 		const [, property, value] = match;
 		const start = from + match.index;
 		const end = start + match[0].length;
+		if (tables.some((table) => start >= table.from && start <= table.to)) continue;
 		const openEnd = start + match[0].indexOf('>') + 1;
 		const closeStart = end - '</span>'.length;
 		if (openEnd < closeStart) {
@@ -432,8 +533,19 @@ const editorTheme = EditorView.theme({
 		borderLeft:
 			'3px solid color-mix(in oklab, var(--color-muted-foreground) 55%, var(--color-border))'
 	},
-	// Table styling itself comes from markdown-content.css, shared with chat
-	'.nb-table': { margin: '0.25rem 0' }
+	// Table styling itself comes from markdown-content.css, shared with chat.
+	// Padding, not margin: CodeMirror's height map ignores widget margins, and
+	// the drift breaks vertical cursor motion below the table.
+	'.nb-table': { padding: '0.25rem 0' },
+	// Rows never wrap so the grid holds; wide tables scroll sideways instead
+	'.nb-table-source': {
+		whiteSpace: 'pre',
+		overflowWrap: 'normal',
+		wordBreak: 'normal',
+		boxSizing: 'border-box',
+		width: 'max-content',
+		minWidth: '100%'
+	}
 });
 
 function linkUrlAt(state: EditorState, pos: number): string | null {
@@ -524,12 +636,19 @@ export function notebookEditorExtensions(hooks: NotebookEditorHooks): Extension 
 		syntaxHighlighting(markdownHighlighting),
 		livePreviewPlugin,
 		tableField,
+		alignTableOnEntry(),
 		findHighlightField,
 		editorTheme,
 		clickHandler,
-		EditorState.changeFilter.of(
-			(transaction) =>
-				!transaction.docChanged || transaction.newDoc.length <= hooks.characterLimit()
+		// Above the markdown keymap, which otherwise claims Enter first
+		Prec.highest(
+			keymap.of([
+				{ key: 'Tab', run: (view) => runTableAction(view, 'next') },
+				{ key: 'Shift-Tab', run: (view) => runTableAction(view, 'previous') },
+				{ key: 'Enter', run: (view) => runTableAction(view, 'down') },
+				{ key: 'Mod-Shift-k', run: (view) => runTableAction(view, 'delete-row') },
+				{ key: 'Mod-Alt-Shift-k', run: (view) => runTableAction(view, 'delete-column') }
+			])
 		),
 		keymap.of([
 			{
@@ -547,6 +666,8 @@ export function notebookEditorExtensions(hooks: NotebookEditorHooks): Extension 
 				}
 			})),
 			{ key: 'Escape', run: () => hooks.onEscape() },
+			{ key: 'ArrowUp', run: (view) => moveIntoTable(view, false) },
+			{ key: 'ArrowDown', run: (view) => moveIntoTable(view, true) },
 			...historyKeymap,
 			...defaultKeymap
 		])

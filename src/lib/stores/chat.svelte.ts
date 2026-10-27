@@ -1,4 +1,5 @@
 import { STORAGE_KEYS } from '#lib/constants';
+import { ChatContextMode } from '#lib/enums';
 import { SvelteMap } from 'svelte/reactivity';
 import { ChatService } from '#lib/services';
 import { persisted } from './persisted.svelte';
@@ -151,7 +152,7 @@ class ChatStore {
 	private conversations = new SvelteMap<string, ChatConversation>();
 	current = $state(new ChatConversation());
 	private _toolsEnabled = persisted(STORAGE_KEYS.CHAT_TOOLS_ENABLED, false);
-	private _searchEnabled = persisted(STORAGE_KEYS.CHAT_SEARCH_ENABLED, true);
+	private _mode = persisted(STORAGE_KEYS.CHAT_MODE, ChatContextMode.SEARCH);
 
 	get session(): Session | undefined {
 		return this.current.session;
@@ -179,12 +180,14 @@ class ChatStore {
 		this._toolsEnabled.value = value;
 	}
 
-	get searchEnabled(): boolean {
-		return this._searchEnabled.value;
+	get mode(): ChatContextMode {
+		const stored = this._mode.value;
+		return Object.values(ChatContextMode).includes(stored) ? stored : ChatContextMode.SEARCH;
 	}
 
-	set searchEnabled(value: boolean) {
-		this._searchEnabled.value = value;
+	set mode(value: ChatContextMode) {
+		if (this._mode.value === value) return;
+		this._mode.value = value;
 	}
 
 	async loadMessages(): Promise<void> {

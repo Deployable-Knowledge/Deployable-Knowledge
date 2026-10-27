@@ -51,6 +51,15 @@ export class NotebooksRepository {
 		return notebookId;
 	}
 
+	static async getActiveId(): Promise<string | null> {
+		const [state] = await db
+			.select({ activeNotebookId: notebookState.activeNotebookId })
+			.from(notebookState)
+			.where(eq(notebookState.id, NOTEBOOK_STATE_ID))
+			.limit(1);
+		return state?.activeNotebookId ?? null;
+	}
+
 	static async setActive(notebookId: string | null): Promise<void> {
 		const updatedAt = new Date().toISOString();
 		const state: NewNotebookState = {
@@ -219,11 +228,7 @@ export class NotebooksRepository {
 				.orderBy(asc(notebooks.sortOrder), asc(notebooks.createdAt));
 		}
 
-		const [state] = await db
-			.select()
-			.from(notebookState)
-			.where(eq(notebookState.id, NOTEBOOK_STATE_ID))
-			.limit(1);
+		const activeId = await this.getActiveId();
 		const output: NotebookWithPages[] = [];
 
 		for (const notebook of notebookRows) {
@@ -236,14 +241,13 @@ export class NotebooksRepository {
 		}
 
 		const activeNotebookId =
-			notebookRows.find(({ id }) => id === state?.activeNotebookId)?.id ??
-			notebookRows[0]?.id ??
-			null;
+			notebookRows.find(({ id }) => id === activeId)?.id ?? notebookRows[0]?.id ?? null;
 		return { activeNotebookId, notebooks: output };
 	}
 }
 
 export const createDefaultNotebook = () => NotebooksRepository.createDefault();
+export const getActiveNotebookId = () => NotebooksRepository.getActiveId();
 export const loadNotebookState = () => NotebooksRepository.loadState();
 export const setActiveNotebook = (notebookId: string | null) =>
 	NotebooksRepository.setActive(notebookId);

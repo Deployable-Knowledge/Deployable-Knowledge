@@ -45,13 +45,14 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 		return json({ error: 'Destination notebook not found' }, { status: 404 });
 	}
 
-	const destinationTitles = (
-		await db
-			.select({ title: notebookPages.title })
-			.from(notebookPages)
-			.where(eq(notebookPages.notebookId, destinationNotebookId))
-	).map(({ title }) => title);
-	const movedTitle = uniquePageTitle(page.title, destinationTitles);
+	const destinationPages = await db
+		.select({ title: notebookPages.title })
+		.from(notebookPages)
+		.where(eq(notebookPages.notebookId, destinationNotebookId));
+	const movedTitle = uniquePageTitle(
+		page.title,
+		destinationPages.map(({ title }) => title)
+	);
 	const timestamp = new Date().toISOString();
 
 	await db.transaction(async (transaction) => {

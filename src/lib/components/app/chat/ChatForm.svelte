@@ -8,15 +8,13 @@
 	import { Button } from '#lib/components/ui/button';
 	import * as DropdownMenu from '#lib/components/ui/dropdown-menu';
 	import { Textarea } from '#lib/components/ui/textarea';
-	import * as Tooltip from '#lib/components/ui/tooltip';
 	import { REASONING_PRESETS, type ReasoningEffort } from '#lib/constants';
-	import { ChatContextMode } from '#lib/enums';
+	import type { ChatContextMode } from '#lib/enums';
 	import ChatModeMenu from './ChatModeMenu.svelte';
 	import ChatModelMenu from './ChatModelMenu.svelte';
 	import ChatToolsToggle from './ChatToolsToggle.svelte';
 
 	interface Props {
-		activeNotebookTitle?: string | null;
 		busy?: boolean;
 		draft: string;
 		mode: ChatContextMode;
@@ -34,7 +32,6 @@
 	}
 
 	let {
-		activeNotebookTitle = null,
 		busy = false,
 		draft = $bindable(),
 		mode,
@@ -79,7 +76,7 @@
 			bind:value={draft}
 		/>
 		<div class="flex items-center justify-between gap-2 px-2.5 pb-2">
-			<div class="flex min-w-0 items-center gap-1">
+			<div class="flex items-center gap-1">
 				<ChatModeMenu disabled={busy} {mode} {onModeChange} {searchToolActive} />
 				<ChatToolsToggle
 					available={toolsAvailable}
@@ -125,19 +122,6 @@
 						</DropdownMenu.RadioGroup>
 					</DropdownMenu.Content>
 				</DropdownMenu.Root>
-				{#if mode === ChatContextMode.NOTEBOOK && activeNotebookTitle}
-					<Tooltip.Root>
-						<Tooltip.Trigger>
-							{#snippet child({ props })}
-								<span {...props} class="max-w-48 min-w-0 truncate text-xs text-muted-foreground">
-									Active Notebook: {activeNotebookTitle}
-								</span>
-							{/snippet}
-						</Tooltip.Trigger>
-						<Tooltip.Content>Notebook chat uses every page of {activeNotebookTitle}</Tooltip.Content
-						>
-					</Tooltip.Root>
-				{/if}
 			</div>
 			<div class="flex min-w-0 items-center gap-2">
 				<ChatModelMenu disabled={busy} />

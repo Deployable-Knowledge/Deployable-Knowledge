@@ -183,7 +183,6 @@
 			onSendToNotebook={(message) => void sendToNotebook(message)}
 		/>
 		<ChatForm
-			activeNotebookTitle={notebooksStore.activeNotebook?.title ?? null}
 			bind:draft
 			busy={chatStore.current.isStreaming}
 			mode={chatStore.mode}

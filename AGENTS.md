@@ -62,8 +62,8 @@ These instructions apply to the entire repository. Preserve them when adding or 
   not be registered as a draggable workspace window or given its own route.
 - The User Guide opens the same way (`UserGuideDialog`, driven by `userGuideStore`). Its chapters
   are the Markdown files in `src/lib/server/user-guide/chapters/`, bundled into the server build
-  and served read-only by the `/user-guide` endpoint. It opens by itself once on a fresh install
-  only (`user_guide_pending` in `app_state`, claimed by `POST /user-guide/first-run`).
+  and served read-only by the `/user-guide` endpoint. It opens by itself once, when the setup page
+  finishes (`SetupView`), and has no stored first-run flag.
 - Do not add a persistent application sidebar. The main workspace toolbar places the left-column
   toggle before the layout tabs and the User Guide, Tools and Settings controls at the far right.
 - The app is single-user and local: there is no authentication, no users table, and no per-user

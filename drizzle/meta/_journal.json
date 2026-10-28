@@ -29,13 +29,6 @@
       "when": 1793127279792,
       "tag": "0003_elite_sauron",
       "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1793193326112,
-      "tag": "0004_fine_jack_power",
-      "breakpoints": true
     }
   ]
 }

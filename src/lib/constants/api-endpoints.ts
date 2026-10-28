@@ -127,10 +127,7 @@ export const API_THEME = '/theme';
 
 export const API_TOOLS = '/tools';
 
-export const API_USER_GUIDE = {
-	BASE: '/user-guide',
-	FIRST_RUN: '/user-guide/first-run'
-};
+export const API_USER_GUIDE = '/user-guide';
 
 export const API_VULKAN_DEVICES = '/vulkan-devices';
 

@@ -37,8 +37,7 @@ export const appState = sqliteTable('app_state', {
 		.notNull()
 		.default(DEFAULT_EMBEDDING_SETTINGS.device),
 	vulkanDevice: integer('vulkan_device'),
-	setupCompletedAt: integer('setup_completed_at', { mode: 'timestamp' }),
-	userGuidePending: integer('user_guide_pending', { mode: 'boolean' }).notNull().default(false)
+	setupCompletedAt: integer('setup_completed_at', { mode: 'timestamp' })
 });
 
 // Workspace layout tabs. The snapshot is opaque UI state that is always read and

@@ -1,23 +1,15 @@
 <script lang="ts">
 	import '../../app.css';
 	import { onMount } from 'svelte';
-	import { page } from '$app/state';
 	import { Toaster } from 'svelte-sonner';
 	import packageMetadata from '../../../package.json';
 	import favicon from '#lib/assets/icon.svg';
 	import { AppStartupOverlay } from '#lib/components/app/navigation';
 	import { SettingsDialog } from '#lib/components/app/settings';
-	import { APP_SETUP } from '#lib/constants';
 	import { UserGuideDialog } from '#lib/components/app/user-guide';
 	import EngineHeartbeat from '#lib/components/app/navigation/EngineHeartbeat.svelte';
 	import * as Tooltip from '#lib/components/ui/tooltip';
-	import {
-		desktopWindowStore,
-		settingsStore,
-		themeStore,
-		userGuideStore,
-		workspaceStore
-	} from '#lib/stores';
+	import { desktopWindowStore, settingsStore, themeStore, workspaceStore } from '#lib/stores';
 
 	let { children } = $props();
 	let framesPainted = $state(false);
@@ -25,13 +17,6 @@
 	// The workspace layout arrives from the database, so the overlay has to cover
 	// that fetch or the tab strip renders empty first.
 	const layoutReady = $derived(framesPainted && workspaceStore.ready);
-
-	// A fresh install starts on the setup page, which shares this layout, so the
-	// guide waits until setup hands off to the workspace.
-	$effect(() => {
-		if (!layoutReady || page.url.pathname === APP_SETUP) return;
-		void userGuideStore.openOnFirstRun();
-	});
 
 	onMount(() => {
 		themeStore.init();

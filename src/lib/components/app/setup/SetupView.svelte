@@ -5,7 +5,7 @@
 	import favicon from '#lib/assets/icon.svg';
 	import { WorkspaceWindowControls } from '#lib/components/app/navigation';
 	import { ScrollArea } from '#lib/components/ui/scroll-area';
-	import { setupStore, type SetupStep } from '#lib/stores';
+	import { setupStore, userGuideStore, type SetupStep } from '#lib/stores';
 	import SetupComponentList from './SetupComponentList.svelte';
 	import SetupModelStep from './SetupModelStep.svelte';
 
@@ -16,7 +16,10 @@
 	};
 
 	async function finish(): Promise<void> {
-		if (await setupStore.finish()) await goto(resolve('/(app)'));
+		if (!(await setupStore.finish())) return;
+
+		await goto(resolve('/(app)'));
+		userGuideStore.show();
 	}
 
 	onMount(() => void setupStore.init());

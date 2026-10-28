@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 import { DEFAULT_EMBEDDING_SETTINGS, parseThemeColor, parseThemeMode } from '#lib/constants';
 import type { EmbeddingSettings, ThemeSettings } from '#lib/types';
@@ -6,28 +6,6 @@ import { db } from '#lib/server/database/database';
 import { appState } from '#lib/server/database/schema';
 
 const APP_STATE_ID = 'app';
-
-/**
- * Migrations never insert the app state row; the first workspace load does. A
- * database without the row at startup has therefore never been booted, which
- * is the only time the user guide should open by itself. Upgraded installs
- * already have the row and keep the column's `false` default.
- */
-export async function createAppStateOnFirstRun(): Promise<void> {
-	await db
-		.insert(appState)
-		.values({ id: APP_STATE_ID, userGuidePending: true })
-		.onConflictDoNothing();
-}
-
-export async function claimUserGuideFirstRun(): Promise<boolean> {
-	const claimed = await db
-		.update(appState)
-		.set({ userGuidePending: false })
-		.where(and(eq(appState.id, APP_STATE_ID), eq(appState.userGuidePending, true)))
-		.returning({ id: appState.id });
-	return claimed.length > 0;
-}
 
 export async function getActiveProfileId(): Promise<string | null> {
 	const state = await db.select().from(appState).where(eq(appState.id, APP_STATE_ID)).get();

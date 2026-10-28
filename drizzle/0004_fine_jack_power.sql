@@ -1,1 +1,0 @@
-ALTER TABLE `app_state` ADD `user_guide_pending` integer DEFAULT false NOT NULL;

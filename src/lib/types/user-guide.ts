@@ -4,7 +4,3 @@ export interface UserGuideChapter {
 	description: string | null;
 	content: string;
 }
-
-export interface UserGuideFirstRunResponse {
-	open: boolean;
-}

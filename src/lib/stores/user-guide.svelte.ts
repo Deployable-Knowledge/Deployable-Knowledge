@@ -2,7 +2,6 @@ import { UserGuideService } from '#lib/services';
 import type { UserGuideChapter } from '#lib/types';
 
 class UserGuideStore {
-	private firstRunChecked = false;
 	open = $state(false);
 	chapters = $state<UserGuideChapter[]>([]);
 	activeIndex = $state(0);
@@ -16,19 +15,6 @@ class UserGuideStore {
 	show(): void {
 		this.open = true;
 		void this.load();
-	}
-
-	async openOnFirstRun(): Promise<void> {
-		if (this.firstRunChecked) return;
-		this.firstRunChecked = true;
-
-		try {
-			const { open } = await UserGuideService.claimFirstRun();
-			if (open) this.show();
-		} catch {
-			// The guide is still one click away in the toolbar, so a failed check
-			// simply leaves it closed instead of interrupting startup with an error.
-		}
 	}
 
 	setOpen(open: boolean): void {

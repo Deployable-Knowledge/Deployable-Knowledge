@@ -1,36 +1,33 @@
 import { APP_PREVIEW } from '#lib/constants';
 import type { NotebookSourceItem } from '#lib/types';
-import { formatTable, tableRowCells } from './markdown-table';
 
-export interface CitationInsertion {
-	text: string;
-	cursor: number;
+export interface CitationLink {
+	label: string;
+	href: string;
+}
+
+export interface CitationSpacing {
+	prefix: string;
+	suffix: string;
 }
 
 const CITATIONS_HEADING = '## Citations';
 const TABLE_HEADER_ROWS = ['| Source | Page |', '| --- | ---: |'];
+const TABLE_HEADER = /^\|\s*Source\s*\|\s*Page\s*\|$/;
 const TABLE_ROW = /^\|.*\|$/;
+const LINK_TARGET = /\]\(([^)\s]+)\)/;
 
-export function insertNotebookSourceCitation(
-	text: string,
-	source: NotebookSourceItem,
-	selectionStart = text.length,
-	selectionEnd = selectionStart
-): CitationInsertion {
-	const page = source.pageIndex + 1;
-	const title = escapeLabel(source.documentTitle.trim() || 'Source');
-	const href = APP_PREVIEW.page(source.documentId, source.pageIndex);
-	const citation = `([${title}, p. ${page}](${href}))`;
-	const start = clamp(selectionStart, 0, text.length);
-	const end = clamp(selectionEnd, start, text.length);
-	const before = text.slice(0, start);
-	const after = text.slice(end);
-	const prefix = before && !/[\s([{]$/.test(before) ? ' ' : '';
-	const suffix = after && !/^[\s.,;:!?)}\]]/.test(after) ? ' ' : '';
-	const insertion = `${prefix}${citation}${suffix}`;
+export function notebookCitationLink(source: NotebookSourceItem): CitationLink {
 	return {
-		text: `${before}${insertion}${after}`,
-		cursor: before.length + insertion.length
+		label: `${source.documentTitle.trim() || 'Source'}, p. ${source.pageIndex + 1}`,
+		href: APP_PREVIEW.page(source.documentId, source.pageIndex)
+	};
+}
+
+export function citationSpacing(before: string, after: string): CitationSpacing {
+	return {
+		prefix: before && !/[\s([{]$/.test(before) ? ' ' : '',
+		suffix: after && !/^[\s.,;:!?)}\]]/.test(after) ? ' ' : ''
 	};
 }
 
@@ -50,8 +47,7 @@ export function insertNotebookCitationsTable(
 		rows.push(row);
 	}
 	if (!rows.length) return text;
-	const table = formatTable([...TABLE_HEADER_ROWS, ...rows].join('\n'), 0).text;
-	const block = `${CITATIONS_HEADING}\n\n${table}`;
+	const block = `${CITATIONS_HEADING}\n\n${[...TABLE_HEADER_ROWS, ...rows].join('\n')}`;
 	if (!section) return [text.trimEnd(), block].filter(Boolean).join('\n\n');
 	let next = section.end;
 	while (next < lines.length && !lines[next].trim()) next++;
@@ -69,9 +65,8 @@ function tableRow(source: NotebookSourceItem): string {
 	return `| [${escapeTable(source.documentTitle)}](${href}) | ${source.pageIndex + 1} |`;
 }
 
-// Rows compare by trimmed cells, since aligning the table re-pads them
 function rowKey(row: string): string {
-	return tableRowCells(row).join('\n');
+	return LINK_TARGET.exec(row)?.[1] ?? row.replace(/\s+/g, ' ').trim();
 }
 
 interface CitationsSection {
@@ -88,10 +83,7 @@ function findCitationsSection(lines: readonly string[]): CitationsSection | null
 		if (lines[start].trim() !== CITATIONS_HEADING) continue;
 		let header = start + 1;
 		while (header < lines.length && !lines[header].trim()) header++;
-		const headerLine = lines[header]?.trim() ?? '';
-		if (!TABLE_ROW.test(headerLine) || rowKey(headerLine) !== rowKey(TABLE_HEADER_ROWS[0])) {
-			continue;
-		}
+		if (!TABLE_HEADER.test(lines[header]?.trim() ?? '')) continue;
 		let end = header;
 		while (end < lines.length && TABLE_ROW.test(lines[end].trim())) end++;
 		const rows = lines.slice(header + TABLE_HEADER_ROWS.length, end).map((line) => line.trim());
@@ -106,8 +98,4 @@ function escapeLabel(value: string): string {
 
 function escapeTable(value: string): string {
 	return escapeLabel(value.replace(/\s+/g, ' ').trim()).replace(/\|/g, '\\|');
-}
-
-function clamp(value: number, min: number, max: number): number {
-	return Math.min(Math.max(value, min), max);
 }

@@ -1,13 +1,19 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { EditorView } from '@codemirror/view';
-	import { applyRibbonCommand, type RibbonCommand } from './notebook-editing';
+	import { toast } from 'svelte-sonner';
+	import { Editor } from '@tiptap/core';
+	import type { NotebookSourceItem } from '#lib/types';
+	import { citationSpacing, notebookCitationLink } from '#lib/utils/notebook-citations';
+	import { runClipboardAction, type ClipboardAction } from './notebook-clipboard';
+	import { notebookEditorExtensions } from './notebook-editor-extensions';
 	import {
-		documentChanges,
-		externalEdit,
-		notebookEditorExtensions,
-		setFindHighlights
-	} from './notebook-codemirror';
+		formattingState,
+		runEditorCommand,
+		type EditorCommand,
+		type FormattingState
+	} from './notebook-editing';
+	import { findPluginKey } from './notebook-find';
+	import NotebookEditorContextMenu from './NotebookEditorContextMenu.svelte';
 	import NotebookEditorFindBar from './NotebookEditorFindBar.svelte';
 	import NotebookEditorRibbon from './NotebookEditorRibbon.svelte';
 
@@ -25,151 +31,140 @@
 		onInput
 	}: Props = $props();
 
-	const MAX_FIND_MATCHES = 500;
-
 	let editorHost = $state<HTMLElement | null>(null);
-	let editorView = $state<EditorView | null>(null);
-
+	let editor = $state.raw<Editor | null>(null);
+	let formatting = $state.raw<FormattingState>({
+		active: new Set(),
+		available: new Set(),
+		blockStyle: null,
+		color: null,
+		hasSelection: false,
+		highlight: null,
+		inTable: false,
+		linkHref: null
+	});
 	let findQuery = $state('');
-	let activeMatchIndex = $state(0);
-
-	// The find bar can also be toggled from the notebook header via the bound prop
-	$effect(() => {
-		if (findOpen) activeMatchIndex = 0;
-	});
-
-	const matches = $derived.by(() => {
-		if (!findOpen || !findQuery.trim()) return [];
-		const needle = findQuery.toLowerCase();
-		const haystack = notes.toLowerCase();
-		const positions: { start: number; end: number }[] = [];
-		let index = haystack.indexOf(needle);
-		while (index !== -1 && positions.length < MAX_FIND_MATCHES) {
-			positions.push({ start: index, end: index + needle.length });
-			index = haystack.indexOf(needle, index + Math.max(1, needle.length));
-		}
-		return positions;
-	});
-	const boundedMatchIndex = $derived(
-		matches.length ? Math.min(activeMatchIndex, matches.length - 1) : 0
-	);
+	let findCount = $state(0);
+	let findCurrent = $state(0);
+	let emitted: string | null = null;
 
 	onMount(() => {
-		editorView = new EditorView({
-			parent: editorHost ?? undefined,
-			doc: notes,
-			extensions: [
-				notebookEditorExtensions({
-					onCommand: (command) => runCommand(command),
-					onOpenFind: openFind,
-					onEscape: () => {
-						if (!findOpen) return false;
-						closeFind();
-						return true;
-					}
-				}),
-				EditorView.updateListener.of((update) => {
-					if (!update.docChanged) return;
-					if (update.transactions.some((transaction) => transaction.annotation(externalEdit))) {
-						return;
-					}
-					notes = update.state.doc.toString();
-					onInput();
-				})
-			]
+		emitted = notes;
+		editor = new Editor({
+			element: editorHost,
+			extensions: notebookEditorExtensions({
+				onOpenFind: () => (findOpen = true),
+				onEscape: () => {
+					if (!findOpen) return false;
+					closeFind();
+					return true;
+				}
+			}),
+			content: notes,
+			contentType: 'markdown',
+			editorProps: {
+				attributes: {
+					'aria-label': 'Notebook notes',
+					'aria-multiline': 'true',
+					class:
+						'markdown-content prose prose-sm min-h-full max-w-none px-4 pt-3 pb-9 dark:prose-invert focus:outline-none'
+				}
+			},
+			onUpdate: ({ editor: instance, transaction }) => {
+				if (!transaction.docChanged) return;
+				emitted = instance.getMarkdown();
+				notes = emitted;
+				onInput();
+			},
+			onTransaction: ({ editor: instance }) => syncEditorState(instance)
 		});
+		syncEditorState(editor);
 	});
 
-	onDestroy(() => editorView?.destroy());
+	onDestroy(() => editor?.destroy());
 
-	// Push external notes changes (page switch, citation insertion) into the editor
 	$effect(() => {
 		const value = notes;
-		const view = editorView;
-		if (!view) return;
-		const changes = documentChanges(view.state.doc.toString(), value);
-		if (!changes) return;
-		view.dispatch({ changes, annotations: externalEdit.of(true) });
+		if (!editor || value === emitted) return;
+		emitted = value;
+		editor.commands.setContent(value, { contentType: 'markdown', emitUpdate: false });
 	});
 
-	// Mirror find matches into the editor's highlight decorations
 	$effect(() => {
-		const spec = { ranges: findOpen ? matches : [], current: boundedMatchIndex };
-		editorView?.dispatch({ effects: setFindHighlights.of(spec) });
+		const query = findOpen ? findQuery : '';
+		if (!editor || findPluginKey.getState(editor.state)?.query === query) return;
+		editor.commands.setFindQuery(query);
 	});
 
-	function runCommand(command: RibbonCommand): void {
-		const view = editorView;
-		if (!view) return;
-		const { from, to } = view.state.selection.main;
-		const text = view.state.doc.toString();
-		const result = applyRibbonCommand(text, { start: from, end: to }, command);
-		const changes = documentChanges(text, result.text);
-		view.dispatch({
-			...(changes ? { changes } : {}),
-			selection: { anchor: result.start, head: result.end },
-			scrollIntoView: true
-		});
-		view.focus();
+	function syncEditorState(instance: Editor): void {
+		formatting = formattingState(instance);
+		const find = findPluginKey.getState(instance.state);
+		findCount = find?.matches.length ?? 0;
+		findCurrent = find?.current ?? 0;
 	}
 
-	function openFind(): void {
-		findOpen = true;
+	function runCommand(command: EditorCommand): void {
+		if (editor) runEditorCommand(editor, command);
+	}
+
+	function runClipboard(action: ClipboardAction): void {
+		if (!editor) return;
+		runClipboardAction(editor, action).catch((error: unknown) => {
+			toast.error(`Clipboard unavailable: ${error instanceof Error ? error.message : error}`);
+		});
+	}
+
+	function focusEditor(): void {
+		editor?.commands.focus();
 	}
 
 	function closeFind(): void {
 		findOpen = false;
-		editorView?.focus();
+		focusEditor();
 	}
 
-	function setQuery(value: string): void {
-		findQuery = value;
-		activeMatchIndex = 0;
-	}
-
-	function gotoMatch(delta: number): void {
-		if (!matches.length) return;
-		activeMatchIndex = (boundedMatchIndex + delta + matches.length) % matches.length;
-		const match = matches[activeMatchIndex];
-		editorView?.dispatch({
-			selection: { anchor: match.start, head: match.end },
-			effects: EditorView.scrollIntoView(match.start, { y: 'center' })
-		});
-	}
-
-	// Exposed to NotebookWindow so citation insertion works in whole-page offsets.
-	export function getSelection(): { start: number; end: number } {
-		const view = editorView;
-		if (!view) return { start: notes.length, end: notes.length };
-		const { from, to } = view.state.selection.main;
-		return { start: from, end: to };
-	}
-
-	export function focusAt(cursor: number): void {
-		const view = editorView;
-		if (!view) return;
-		const position = Math.max(0, Math.min(cursor, view.state.doc.length));
-		view.dispatch({
-			selection: { anchor: position },
-			effects: EditorView.scrollIntoView(position, { y: 'center' })
-		});
-		view.focus();
+	export function insertCitation(source: NotebookSourceItem): boolean {
+		if (!editor) return false;
+		const { label, href } = notebookCitationLink(source);
+		const { doc, selection } = editor.state;
+		const { prefix, suffix } = citationSpacing(
+			doc.textBetween(Math.max(0, selection.from - 1), selection.from),
+			doc.textBetween(selection.to, Math.min(doc.content.size, selection.to + 1))
+		);
+		return editor
+			.chain()
+			.focus()
+			.insertContent([
+				{ type: 'text', text: `${prefix}(` },
+				{ type: 'text', text: label, marks: [{ type: 'link', attrs: { href } }] },
+				{ type: 'text', text: `)${suffix}` }
+			])
+			.run();
 	}
 </script>
 
 <div class="grid min-h-0 grid-rows-[auto_1fr]">
-	<NotebookEditorRibbon onCommand={runCommand} />
+	<NotebookEditorRibbon {formatting} onCommand={runCommand} onFocusEditor={focusEditor} />
 	<div class="relative min-h-0">
-		<div bind:this={editorHost} class="h-full min-h-0" aria-label="Notebook notes"></div>
+		<NotebookEditorContextMenu
+			{formatting}
+			onClipboard={runClipboard}
+			onCommand={runCommand}
+			onFocusEditor={focusEditor}
+		>
+			{#snippet children(props)}
+				<div {...props} bind:this={editorHost} class="h-full min-h-0 overflow-auto"></div>
+			{/snippet}
+		</NotebookEditorContextMenu>
 		{#if findOpen}
 			<div class="absolute right-3 bottom-8 z-10">
 				<NotebookEditorFindBar
-					activeIndex={matches.length ? boundedMatchIndex + 1 : 0}
-					count={matches.length}
+					activeIndex={findCount ? findCurrent + 1 : 0}
+					count={findCount}
 					onClose={closeFind}
-					onNext={() => gotoMatch(1)}
-					onPrev={() => gotoMatch(-1)}
-					bind:query={() => findQuery, setQuery}
+					onNext={() => editor?.commands.gotoFindMatch(1)}
+					onPrev={() => editor?.commands.gotoFindMatch(-1)}
+					bind:query={findQuery}
 				/>
 			</div>
 		{/if}

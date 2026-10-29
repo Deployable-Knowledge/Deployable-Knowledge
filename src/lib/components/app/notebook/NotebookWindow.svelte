@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onDestroy, onMount, tick } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { createAutosave, pickDirectory, pickFiles, supportsFolderSync } from '#lib/utils';
 	import { collectFiles } from '#lib/client/folder-sync/walk';
@@ -21,10 +21,7 @@
 	import NotebookPageList from './NotebookPageList.svelte';
 	import NotebookSearch from './NotebookSearch.svelte';
 	import type { NotebookSearchResult } from './notebook-search';
-	import {
-		insertNotebookCitationsTable,
-		insertNotebookSourceCitation
-	} from '#lib/utils/notebook-citations';
+	import { insertNotebookCitationsTable } from '#lib/utils/notebook-citations';
 
 	interface Props {
 		collapsed?: boolean;
@@ -327,13 +324,8 @@
 		}
 	}
 
-	async function insertCitation(source: NotebookSourceItem): Promise<void> {
-		const selection = editorRef?.getSelection() ?? { start: notes.length, end: notes.length };
-		const insertion = insertNotebookSourceCitation(notes, source, selection.start, selection.end);
-		notes = insertion.text;
-		autosave.schedule();
-		await tick();
-		editorRef?.focusAt(insertion.cursor);
+	function insertCitation(source: NotebookSourceItem): void {
+		if (!editorRef?.insertCitation(source)) return;
 		toast.success(`Citation inserted: ${source.documentTitle}, p. ${source.pageIndex + 1}`);
 	}
 

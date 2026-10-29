@@ -4,7 +4,7 @@
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 @import '../node_modules/tw-animate-css/dist/tw-animate.css';
-/* Global so the notebook's table widget is styled even when no chat is mounted */
+/* Global so the notebook editor is styled even when no chat is mounted */
 @import './lib/components/app/content/MarkdownContent/markdown-content.css';
 
 @custom-variant dark (&:is(.dark *));
@@ -38,6 +38,10 @@
 	--field: oklch(0.9 0.017 var(--theme-hue));
 	--chrome-highlight: oklch(0.95 0.014 var(--theme-hue));
 	--sheet: color-mix(in oklab, var(--chrome-highlight) 70%, white);
+	--find-match: oklch(0.88 0.16 95 / 0.6);
+	--find-current: oklch(0.75 0.17 55 / 0.75);
+	--find-foreground: currentColor;
+	--text-highlight-foreground: oklch(0.28 0.03 260);
 	--window-shadow: 0 10px 30px rgb(0 0 0 / 0.24), 0 2px 6px rgb(0 0 0 / 0.18);
 	--radius: 0.75rem;
 	--titlebar-height: 2.25rem;
@@ -70,6 +74,8 @@
 	--field: oklch(0.18 0.024 var(--theme-hue));
 	--chrome-highlight: oklch(0.245 0.03 var(--theme-hue));
 	--sheet: color-mix(in oklab, var(--background) 60%, var(--card));
+	--find-match: oklch(0.78 0.15 95 / 0.4);
+	--find-current: oklch(0.7 0.17 55 / 0.65);
 	--window-shadow: 0 10px 30px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.35);
 }
 
@@ -145,6 +151,8 @@
 	--field: oklch(0.98 0 0);
 	--chrome-highlight: oklch(1 0 0);
 	--window-shadow: 0 0 0 2px oklch(0 0 0);
+	--find-match: oklch(0.9 0.18 100);
+	--find-current: oklch(0.78 0.18 55);
 	--titlebar-height: 2.5rem;
 }
 
@@ -171,6 +179,9 @@
 	--field: oklch(0.06 0.015 205);
 	--chrome-highlight: oklch(0.12 0.03 205);
 	--window-shadow: 0 0 0 2px oklch(0.88 0.23 155);
+	--find-match: oklch(0.9 0.18 100);
+	--find-current: oklch(0.78 0.18 55);
+	--find-foreground: oklch(0 0 0);
 }
 
 @theme inline {
@@ -203,6 +214,10 @@
 	--color-elevated: var(--elevated);
 	--color-sheet: var(--sheet);
 	--color-field: var(--field);
+	--color-find-match: var(--find-match);
+	--color-find-current: var(--find-current);
+	--color-find-foreground: var(--find-foreground);
+	--color-text-highlight-foreground: var(--text-highlight-foreground);
 	--shadow-window: var(--window-shadow);
 }
 

@@ -31,8 +31,8 @@
 	color: var(--color-foreground);
 }
 
-/* Shared by every rendered table: the chat pane and the notebook editor's
-   inline table widget both carry .markdown-content, so they stay identical.
+/* Shared by every rendered table: the chat pane and the notebook editor both
+   carry .markdown-content.
    Plain class selectors outrank prose, whose rules sit inside :where(). */
 .markdown-content table {
 	border-collapse: collapse;
@@ -50,4 +50,128 @@
 .markdown-content th {
 	background-color: color-mix(in oklab, var(--color-muted) 40%, transparent);
 	font-weight: 600;
+}
+
+.markdown-content .dk-text-highlight {
+	border-radius: 3px;
+	padding: 0.05em 0.1em;
+	color: var(--color-text-highlight-foreground);
+}
+
+.markdown-content.ProseMirror {
+	line-height: 1.5;
+}
+
+.markdown-content.ProseMirror :is(p, ul, ol) {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+.markdown-content.ProseMirror :is(blockquote, pre, table) {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.markdown-content.ProseMirror :is(h1, h2, h3, h4) {
+	margin-top: 0.9em;
+	margin-bottom: 0.3em;
+	line-height: 1.25;
+}
+
+.markdown-content.ProseMirror > :first-child {
+	margin-top: 0;
+}
+
+.markdown-content.ProseMirror hr {
+	margin: 1em 0;
+}
+
+.markdown-content.ProseMirror :not(pre) > code {
+	border-radius: 4px;
+	background-color: var(--color-muted);
+	padding: 0.1em 0.3em;
+}
+
+.markdown-content.ProseMirror code::before,
+.markdown-content.ProseMirror code::after {
+	content: none;
+}
+
+.markdown-content.ProseMirror li,
+.markdown-content.ProseMirror li > :is(p, ul, ol),
+.markdown-content.ProseMirror li > div > :is(p, ul, ol),
+.markdown-content.ProseMirror :is(th, td) > p {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+.markdown-content.ProseMirror table {
+	width: auto;
+}
+
+.markdown-content.ProseMirror :is(th, td) {
+	min-width: 5em;
+}
+
+.markdown-content.ProseMirror ul[data-type='taskList'] {
+	list-style: none;
+	padding-left: 0.25em;
+}
+
+.markdown-content.ProseMirror ul[data-type='taskList'] li {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.5em;
+	padding-left: 0;
+}
+
+.markdown-content.ProseMirror ul[data-type='taskList'] li > label {
+	flex: none;
+	margin-top: 0.1em;
+	user-select: none;
+}
+
+.markdown-content.ProseMirror ul[data-type='taskList'] li > div {
+	flex: 1;
+	min-width: 0;
+}
+
+.markdown-content.ProseMirror ul[data-type='taskList'] input[type='checkbox'] {
+	cursor: pointer;
+	border-color: var(--color-input);
+	border-radius: 4px;
+	background-color: var(--color-field);
+	color: var(--color-primary);
+}
+
+.markdown-content.ProseMirror ul[data-type='taskList'] input[type='checkbox']:checked {
+	border-color: transparent;
+	background-color: currentColor;
+}
+
+.markdown-content.ProseMirror ul[data-type='taskList'] li[data-checked='true'] > div {
+	color: var(--color-muted-foreground);
+	text-decoration: line-through;
+}
+
+.markdown-content.ProseMirror p.is-editor-empty:first-child::before {
+	content: attr(data-placeholder);
+	float: left;
+	height: 0;
+	pointer-events: none;
+	color: var(--color-muted-foreground);
+}
+
+.markdown-content.ProseMirror .selectedCell {
+	background-color: color-mix(in oklab, var(--color-primary) 20%, transparent);
+}
+
+.markdown-content.ProseMirror .dk-find-match {
+	background-color: var(--color-find-match);
+	color: var(--color-find-foreground);
+}
+
+.markdown-content.ProseMirror .dk-find-current {
+	background-color: var(--color-find-current);
+	color: var(--color-find-foreground);
 }

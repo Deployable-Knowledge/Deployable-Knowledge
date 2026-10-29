@@ -1,211 +1,179 @@
-// Pure text transforms behind the notebook editor ribbon. Each command takes the
-// current text plus selection and returns the next text with the selection to
-// restore, so the component only moves the caret.
+import type { ChainedCommands, Editor } from '@tiptap/core';
 
-export interface EditorSelection {
-	start: number;
-	end: number;
+const TOGGLE_COMMANDS = [
+	'bold',
+	'italic',
+	'strikethrough',
+	'code',
+	'bullet-list',
+	'ordered-list',
+	'task-list',
+	'quote',
+	'code-block'
+] as const;
+
+const ACTION_COMMANDS = [
+	'undo',
+	'redo',
+	'indent',
+	'outdent',
+	'horizontal-rule',
+	'clear-formatting'
+] as const;
+
+const TABLE_COMMANDS = [
+	'insert-table',
+	'add-row-above',
+	'add-row-below',
+	'add-column-left',
+	'add-column-right',
+	'delete-row',
+	'delete-column',
+	'delete-table'
+] as const;
+
+const BLOCK_STYLES = ['paragraph', 'h1', 'h2', 'h3', 'h4'] as const;
+
+export type ToggleCommand = (typeof TOGGLE_COMMANDS)[number];
+export type ActionCommand = (typeof ACTION_COMMANDS)[number];
+export type TableCommand = (typeof TABLE_COMMANDS)[number];
+export type BlockStyle = (typeof BLOCK_STYLES)[number];
+type NamedCommand = ToggleCommand | ActionCommand | TableCommand;
+
+type StyleCommand = { color: string | null } | { highlight: string | null };
+
+export type EditorCommand =
+	| NamedCommand
+	| StyleCommand
+	| { block: BlockStyle }
+	| { link: string | null };
+
+export interface FormattingState {
+	active: ReadonlySet<ToggleCommand>;
+	available: ReadonlySet<NamedCommand | BlockStyle>;
+	blockStyle: BlockStyle | null;
+	color: string | null;
+	hasSelection: boolean;
+	highlight: string | null;
+	inTable: boolean;
+	linkHref: string | null;
 }
 
-export interface FormatResult {
-	text: string;
-	start: number;
-	end: number;
+type ChainStep = (chain: ChainedCommands, editor: Editor) => ChainedCommands;
+
+function listItemType(editor: Editor): string {
+	return editor.isActive('taskItem') ? 'taskItem' : 'listItem';
 }
 
-export type InlineFormat = 'bold' | 'italic' | 'strikethrough' | 'code';
-export type LineFormat = 'h1' | 'h2' | 'h3' | 'bullet-list' | 'ordered-list' | 'quote';
-export type RibbonCommand =
-	| InlineFormat
-	| LineFormat
-	| 'link'
-	| 'code-block'
-	| { color: string }
-	| { highlight: string };
-
-const INLINE_MARKERS: Record<InlineFormat, string> = {
-	bold: '**',
-	italic: '*',
-	strikethrough: '~~',
-	code: '`'
+const NAMED_COMMANDS: Record<NamedCommand, ChainStep> = {
+	bold: (chain) => chain.toggleBold(),
+	italic: (chain) => chain.toggleItalic(),
+	strikethrough: (chain) => chain.toggleStrike(),
+	code: (chain) => chain.toggleCode(),
+	'bullet-list': (chain) => chain.toggleBulletList(),
+	'ordered-list': (chain) => chain.toggleOrderedList(),
+	'task-list': (chain) => chain.toggleTaskList(),
+	quote: (chain) => chain.toggleBlockquote(),
+	'code-block': (chain) => chain.toggleCodeBlock(),
+	undo: (chain) => chain.undo(),
+	redo: (chain) => chain.redo(),
+	indent: (chain, editor) => chain.sinkListItem(listItemType(editor)),
+	outdent: (chain, editor) => chain.liftListItem(listItemType(editor)),
+	'horizontal-rule': (chain) => chain.setHorizontalRule(),
+	'clear-formatting': (chain) => chain.unsetAllMarks().clearNodes(),
+	'insert-table': (chain) => chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true }),
+	'add-row-above': (chain) => chain.addRowBefore(),
+	'add-row-below': (chain) => chain.addRowAfter(),
+	'add-column-left': (chain) => chain.addColumnBefore(),
+	'add-column-right': (chain) => chain.addColumnAfter(),
+	'delete-row': (chain) => chain.deleteRow(),
+	'delete-column': (chain) => chain.deleteColumn(),
+	'delete-table': (chain) => chain.deleteTable()
 };
 
-const HEADING_LEVELS: Record<'h1' | 'h2' | 'h3', number> = { h1: 1, h2: 2, h3: 3 };
+const BLOCK_STYLE_COMMANDS: Record<BlockStyle, (chain: ChainedCommands) => ChainedCommands> = {
+	paragraph: (chain) => chain.setParagraph(),
+	h1: (chain) => chain.setHeading({ level: 1 }),
+	h2: (chain) => chain.setHeading({ level: 2 }),
+	h3: (chain) => chain.setHeading({ level: 3 }),
+	h4: (chain) => chain.setHeading({ level: 4 })
+};
 
-// Markers have to sit flush against the text they wrap — CommonMark renders
-// `** bold **` as literal asterisks — so whitespace the selection picked up (a
-// double-click usually grabs the trailing space) stays outside the markup.
-function trimSelection(text: string, { start, end }: EditorSelection): EditorSelection {
-	const selected = text.slice(start, end);
-	if (!selected.trim()) return { start: end, end };
+const TOGGLE_TARGETS: Record<ToggleCommand, string> = {
+	bold: 'bold',
+	italic: 'italic',
+	strikethrough: 'strike',
+	code: 'code',
+	'bullet-list': 'bulletList',
+	'ordered-list': 'orderedList',
+	'task-list': 'taskList',
+	quote: 'blockquote',
+	'code-block': 'codeBlock'
+};
+
+const BLOCK_STYLE_TARGETS: Record<BlockStyle, [name: string, attributes?: { level: number }]> = {
+	paragraph: ['paragraph'],
+	h1: ['heading', { level: 1 }],
+	h2: ['heading', { level: 2 }],
+	h3: ['heading', { level: 3 }],
+	h4: ['heading', { level: 4 }]
+};
+
+function applyLink(editor: Editor, href: string | null): boolean {
+	const chain = editor.chain().focus();
+	if (!href) return chain.extendMarkRange('link').unsetLink().run();
+	if (editor.state.selection.empty && !editor.isActive('link')) {
+		return chain
+			.insertContent({ type: 'text', text: href, marks: [{ type: 'link', attrs: { href } }] })
+			.run();
+	}
+	return chain.extendMarkRange('link').setLink({ href }).run();
+}
+
+function styleText(chain: ChainedCommands, command: StyleCommand): ChainedCommands {
+	if ('highlight' in command) {
+		return command.highlight
+			? chain.setBackgroundColor(command.highlight)
+			: chain.unsetBackgroundColor();
+	}
+	return command.color ? chain.setColor(command.color) : chain.unsetColor();
+}
+
+export function runEditorCommand(editor: Editor, command: EditorCommand): boolean {
+	if (typeof command === 'object' && 'link' in command) return applyLink(editor, command.link);
+	const chain = editor.chain().focus();
+	if (typeof command === 'string') return NAMED_COMMANDS[command](chain, editor).run();
+	if ('block' in command) return BLOCK_STYLE_COMMANDS[command.block](chain).run();
+	return styleText(chain, command).run();
+}
+
+function stringAttribute(value: unknown): string | null {
+	return typeof value === 'string' && value ? value : null;
+}
+
+function availableCommands(editor: Editor): Set<NamedCommand | BlockStyle> {
+	const named = [...TOGGLE_COMMANDS, ...ACTION_COMMANDS, ...TABLE_COMMANDS].filter((command) =>
+		NAMED_COMMANDS[command](editor.can().chain(), editor).run()
+	);
+	const styles = BLOCK_STYLES.filter(
+		(style) =>
+			editor.isActive(...BLOCK_STYLE_TARGETS[style]) ||
+			BLOCK_STYLE_COMMANDS[style](editor.can().chain()).run()
+	);
+	return new Set([...named, ...styles]);
+}
+
+export function formattingState(editor: Editor): FormattingState {
+	const textStyle = editor.getAttributes('textStyle');
 	return {
-		start: start + (selected.length - selected.trimStart().length),
-		end: end - (selected.length - selected.trimEnd().length)
+		active: new Set(TOGGLE_COMMANDS.filter((command) => editor.isActive(TOGGLE_TARGETS[command]))),
+		available: availableCommands(editor),
+		blockStyle:
+			BLOCK_STYLES.find((style) => editor.isActive(...BLOCK_STYLE_TARGETS[style])) ?? null,
+		color: stringAttribute(textStyle.color),
+		hasSelection: !editor.state.selection.empty,
+		highlight: stringAttribute(textStyle.backgroundColor),
+		inTable: editor.isActive('table'),
+		linkHref: stringAttribute(editor.getAttributes('link').href)
 	};
-}
-
-export function toggleInline(
-	text: string,
-	selection: EditorSelection,
-	format: InlineFormat
-): FormatResult {
-	const marker = INLINE_MARKERS[format];
-	const { start, end } = trimSelection(text, selection);
-	const selected = text.slice(start, end);
-	const before = text.slice(0, start);
-	const after = text.slice(end);
-
-	if (before.endsWith(marker) && after.startsWith(marker)) {
-		return {
-			text: before.slice(0, -marker.length) + selected + after.slice(marker.length),
-			start: start - marker.length,
-			end: end - marker.length
-		};
-	}
-	if (
-		selected.length >= marker.length * 2 &&
-		selected.startsWith(marker) &&
-		selected.endsWith(marker)
-	) {
-		const inner = selected.slice(marker.length, selected.length - marker.length);
-		return { text: before + inner + after, start, end: start + inner.length };
-	}
-	return {
-		text: before + marker + selected + marker + after,
-		start: start + marker.length,
-		end: end + marker.length
-	};
-}
-
-function lineBlock(text: string, { start, end }: EditorSelection) {
-	const blockStart = text.lastIndexOf('\n', Math.max(0, start - 1)) + 1;
-	const terminator = text.indexOf('\n', Math.max(end, start));
-	const blockEnd = terminator === -1 ? text.length : terminator;
-	return { blockStart, blockEnd, lines: text.slice(blockStart, blockEnd).split('\n') };
-}
-
-function replaceBlock(
-	text: string,
-	blockStart: number,
-	blockEnd: number,
-	lines: string[]
-): FormatResult {
-	const block = lines.join('\n');
-	return {
-		text: text.slice(0, blockStart) + block + text.slice(blockEnd),
-		start: blockStart,
-		end: blockStart + block.length
-	};
-}
-
-export function toggleLinePrefix(
-	text: string,
-	selection: EditorSelection,
-	format: LineFormat
-): FormatResult {
-	const { blockStart, blockEnd, lines } = lineBlock(text, selection);
-	const content = lines.filter((line) => line.trim());
-
-	if (format === 'h1' || format === 'h2' || format === 'h3') {
-		const prefix = `${'#'.repeat(HEADING_LEVELS[format])} `;
-		const active = content.length > 0 && content.every((line) => line.startsWith(prefix));
-		const next = lines.map((line) => {
-			const stripped = line.replace(/^#{1,6}\s+/, '');
-			return active || !stripped.trim() ? stripped : prefix + stripped;
-		});
-		return replaceBlock(text, blockStart, blockEnd, next);
-	}
-
-	if (format === 'bullet-list') {
-		const active = content.length > 0 && content.every((line) => /^[-*+]\s/.test(line));
-		const next = lines.map((line) => {
-			const stripped = line.replace(/^[-*+]\s+/, '');
-			return active || !stripped.trim() ? stripped : `- ${stripped}`;
-		});
-		return replaceBlock(text, blockStart, blockEnd, next);
-	}
-
-	if (format === 'ordered-list') {
-		const active = content.length > 0 && content.every((line) => /^\d+\.\s/.test(line));
-		let ordinal = 0;
-		const next = lines.map((line) => {
-			const stripped = line.replace(/^\d+\.\s+/, '');
-			if (active || !stripped.trim()) return stripped;
-			ordinal += 1;
-			return `${ordinal}. ${stripped}`;
-		});
-		return replaceBlock(text, blockStart, blockEnd, next);
-	}
-
-	const active = content.length > 0 && content.every((line) => /^>\s?/.test(line));
-	const next = lines.map((line) => {
-		const stripped = line.replace(/^>\s?/, '');
-		return active || !stripped.trim() ? stripped : `> ${stripped}`;
-	});
-	return replaceBlock(text, blockStart, blockEnd, next);
-}
-
-export function insertLink(text: string, { start, end }: EditorSelection): FormatResult {
-	const selected = text.slice(start, end) || 'link text';
-	const url = 'https://';
-	const snippet = `[${selected}](${url})`;
-	const urlStart = start + selected.length + 3;
-	return {
-		text: text.slice(0, start) + snippet + text.slice(end),
-		start: urlStart,
-		end: urlStart + url.length
-	};
-}
-
-function wrapStyle(
-	text: string,
-	selection: EditorSelection,
-	declaration: string,
-	fallback: string
-): FormatResult {
-	const { start, end } = trimSelection(text, selection);
-	const selected = text.slice(start, end) || fallback;
-	const prefix = `<span style="${declaration}">`;
-	const suffix = '</span>';
-	return {
-		text: text.slice(0, start) + prefix + selected + suffix + text.slice(end),
-		start: start + prefix.length,
-		end: start + prefix.length + selected.length
-	};
-}
-
-export function wrapColor(text: string, selection: EditorSelection, color: string): FormatResult {
-	return wrapStyle(text, selection, `color:${color}`, 'colored text');
-}
-
-export function wrapHighlight(
-	text: string,
-	selection: EditorSelection,
-	color: string
-): FormatResult {
-	return wrapStyle(text, selection, `background-color:${color}`, 'highlighted text');
-}
-
-export function toggleCodeBlock(text: string, selection: EditorSelection): FormatResult {
-	const { blockStart, blockEnd, lines } = lineBlock(text, selection);
-	const fenced =
-		lines.length >= 2 && lines[0].trim().startsWith('```') && lines.at(-1)?.trim() === '```';
-	const next = fenced ? lines.slice(1, -1) : ['```', ...lines, '```'];
-	return replaceBlock(text, blockStart, blockEnd, next);
-}
-
-export function applyRibbonCommand(
-	text: string,
-	selection: EditorSelection,
-	command: RibbonCommand
-): FormatResult {
-	if (typeof command === 'object') {
-		return 'highlight' in command
-			? wrapHighlight(text, selection, command.highlight)
-			: wrapColor(text, selection, command.color);
-	}
-	if (command === 'link') return insertLink(text, selection);
-	if (command === 'code-block') return toggleCodeBlock(text, selection);
-	if (command in INLINE_MARKERS) return toggleInline(text, selection, command as InlineFormat);
-	return toggleLinePrefix(text, selection, command as LineFormat);
 }

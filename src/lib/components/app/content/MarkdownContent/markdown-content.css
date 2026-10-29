@@ -179,3 +179,17 @@
 	background-color: var(--color-find-current);
 	color: var(--color-find-foreground);
 }
+
+/* Prose wraps inline code in literal backticks, which reads as unrendered
+   Markdown; a chip like the notebook editor's marks it as code instead. */
+.markdown-content:not(.ProseMirror) code::before,
+.markdown-content:not(.ProseMirror) code::after {
+	content: none;
+}
+
+.markdown-content:not(.ProseMirror) :not(pre) > code {
+	background-color: color-mix(in oklab, var(--color-muted) 70%, transparent);
+	border: 1px solid color-mix(in oklab, var(--color-border) 80%, transparent);
+	border-radius: 4px;
+	padding: 0.08em 0.3em;
+}

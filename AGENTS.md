@@ -60,8 +60,12 @@ These instructions apply to the entire repository. Preserve them when adding or 
   `WorkspaceTabs`; layout tab selection, creation, and deletion do not belong in the sidebar.
 - Settings opens as a centered dialog (`SettingsDialog`, driven by `settingsDialogStore`) and must
   not be registered as a draggable workspace window or given its own route.
+- The User Guide opens the same way (`UserGuideDialog`, driven by `userGuideStore`). Its chapters
+  are the Markdown files in `src/lib/server/user-guide/chapters/`, bundled into the server build
+  and served read-only by the `/user-guide` endpoint. It opens by itself once, when the setup page
+  finishes (`SetupView`), and has no stored first-run flag.
 - Do not add a persistent application sidebar. The main workspace toolbar places the left-column
-  toggle before the layout tabs and Tools and Settings controls at the far right.
+  toggle before the layout tabs and the User Guide, Tools and Settings controls at the far right.
 - The app is single-user and local: there is no authentication, no users table, and no per-user
   scoping. App-wide state (like the active profile, active layout, and theme) lives in the
   `app_state` table.

@@ -16,6 +16,7 @@ export { SearchService } from './search.service';
 export { SetupService } from './setup.service';
 export { ThemeService } from './theme.service';
 export { ToolsService } from './tools.service';
+export { UserGuideService } from './user-guide.service';
 export { VulkanDevicesService } from './vulkan-devices.service';
 export { WorkspaceLayoutsService } from './workspace-layouts.service';
 export { DiagnosticsService } from './diagnostics.service';

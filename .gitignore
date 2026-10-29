@@ -3,6 +3,7 @@ node_modules
 .output
 /.svelte-kit
 /build
+/dist-workers
 
 # desktop
 /release
@@ -25,7 +26,10 @@ app.db
 app.db-*
 
 # runtime data directories
-/models/
+/models/*
+!/models/vad/
+/models/vad/*
+!/models/vad/silero_vad_v4.onnx
 /documents/
 /logs/
 .cache/

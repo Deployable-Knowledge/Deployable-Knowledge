@@ -58,6 +58,10 @@
 	color: var(--color-text-highlight-foreground);
 }
 
+.markdown-content .dk-text-highlight * {
+	color: inherit;
+}
+
 .markdown-content.ProseMirror {
 	line-height: 1.5;
 }

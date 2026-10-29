@@ -11,7 +11,7 @@
 	import { formatTimestamp } from './timestamp';
 	import Download from '@lucide/svelte/icons/download';
 	import { toast } from 'svelte-sonner';
-	import { TranscriptsService } from '$lib/services';
+	import { TranscriptsService } from '#lib/services';
 
 	interface Props {
 		audioSrc: string;

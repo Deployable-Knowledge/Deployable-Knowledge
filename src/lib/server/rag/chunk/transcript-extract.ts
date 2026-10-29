@@ -1,3 +1,4 @@
+import { createLogger } from '#lib/server/logging';
 import { decodeAudioFile } from '#lib/server/transcription/audio-decoder';
 import type { TranscriptSegment } from '#lib/server/transcription/transcription-model';
 import { transcribeRecording } from '#lib/server/transcription/transcription-worker';
@@ -59,6 +60,8 @@ export function buildTranscriptExtraction(
 	};
 }
 
+const log = createLogger('documents');
+
 const TRANSCRIPTION_PROGRESS: Record<
 	TranscriptionStage,
 	{ start: number; share: number; message: string }
@@ -95,7 +98,7 @@ export async function extractTranscript(
 	);
 
 	if (speakerError) {
-		console.warn('[Transcription] Speaker diarization unavailable:', speakerError);
+		log.warn('Speaker diarization unavailable', {}, speakerError);
 	}
 
 	return buildTranscriptExtraction(source, segments, text);

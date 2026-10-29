@@ -1,9 +1,9 @@
 import { error } from '@sveltejs/kit';
-import { DocumentsRepository } from '$lib/server/repositories';
+import { DocumentsRepository } from '#lib/server/repositories';
 import {
 	formatTranscriptExport,
 	transcriptExportFilename
-} from '$lib/server/transcription/transcript-export';
+} from '#lib/server/transcription/transcript-export';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ params }) => {

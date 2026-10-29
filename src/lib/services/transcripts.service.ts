@@ -1,5 +1,5 @@
-import { API_TRANSCRIPTS } from '$lib/constants';
-import { apiDownload } from '$lib/utils';
+import { API_TRANSCRIPTS } from '#lib/constants';
+import { apiDownload } from '#lib/utils';
 
 export class TranscriptsService {
 	static download(id: string) {

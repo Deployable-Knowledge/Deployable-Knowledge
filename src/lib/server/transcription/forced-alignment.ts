@@ -1,4 +1,5 @@
 import { AutoModelForCTC, Wav2Vec2Processor } from '@huggingface/transformers';
+import { createLogger } from '#lib/server/logging';
 import { AUDIO_SAMPLE_RATE, sampleIndexToMs } from './audio-types';
 import type {
 	TranscriptSegment,
@@ -6,6 +7,8 @@ import type {
 	TranscriptionResult
 } from './transcription-model';
 import { TRANSFORMERS_CACHE_DIR } from '../utils/transformers-env';
+
+const log = createLogger('documents');
 
 const ALIGNMENT_MODEL = 'Xenova/wav2vec2-base-960h';
 const ALIGNMENT_REVISION = 'a19f851b3d42865797e410752b4c570c871e4825';
@@ -227,7 +230,7 @@ export async function alignTranscription(
 	try {
 		assets = await getAlignmentAssets();
 	} catch (error) {
-		console.warn('[Transcription] Forced-alignment model unavailable:', error);
+		log.warn('Forced-alignment model unavailable', {}, error);
 		return transcription;
 	}
 
@@ -236,7 +239,7 @@ export async function alignTranscription(
 		try {
 			alignedChunks.push({ ...chunk, segments: await alignChunk(chunk, assets) });
 		} catch (error) {
-			console.warn('[Transcription] Could not align an audio chunk:', error);
+			log.warn('Could not align an audio chunk', { chunk: index + 1 }, error);
 			alignedChunks.push(chunk);
 		}
 		onChunk?.(index + 1, transcription.chunks.length);

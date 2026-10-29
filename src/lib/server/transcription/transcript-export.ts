@@ -1,4 +1,4 @@
-import type { ApiTranscriptResponse, TranscriptChunkRow } from '$lib/types';
+import type { ApiTranscriptResponse, TranscriptChunkRow } from '#lib/types';
 
 function formatMilliseconds(milliseconds: number | null): string {
 	if (milliseconds === null) return 'Unavailable';

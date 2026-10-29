@@ -1,10 +1,13 @@
 import { gzipSync } from 'node:zlib';
+import { createLogger } from '#lib/server/logging';
 import { AUDIO_SAMPLE_RATE, sampleIndexToMs } from './audio-types';
 import {
 	combineChunkResults,
 	type TranscribedAudioChunk,
 	type TranscriptionResult
 } from './transcription-model';
+
+const log = createLogger('documents');
 
 const MINIMUM_ANALYSIS_WORDS = 12;
 const MAXIMUM_CONSECUTIVE_WORD_RUN = 8;
@@ -77,10 +80,10 @@ export function filterHallucinatedTranscription(
 		const reasons = hallucinationReasons(chunk);
 		if (reasons.length === 0) return true;
 
-		console.warn('[Transcription] Rejected probable hallucination:', {
+		log.warn('Rejected probable hallucination', {
 			chunk: index + 1,
 			endMs: sampleIndexToMs(chunk.audio.endSample),
-			reasons,
+			reasons: reasons.join(', '),
 			startMs: sampleIndexToMs(chunk.audio.startSample)
 		});
 		return false;

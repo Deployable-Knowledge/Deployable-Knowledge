@@ -3,6 +3,7 @@ import { asc, desc, eq } from 'drizzle-orm';
 import { NEW_CHAT_TITLE } from '#lib/constants';
 import { db } from '#lib/server/database/database';
 import { sessionMessages, sessions } from '#lib/server/database/schema';
+import type { UserMessageMetadata } from '#lib/types';
 
 export class SessionsRepository {
 	static list() {
@@ -41,6 +42,7 @@ export class SessionsRepository {
 	static async appendTurn(turn: {
 		sessionId: string;
 		userMessage: string;
+		userMetadata: UserMessageMetadata | null;
 		assistantContent: string;
 		metadata: unknown;
 		createdAt: Date;
@@ -52,7 +54,7 @@ export class SessionsRepository {
 				sessionId: turn.sessionId,
 				role: 'user' as const,
 				content: turn.userMessage,
-				metadata: null,
+				metadata: turn.userMetadata,
 				createdAt: turn.createdAt
 			},
 			...(turn.assistantContent

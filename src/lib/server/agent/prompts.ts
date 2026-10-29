@@ -28,3 +28,12 @@ export const REFERENCE_MATERIAL_INSTRUCTION = `Use the reference material above 
 export const TITLE_GENERATION_PROMPT = `You write short, informative chat titles. Return only the title. Do not use quotation marks.
 Do not add commentary. Keep the title under 7 words when possible.
 Focus on the user's main task, not minor details.`;
+
+export const ACTIVE_SKILL_SYSTEM_PROMPT = `ACTIVE SKILL: The user invoked the skill below for this request. Follow its instructions when responding to the user's message, and keep following any other policies in this prompt.`;
+
+export const SKILL_CATALOG_SYSTEM_PROMPT = `SKILL POLICY:
+- The user has written the skills listed below. Each one holds detailed instructions for a kind of request.
+- When the user's request clearly matches a skill's description, call use_skill with that skill's name before answering, then follow the instructions it returns.
+- Do not call use_skill when no skill matches, and never invent skill names.
+
+Available skills:`;

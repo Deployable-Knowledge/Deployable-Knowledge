@@ -10,7 +10,8 @@ import type {
 	ApiChatMessageRequest,
 	ApiChatStreamEvent,
 	Session,
-	SessionMessage
+	SessionMessage,
+	UserMessageMetadata
 } from '#lib/types';
 
 class ChatConversation {
@@ -34,14 +35,17 @@ class ChatConversation {
 		if (load === this.messageLoad && !this.removed) this.messages = messages;
 	}
 
-	async sendMessage(request: ApiChatMessageRequest): Promise<void> {
+	async sendMessage(
+		request: ApiChatMessageRequest,
+		userMetadata: UserMessageMetadata | null = null
+	): Promise<void> {
 		if (!this.session) throw new Error('A chat session is required.');
 		if (this.isStreaming || this.removed) return;
 		const sessionId = this.session.id;
 		const controller = new AbortController();
 		this.generationController = controller;
 		this.messageLoad += 1;
-		this.appendLocalMessage(sessionId, 'user', request.message);
+		this.appendLocalMessage(sessionId, 'user', request.message, userMetadata);
 		this.isStreaming = true;
 		this.streamedText = '';
 		this.liveTrace = [];
@@ -97,11 +101,16 @@ class ChatConversation {
 		}
 	}
 
-	private appendLocalMessage(sessionId: string, role: 'user' | 'assistant', content: string): void {
+	private appendLocalMessage(
+		sessionId: string,
+		role: 'user' | 'assistant',
+		content: string,
+		metadata: UserMessageMetadata | null = null
+	): void {
 		const id = (this.messages.at(-1)?.id ?? 0) + 1;
 		this.messages = [
 			...this.messages,
-			{ id, sessionId, role, content, metadata: null, createdAt: new Date() }
+			{ id, sessionId, role, content, metadata, createdAt: new Date() }
 		];
 	}
 

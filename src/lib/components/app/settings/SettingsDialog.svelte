@@ -11,6 +11,7 @@
 	import Search from '@lucide/svelte/icons/search';
 	import SearchX from '@lucide/svelte/icons/search-x';
 	import SlidersHorizontal from '@lucide/svelte/icons/sliders-horizontal';
+	import SquareSlash from '@lucide/svelte/icons/square-slash';
 	import Wrench from '@lucide/svelte/icons/wrench';
 	import type { Component } from 'svelte';
 	import SettingsAppearance from './SettingsAppearance.svelte';
@@ -25,6 +26,7 @@
 	import SettingsPromptTemplateSelector from './SettingsPromptTemplateSelector.svelte';
 	import SettingsProviders from './SettingsProviders.svelte';
 	import SettingsRetrievalSection from './SettingsRetrievalSection.svelte';
+	import SettingsSkillsSection from './SettingsSkillsSection.svelte';
 	import SettingsToolsSection from './SettingsToolsSection.svelte';
 	import { DiagnosticsConsole } from '#lib/components/app/diagnostics';
 	import * as Dialog from '#lib/components/ui/dialog';
@@ -80,6 +82,14 @@
 				'disable',
 				...settingsStore.availableTools.map(({ label }) => label.toLowerCase())
 			]
+		},
+		{
+			id: 'skills',
+			label: 'Skills',
+			description:
+				'Reusable instructions you run with a slash command in chat, or let the model load when a request matches.',
+			icon: SquareSlash,
+			keywords: ['slash commands', 'commands', 'instructions', 'shortcuts', 'use skill']
 		},
 		{
 			id: 'models',
@@ -206,7 +216,7 @@
 		class="flex h-[min(46rem,88dvh)] w-[min(70rem,calc(100vw-3rem))] max-w-none gap-0 overflow-hidden p-0 sm:max-w-none"
 	>
 		<Dialog.Description class="sr-only">
-			Configure the assistant, tools, models, embeddings, appearance, and diagnostics.
+			Configure the assistant, tools, skills, models, embeddings, appearance, and diagnostics.
 		</Dialog.Description>
 
 		<aside
@@ -344,6 +354,8 @@
 						{:else}
 							<SettingsToolsSection />
 						{/if}
+					{:else if activeSection.id === 'skills'}
+						<SettingsSkillsSection />
 					{:else if activeSection.id === 'models'}
 						<div class="grid gap-6">
 							<SettingsLocalModels />

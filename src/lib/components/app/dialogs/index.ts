@@ -5,4 +5,5 @@ export { default as DialogDocumentTextEntry } from './DialogDocumentTextEntry.sv
 export { default as DialogDocumentYoutubeEntry } from './DialogDocumentYoutubeEntry.svelte';
 export { default as DialogPromptTemplate } from './DialogPromptTemplate.svelte';
 export { default as DialogProvider } from './DialogProvider.svelte';
+export { default as DialogSkill } from './DialogSkill.svelte';
 export * from './provider-types';

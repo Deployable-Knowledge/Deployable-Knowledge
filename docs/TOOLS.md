@@ -50,6 +50,11 @@ Built-in tools:
   scope, and each call writes `/documents.json` mapping every such document's
   ID, title, and source type to its path so the model can load CSV or text data
   directly.
+- `use_skill` loads the instructions of a user-written skill by name. Chat lists
+  the skills marked "model can use" in the system prompt and passes them through
+  execution context; the tool is withheld when no such skill exists. Users can
+  also run a skill directly with `/name` in the composer, which adds its
+  instructions to the system prompt for that turn only.
 
 The Pyodide worker is reused between calls, but each call receives fresh Python
 globals. Calls are serialized and interrupted after ten seconds. The first use

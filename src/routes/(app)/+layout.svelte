@@ -9,7 +9,13 @@
 	import { UserGuideDialog } from '#lib/components/app/user-guide';
 	import EngineHeartbeat from '#lib/components/app/navigation/EngineHeartbeat.svelte';
 	import * as Tooltip from '#lib/components/ui/tooltip';
-	import { desktopWindowStore, settingsStore, themeStore, workspaceStore } from '#lib/stores';
+	import {
+		desktopWindowStore,
+		settingsStore,
+		skillsStore,
+		themeStore,
+		workspaceStore
+	} from '#lib/stores';
 
 	let { children } = $props();
 	let framesPainted = $state(false);
@@ -23,6 +29,7 @@
 		void desktopWindowStore.init();
 		void workspaceStore.init();
 		void settingsStore.init();
+		void skillsStore.load();
 
 		let secondFrame = 0;
 		const firstFrame = requestAnimationFrame(() => {

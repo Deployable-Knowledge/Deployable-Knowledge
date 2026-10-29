@@ -1,9 +1,11 @@
 <script lang="ts">
+	import SquareSlash from '@lucide/svelte/icons/square-slash';
 	import { MarkdownContent } from '#lib/components/app/content';
+	import { Badge } from '#lib/components/ui/badge';
 	import type { SessionMessage } from '#lib/types';
 	import ChatMessageToolbar from './ChatMessageToolbar.svelte';
 	import { ChatMessageContext } from './ChatMessageContext';
-	import { messageMetadata, messageTrace } from './chat-message';
+	import { messageMetadata, messageSkill, messageTrace } from './chat-message';
 
 	interface Props {
 		message: SessionMessage;
@@ -14,6 +16,7 @@
 	let { message, onSaveChunk, onSendToNotebook }: Props = $props();
 	const metadata = $derived(messageMetadata(message));
 	const trace = $derived(messageTrace(metadata.agent));
+	const skill = $derived(messageSkill(message));
 </script>
 
 <article
@@ -35,6 +38,13 @@
 			{onSendToNotebook}
 		/>
 	{:else}
+		{#if skill}
+			<Badge class="mb-1.5 ml-auto flex">
+				<SquareSlash aria-hidden="true" />
+				<span class="sr-only">Skill</span>
+				{skill.name}
+			</Badge>
+		{/if}
 		<p class="m-0 whitespace-pre-wrap">{message.content}</p>
 	{/if}
 </article>

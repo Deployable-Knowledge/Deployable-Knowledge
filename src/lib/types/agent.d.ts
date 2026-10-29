@@ -70,6 +70,10 @@ export interface AssistantMessageMetadata {
 	outputs?: AgentOutput[];
 }
 
+export interface UserMessageMetadata {
+	skill?: { id: string; name: string };
+}
+
 export type AgentProgressEvent =
 	| {
 			kind: 'model';

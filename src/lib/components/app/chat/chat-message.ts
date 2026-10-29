@@ -2,7 +2,8 @@ import type {
 	AgentTraceItem,
 	AssistantMessageMetadata,
 	SessionMessage,
-	StoredAgentRun
+	StoredAgentRun,
+	UserMessageMetadata
 } from '#lib/types';
 import { legacyToolCallTrace } from '#lib/utils/agent-trace';
 
@@ -21,4 +22,9 @@ export function sourceChunkIds(message: SessionMessage): string[] {
 	return (messageMetadata(message).outputs ?? []).flatMap((output) =>
 		output.type === 'source' && output.data.chunkId ? [output.data.chunkId] : []
 	);
+}
+
+export function messageSkill(message: SessionMessage): UserMessageMetadata['skill'] {
+	if (message.role !== 'user') return undefined;
+	return (message.metadata as UserMessageMetadata | null)?.skill;
 }

@@ -5,6 +5,7 @@ import { pythonTool } from './python';
 import { readChunksTool } from './read-chunks';
 import { ToolRegistry } from './registry';
 import { searchTool } from './search';
+import { useSkillTool } from './use-skill';
 
 export const toolRegistry = new ToolRegistry([
 	corpusDetailsTool,
@@ -12,7 +13,8 @@ export const toolRegistry = new ToolRegistry([
 	goalsTool,
 	pythonTool,
 	readChunksTool,
-	searchTool
+	searchTool,
+	useSkillTool
 ]);
 
 export { ToolRegistry } from './registry';

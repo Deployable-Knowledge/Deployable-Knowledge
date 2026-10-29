@@ -12,7 +12,8 @@ import type {
 	ApiChatMessageRequest,
 	ApiChatStreamEvent,
 	ApiNotebookChatMessageRequest,
-	AssistantProfile
+	AssistantProfile,
+	UserMessageMetadata
 } from '#lib/types';
 import { runAgent } from '#lib/server/agent/runner';
 import { runAutoSearch } from '#lib/server/chat/auto-search';
@@ -28,7 +29,11 @@ import { createLogger } from '#lib/server/logging';
 import { getActiveProfile } from '#lib/server/profiles/active-profile';
 import { findProvider } from '#lib/server/providers/registry';
 import type { Provider, ProviderChatOptions } from '#lib/server/providers/provider';
-import { DocumentsRepository, SessionsRepository } from '#lib/server/repositories';
+import {
+	DocumentsRepository,
+	SessionsRepository,
+	SkillsRepository
+} from '#lib/server/repositories';
 import { toolRegistry } from '#lib/server/tools';
 import { readGoals } from '#lib/server/tools/goals';
 import type { ToolExecutionContext } from '#lib/server/tools/types';
@@ -54,6 +59,11 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		);
 	}
 
+	const skill = body.skill_id ? ((await SkillsRepository.find(body.skill_id)) ?? null) : null;
+	if (body.skill_id && !skill) {
+		return json({ error: 'The selected skill no longer exists.' }, { status: 404 });
+	}
+
 	const includeLocalOnly = provider.id === LOCAL_MODEL_PROVIDER_ID;
 	const profile = await getActiveProfile();
 	const session = await SessionsRepository.find(params.id);
@@ -72,7 +82,13 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		!history.length &&
 		(!session || session.title.trim().toLowerCase() === NEW_CHAT_TITLE.toLowerCase());
 
-	const toolNames = await resolveToolNames(body, provider, modelId, profile);
+	const invocableSkills = (await SkillsRepository.list()).filter(
+		(candidate) => candidate.modelInvocable && candidate.id !== skill?.id
+	);
+	const toolNames = (await resolveToolNames(body, provider, modelId, profile)).filter(
+		(name) => name !== 'use_skill' || invocableSkills.length > 0
+	);
+	const skillCatalog = toolNames.includes('use_skill') ? invocableSkills : [];
 
 	const retrievalMode =
 		Object.values(RetrievalMode).find((mode) => mode === profile?.retrievalMode) ??
@@ -81,7 +97,12 @@ export const POST: RequestHandler = async ({ params, request }) => {
 	const ragScope = body.conversational
 		? { ragTopK: profile?.ragTopK ?? DEFAULT_ASSISTANT_CONFIG.ragTopK }
 		: { ragTopK: body.rag_top_k, documentIds: body.document_ids };
-	const toolContext: ToolExecutionContext = { retrievalMode, includeLocalOnly, ...ragScope };
+	const toolContext: ToolExecutionContext = {
+		retrievalMode,
+		includeLocalOnly,
+		skills: skillCatalog,
+		...ragScope
+	};
 
 	if (includeLocalOnly && (await DocumentsRepository.hasLocalOnly(toolContext.documentIds))) {
 		await SessionsRepository.markLocalOnly(params.id);
@@ -103,6 +124,9 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		signal: abortController.signal
 	};
 
+	const userMetadata: UserMessageMetadata | null = skill
+		? { skill: { id: skill.id, name: skill.name } }
+		: null;
 	const createdAt = new Date();
 	let partialContent = '';
 	let finished = false;
@@ -113,6 +137,7 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		(persistence ??= SessionsRepository.appendTurn({
 			sessionId: params.id,
 			userMessage: message,
+			userMetadata,
 			assistantContent,
 			metadata,
 			createdAt
@@ -142,7 +167,7 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		const autoSearch = autoSearchEnabled
 			? await runAutoSearch(message, toolContext, onProgress)
 			: null;
-		const chat = { history, userMessage: message, toolNames };
+		const chat = { history, userMessage: message, toolNames, skill, skillCatalog };
 		const messages = body.conversational
 			? createNotebookMessages({ ...chat, context: await notebookContext(body, includeLocalOnly) })
 			: createDocumentMessages({
@@ -193,7 +218,12 @@ export const POST: RequestHandler = async ({ params, request }) => {
 
 		if (!shouldGenerateTitle || !saved || abortController.signal.aborted) return;
 		try {
-			const title = await generateChatTitle(message, provider, modelId, options);
+			const title = await generateChatTitle(
+				skill ? `${skill.name}: ${message}` : message,
+				provider,
+				modelId,
+				options
+			);
 			await SessionsRepository.rename(params.id, title);
 			send({ type: 'title', title });
 		} catch (cause) {

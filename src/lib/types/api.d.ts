@@ -308,6 +308,13 @@ export interface ApiPromptTemplateRequest {
 	systemPrompt: string;
 }
 
+export interface ApiSkillRequest {
+	name: string;
+	description: string;
+	instructions: string;
+	modelInvocable: boolean;
+}
+
 export interface ApiProviderInfo {
 	id: string;
 	name: string;
@@ -437,6 +444,7 @@ interface ApiChatMessageBase {
 	agent_max_turns: number;
 	tools_enabled?: boolean;
 	enabled_tools?: string[];
+	skill_id?: string | null;
 }
 
 export interface ApiDocumentChatMessageRequest extends ApiChatMessageBase {

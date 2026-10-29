@@ -4,15 +4,20 @@
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import MessageSquarePlus from '@lucide/svelte/icons/message-square-plus';
 	import Square from '@lucide/svelte/icons/square';
+	import SquareSlash from '@lucide/svelte/icons/square-slash';
 	import { ActionIcon } from '#lib/components/app/actions';
+	import { Badge } from '#lib/components/ui/badge';
 	import { Button } from '#lib/components/ui/button';
 	import * as DropdownMenu from '#lib/components/ui/dropdown-menu';
 	import { Textarea } from '#lib/components/ui/textarea';
 	import { REASONING_PRESETS, type ReasoningEffort } from '#lib/constants';
 	import type { ChatContextMode } from '#lib/enums';
+	import type { Skill } from '#lib/types';
 	import ChatModeMenu from './ChatModeMenu.svelte';
 	import ChatModelMenu from './ChatModelMenu.svelte';
+	import ChatSkillMenu from './ChatSkillMenu.svelte';
 	import ChatToolsToggle from './ChatToolsToggle.svelte';
+	import { matchSkills, resolveSkillInvocation, skillQuery } from './chat-skill-command';
 
 	interface Props {
 		busy?: boolean;
@@ -26,6 +31,7 @@
 		onToolsChange: (enabled: boolean) => void;
 		reasoningEffort: ReasoningEffort;
 		searchToolActive?: boolean;
+		skills: readonly Skill[];
 		toolsAvailable?: boolean;
 		toolsEnabled?: boolean;
 		toolsSupported?: boolean;
@@ -43,13 +49,61 @@
 		onToolsChange,
 		reasoningEffort,
 		searchToolActive = false,
+		skills,
 		toolsAvailable = true,
 		toolsEnabled = false,
 		toolsSupported = true
 	}: Props = $props();
 
+	const listId = $props.id();
+	let composer = $state<HTMLDivElement | null>(null);
+	let activeIndex = $state(0);
+	let dismissedDraft = $state<string | null>(null);
+
+	const query = $derived(skillQuery(draft));
+	const matches = $derived(query === null ? [] : matchSkills(skills, query));
+	const menuOpen = $derived(
+		query !== null &&
+			!busy &&
+			draft !== dismissedDraft &&
+			(matches.length > 0 || (!skills.length && !query))
+	);
+	const highlightIndex = $derived(Math.min(activeIndex, matches.length - 1));
+	const highlightedId = $derived(
+		menuOpen && matches[highlightIndex] ? `${listId}-${matches[highlightIndex].id}` : undefined
+	);
+	const invokedSkill = $derived(resolveSkillInvocation(draft, skills).skill);
+
+	function selectSkill(skill: Skill): void {
+		draft = `/${skill.name} `;
+		activeIndex = 0;
+	}
+
+	function handleMenuKey(event: KeyboardEvent): boolean {
+		if (event.key === 'Escape') {
+			dismissedDraft = draft;
+			return true;
+		}
+		if (!matches.length) return false;
+		if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+			const step = event.key === 'ArrowDown' ? 1 : -1;
+			activeIndex = (highlightIndex + step + matches.length) % matches.length;
+			return true;
+		}
+		if ((event.key === 'Enter' && !event.shiftKey) || event.key === 'Tab') {
+			selectSkill(matches[highlightIndex]);
+			return true;
+		}
+		return false;
+	}
+
 	function handleKeydown(event: KeyboardEvent): void {
-		if (event.key !== 'Enter' || event.shiftKey || event.isComposing) return;
+		if (event.isComposing) return;
+		if (menuOpen && handleMenuKey(event)) {
+			event.preventDefault();
+			return;
+		}
+		if (event.key !== 'Enter' || event.shiftKey) return;
 		event.preventDefault();
 		if (!busy && draft.trim()) onSubmit();
 	}
@@ -63,15 +117,29 @@
 	}}
 >
 	<div
+		bind:this={composer}
 		class="dk-panel overflow-hidden rounded-3xl border bg-card/90 shadow-md transition-[border-color,box-shadow] focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/25"
 	>
+		{#if invokedSkill && !menuOpen}
+			<div class="px-4 pt-2.5">
+				<Badge>
+					<SquareSlash aria-hidden="true" />
+					<span class="sr-only">Skill</span>
+					{invokedSkill.name}
+				</Badge>
+			</div>
+		{/if}
 		<Textarea
+			aria-activedescendant={highlightedId}
+			aria-autocomplete="list"
+			aria-controls={menuOpen ? listId : undefined}
 			aria-label="Message"
 			class="max-h-40 min-h-16 resize-none overflow-y-auto rounded-none border-0 bg-transparent px-4 pt-3 pb-1 shadow-none focus-visible:border-transparent focus-visible:ring-0"
 			disabled={busy}
 			name="message"
+			oninput={() => (activeIndex = 0)}
 			onkeydown={handleKeydown}
-			placeholder="Type a message…"
+			placeholder="Type a message or / for skills…"
 			rows={2}
 			bind:value={draft}
 		/>
@@ -146,3 +214,13 @@
 		</div>
 	</div>
 </form>
+
+<ChatSkillMenu
+	activeIndex={highlightIndex}
+	anchor={composer}
+	{listId}
+	onDismiss={() => (dismissedDraft = draft)}
+	onSelect={selectSkill}
+	open={menuOpen}
+	skills={matches}
+/>

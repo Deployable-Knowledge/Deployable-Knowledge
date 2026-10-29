@@ -7,14 +7,17 @@
 		documentsStore,
 		notebooksStore,
 		sessionsStore,
-		settingsStore
+		settingsStore,
+		skillsStore
 	} from '#lib/stores';
+	import { SKILL_EMPTY_REQUEST } from '#lib/constants';
 	import { ChatContextMode } from '#lib/enums';
 	import type { ApiChatMessageRequest, SessionMessage } from '#lib/types';
 	import ChatForm from './ChatForm.svelte';
 	import ChatGoalsBar from './ChatGoalsBar.svelte';
 	import ChatMessageList from './ChatMessageList.svelte';
 	import { sourceChunkIds } from './chat-message';
+	import { resolveSkillInvocation } from './chat-skill-command';
 
 	interface Props {
 		collapsed?: boolean;
@@ -88,16 +91,17 @@
 			toast.error('Select a model before sending a message.');
 			return;
 		}
-		const text = draft.trim();
+		const { skill, text } = resolveSkillInvocation(draft, skillsStore.skills);
 		draft = '';
-		settingsStore.lastQuery = text;
+		if (text) settingsStore.lastQuery = text;
 		try {
 			if (!chatStore.session) await createSession();
 			const conversation = chatStore.current;
 			await scrollToBottom();
 			const config = settingsStore.config;
 			const requestBase = {
-				message: text,
+				message: text || SKILL_EMPTY_REQUEST,
+				skill_id: skill?.id ?? null,
 				model_id: config.model,
 				provider_id: config.provider,
 				max_tokens: config.maxTokens,
@@ -125,7 +129,10 @@
 							rag_top_k: config.ragTopK,
 							search_enabled: chatStore.mode === ChatContextMode.SEARCH
 						};
-			await conversation.sendMessage(request);
+			await conversation.sendMessage(
+				request,
+				skill ? { skill: { id: skill.id, name: skill.name } } : null
+			);
 			await sessionsStore.refresh();
 		} catch (error) {
 			toast.error(`Chat failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -194,6 +201,7 @@
 			onToolsChange={(enabled) => (chatStore.toolsEnabled = enabled)}
 			reasoningEffort={settingsStore.reasoningEffort}
 			{searchToolActive}
+			skills={skillsStore.skills}
 			{toolsAvailable}
 			toolsEnabled={effectiveToolsEnabled}
 			{toolsSupported}

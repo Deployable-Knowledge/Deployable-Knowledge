@@ -12,6 +12,7 @@ export { default as SettingsProfileSelector } from './SettingsProfileSelector.sv
 export { default as SettingsPromptTemplateSelector } from './SettingsPromptTemplateSelector.svelte';
 export { default as SettingsProviders } from './SettingsProviders.svelte';
 export { default as SettingsRetrievalSection } from './SettingsRetrievalSection.svelte';
+export { default as SettingsSkillsSection } from './SettingsSkillsSection.svelte';
 export { default as SettingsToolsSection } from './SettingsToolsSection.svelte';
 export { default as SettingsVulkanDeviceField } from './SettingsVulkanDeviceField.svelte';
 export * from './settings-profiles';

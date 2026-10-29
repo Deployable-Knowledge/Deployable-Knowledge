@@ -91,6 +91,11 @@ export const API_PROMPT_TEMPLATES = {
 	byId: (id: string) => `/prompt-templates/${segment(id)}`
 };
 
+export const API_SKILLS = {
+	BASE: '/skills',
+	byId: (id: string) => `/skills/${segment(id)}`
+};
+
 export const API_PROVIDERS = {
 	BASE: '/providers',
 	byId: (id: string) => `/providers/${segment(id)}`,

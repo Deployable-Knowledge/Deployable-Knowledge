@@ -1,6 +1,7 @@
 export type SettingsSection =
 	| 'agent'
 	| 'tools'
+	| 'skills'
 	| 'models'
 	| 'embeddings'
 	| 'appearance'

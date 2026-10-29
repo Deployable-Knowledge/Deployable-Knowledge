@@ -17,6 +17,8 @@ import {
 	EMBEDDING_DEVICES,
 	LAYOUT_NAME_MAX_LENGTH,
 	PROVIDER_NAME_MAX_LENGTH,
+	SKILL_DESCRIPTION_MAX_LENGTH,
+	SKILL_NAME_MAX_LENGTH,
 	SYNCED_FILE_STATES,
 	THEME_COLORS,
 	THEME_MODES
@@ -67,6 +69,16 @@ export const promptTemplates = sqliteTable(
 	},
 	(table) => [index('prompt_templates_updated_idx').on(table.updatedAt)]
 );
+
+export const skills = sqliteTable('skills', {
+	id: text('id').primaryKey(),
+	name: text('name', { length: SKILL_NAME_MAX_LENGTH }).notNull().unique(),
+	description: text('description', { length: SKILL_DESCRIPTION_MAX_LENGTH }).notNull().default(''),
+	instructions: text('instructions').notNull(),
+	modelInvocable: integer('model_invocable', { mode: 'boolean' }).notNull().default(true),
+	createdAt: integer('created_at', { mode: 'timestamp' }),
+	updatedAt: integer('updated_at', { mode: 'timestamp' })
+});
 
 export const sessions = sqliteTable(
 	'sessions',
@@ -356,6 +368,9 @@ export type NewWorkspaceLayout = typeof workspaceLayouts.$inferInsert;
 
 export type PromptTemplate = typeof promptTemplates.$inferSelect;
 export type NewPromptTemplate = typeof promptTemplates.$inferInsert;
+
+export type Skill = typeof skills.$inferSelect;
+export type NewSkill = typeof skills.$inferInsert;
 
 export type CustomProviderRecord = typeof customProviders.$inferSelect;
 export type NewCustomProviderRecord = typeof customProviders.$inferInsert;

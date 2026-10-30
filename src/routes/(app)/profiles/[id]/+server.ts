@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 
 import { toolRegistry } from '#lib/server/tools';
@@ -44,7 +44,7 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 		.where(eq(profiles.id, params.id))
 		.returning();
 
-	return json(row);
+	return Response.json(row);
 };
 
 export const DELETE: RequestHandler = async ({ params }) => {
@@ -56,5 +56,5 @@ export const DELETE: RequestHandler = async ({ params }) => {
 		throw error(404, 'Profile not found');
 	}
 
-	return json(row);
+	return Response.json(row);
 };

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { json, type RequestHandler } from '@sveltejs/kit';
+import type { RequestHandler } from '@sveltejs/kit';
 import { and, asc, eq } from 'drizzle-orm';
 import type { ApiNotebookPageContentRequest, ApiNotebookPageTitleRequest } from '#lib/types';
 import { db } from '#lib/server/database/database';
@@ -19,14 +19,14 @@ type PagePatch = Partial<ApiNotebookPageContentRequest & ApiNotebookPageTitleReq
 export const PATCH: RequestHandler = async ({ params, request }) => {
 	const notebookId = params.id;
 	const pageId = params.pageId;
-	if (!notebookId || !pageId) return json({ error: 'Missing id' }, { status: 400 });
+	if (!notebookId || !pageId) return Response.json({ error: 'Missing id' }, { status: 400 });
 	const body = (await request.json()) as PagePatch;
 	const pages = await db
 		.select({ id: notebookPages.id })
 		.from(notebookPages)
 		.where(eq(notebookPages.notebookId, notebookId));
 	if (!pages.some(({ id }) => id === pageId)) {
-		return json({ error: 'Notebook page not found' }, { status: 404 });
+		return Response.json({ error: 'Notebook page not found' }, { status: 404 });
 	}
 
 	const changes: { content?: string; title?: string; updatedAt: string } = {
@@ -34,34 +34,34 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 	};
 	if (typeof body.title === 'string') {
 		const title = body.title.trim();
-		if (!title) return json({ error: 'Page title is required' }, { status: 400 });
+		if (!title) return Response.json({ error: 'Page title is required' }, { status: 400 });
 		changes.title = title;
 	}
 	if (typeof body.content === 'string') {
 		changes.content = body.content;
 	}
 	if (changes.title === undefined && changes.content === undefined) {
-		return json({ error: 'Page title or content is required' }, { status: 400 });
+		return Response.json({ error: 'Page title or content is required' }, { status: 400 });
 	}
 
 	await db
 		.update(notebookPages)
 		.set(changes)
 		.where(and(eq(notebookPages.id, pageId), eq(notebookPages.notebookId, notebookId)));
-	return json(await loadNotebookState());
+	return Response.json(await loadNotebookState());
 };
 
 export const DELETE: RequestHandler = async ({ params }) => {
 	const notebookId = params.id;
 	const pageId = params.pageId;
-	if (!notebookId || !pageId) return json({ error: 'Missing id' }, { status: 400 });
+	if (!notebookId || !pageId) return Response.json({ error: 'Missing id' }, { status: 400 });
 	const timestamp = new Date().toISOString();
 	const [page] = await db
 		.select({ id: notebookPages.id })
 		.from(notebookPages)
 		.where(and(eq(notebookPages.id, pageId), eq(notebookPages.notebookId, notebookId)))
 		.limit(1);
-	if (!page) return json({ error: 'Notebook page not found' }, { status: 404 });
+	if (!page) return Response.json({ error: 'Notebook page not found' }, { status: 404 });
 
 	await db
 		.delete(notebookPages)
@@ -91,5 +91,5 @@ export const DELETE: RequestHandler = async ({ params }) => {
 		.set({ activePageId, updatedAt: timestamp })
 		.where(eq(notebooks.id, notebookId));
 	await setActiveNotebook(notebookId);
-	return json(await loadNotebookState());
+	return Response.json(await loadNotebookState());
 };

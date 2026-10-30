@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 
 import { toolRegistry } from '#lib/server/tools';
@@ -11,7 +11,7 @@ import type { RequestHandler } from './$types';
 export const GET: RequestHandler = async () => {
 	const profile = await getActiveProfile();
 
-	return json(profile);
+	return Response.json(profile);
 };
 
 export const PATCH: RequestHandler = async ({ request }) => {
@@ -43,5 +43,5 @@ export const PATCH: RequestHandler = async ({ request }) => {
 		throw error(404, 'No active profile');
 	}
 
-	return json(row);
+	return Response.json(row);
 };

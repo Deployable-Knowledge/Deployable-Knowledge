@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 
 import type { ApiPromptTemplateRequest } from '#lib/types';
@@ -29,7 +29,7 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 		throw error(404, 'Prompt template not found');
 	}
 
-	return json(row);
+	return Response.json(row);
 };
 
 export const DELETE: RequestHandler = async ({ params }) => {
@@ -47,5 +47,5 @@ export const DELETE: RequestHandler = async ({ params }) => {
 		throw error(404, 'Prompt template not found');
 	}
 
-	return json(row);
+	return Response.json(row);
 };

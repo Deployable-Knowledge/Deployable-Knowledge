@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import { DEFAULT_ASSISTANT_CONFIG } from '#lib/constants';
 import { createLogger } from '#lib/server/logging';
 import { toolRegistry } from '#lib/server/tools';
@@ -19,7 +18,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	const docs = documentIds.length ? documentIds : undefined;
 
 	if (!query.trim()) {
-		return json({ bm25: [], semantic: [], hybrid: [] });
+		return Response.json({ bm25: [], semantic: [], hybrid: [] });
 	}
 
 	const started = Date.now();
@@ -31,7 +30,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	if (result.isError) {
 		log.error('Search failed', { searchMode: 'all' });
-		return json(JSON.parse(result.content), { status: 400 });
+		return Response.json(JSON.parse(result.content), { status: 400 });
 	}
 
 	log.info('Search completed', {
@@ -39,5 +38,5 @@ export const GET: RequestHandler = async ({ url }) => {
 		resultCount: result.outputs?.length ?? 0,
 		searchMode: 'all'
 	});
-	return json(result.data);
+	return Response.json(result.data);
 };

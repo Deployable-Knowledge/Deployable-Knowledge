@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 
 import type { ApiWorkspaceLayoutUpdateRequest } from '#lib/types';
@@ -38,7 +38,7 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 		.where(eq(workspaceLayouts.id, params.id))
 		.returning();
 
-	return json(row);
+	return Response.json(row);
 };
 
 export const DELETE: RequestHandler = async ({ params }) => {
@@ -64,5 +64,5 @@ export const DELETE: RequestHandler = async ({ params }) => {
 		await setActiveLayoutId(remaining[Math.min(deletedIndex, remaining.length - 1)].id);
 	}
 
-	return json(await WorkspaceLayoutsRepository.loadState());
+	return Response.json(await WorkspaceLayoutsRepository.loadState());
 };

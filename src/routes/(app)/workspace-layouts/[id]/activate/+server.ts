@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 
 import { setActiveLayoutId } from '#lib/server/database/app-state';
 import { WorkspaceLayoutsRepository } from '#lib/server/repositories';
@@ -13,5 +13,5 @@ export const POST: RequestHandler = async ({ params }) => {
 
 	await setActiveLayoutId(layout.id);
 
-	return json({ activeLayoutId: layout.id });
+	return Response.json({ activeLayoutId: layout.id });
 };

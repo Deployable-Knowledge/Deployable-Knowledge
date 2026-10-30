@@ -1,11 +1,11 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 
 import type { ApiVulkanDeviceUpdate } from '#lib/types';
 import { setVulkanDevice } from '#lib/server/database/app-state';
 import { getVulkanDevicesStatus, listVulkanDevices } from '#lib/server/providers/vulkan-devices';
 import type { RequestHandler } from './$types';
 
-export const GET: RequestHandler = async () => json(await getVulkanDevicesStatus());
+export const GET: RequestHandler = async () => Response.json(await getVulkanDevicesStatus());
 
 export const PATCH: RequestHandler = async ({ request }) => {
 	const body = (await request.json().catch(() => null)) as Partial<
@@ -20,5 +20,5 @@ export const PATCH: RequestHandler = async ({ request }) => {
 	if (device === undefined) throw error(400, 'Unknown Vulkan device.');
 
 	await setVulkanDevice(device?.index ?? null);
-	return json(await getVulkanDevicesStatus());
+	return Response.json(await getVulkanDevicesStatus());
 };

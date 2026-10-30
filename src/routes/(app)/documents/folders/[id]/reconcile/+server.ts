@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import type {
 	ApiDocumentFolderReconcileRequest,
 	ApiDocumentFolderReconcileResponse,
@@ -57,5 +57,10 @@ export const POST: RequestHandler = async ({ params, request }) => {
 			size: file.size
 		}));
 
-	return json({ upload, stale, unchanged, malformed } satisfies ApiDocumentFolderReconcileResponse);
+	return Response.json({
+		upload,
+		stale,
+		unchanged,
+		malformed
+	} satisfies ApiDocumentFolderReconcileResponse);
 };

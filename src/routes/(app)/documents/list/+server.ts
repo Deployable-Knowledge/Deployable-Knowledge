@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import type { ApiDocumentListQuery, DocumentListMode, DocumentSortMode } from '#lib/types';
 import { DocumentsRepository } from '#lib/server/repositories';
 import type { RequestHandler } from './$types';
@@ -41,5 +41,5 @@ export const GET: RequestHandler = async ({ url }) => {
 		sort: sort as DocumentSortMode,
 		tags: url.searchParams.getAll('tag')
 	};
-	return json(await DocumentsRepository.list(query));
+	return Response.json(await DocumentsRepository.list(query));
 };

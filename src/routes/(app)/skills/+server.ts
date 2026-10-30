@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 
 import type { ApiSkillRequest } from '#lib/types';
 import { SkillsRepository } from '#lib/server/repositories';
@@ -6,7 +6,7 @@ import { parseSkillRequest } from '#lib/server/skills/skill-values';
 
 import type { RequestHandler } from './$types';
 
-export const GET: RequestHandler = async () => json(await SkillsRepository.list());
+export const GET: RequestHandler = async () => Response.json(await SkillsRepository.list());
 
 export const POST: RequestHandler = async ({ request }) => {
 	const values = parseSkillRequest((await request.json()) as ApiSkillRequest);
@@ -15,5 +15,5 @@ export const POST: RequestHandler = async ({ request }) => {
 		throw error(409, `A skill named /${values.name} already exists`);
 	}
 
-	return json(await SkillsRepository.create(values), { status: 201 });
+	return Response.json(await SkillsRepository.create(values), { status: 201 });
 };

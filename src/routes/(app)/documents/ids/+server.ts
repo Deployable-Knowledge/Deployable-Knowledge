@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import type { ApiDocumentListQuery, DocumentListMode } from '#lib/types';
 import { DocumentsRepository } from '#lib/server/repositories';
 import type { RequestHandler } from './$types';
@@ -18,5 +18,5 @@ export const GET: RequestHandler = async ({ url }) => {
 		tags: url.searchParams.getAll('tag')
 	};
 
-	return json({ ids: await DocumentsRepository.listIds(query) });
+	return Response.json({ ids: await DocumentsRepository.listIds(query) });
 };

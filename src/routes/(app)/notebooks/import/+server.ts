@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import {
 	buildNotebookCollection,
 	NotebookCollectionImportError,
@@ -39,7 +39,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const collection = buildNotebookCollection(title, files);
 		await NotebooksRepository.createWithPages(collection.title, collection.pages);
-		return json(await loadNotebookState(), { status: 201 });
+		return Response.json(await loadNotebookState(), { status: 201 });
 	} catch (cause) {
 		if (cause instanceof NotebookCollectionImportError) {
 			throw error(cause.status, cause.message);

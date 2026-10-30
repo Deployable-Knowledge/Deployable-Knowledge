@@ -1,5 +1,5 @@
 import { basename, extname } from 'node:path';
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import type { ApiNotebookPageImportRequest } from '#lib/types';
 import {
 	isNotebookPageImportPath,
@@ -41,5 +41,5 @@ export const POST: RequestHandler = async ({ params, request }) => {
 	await NotebooksRepository.createPage(notebook.id, title, content);
 	await setActiveNotebook(notebook.id);
 
-	return json(await loadNotebookState(), { status: 201 });
+	return Response.json(await loadNotebookState(), { status: 201 });
 };

@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 
 import { CUSTOM_PROVIDER_TYPES } from '#lib/constants';
 import type { ApiCustomProviderCreateRequest, ApiProviderInfo } from '#lib/types';
@@ -19,7 +19,7 @@ export const GET: RequestHandler = async () => {
 	}));
 	const custom = (await CustomProvidersRepository.list()).map(toApiProviderInfo);
 
-	return json([...builtIn, ...custom]);
+	return Response.json([...builtIn, ...custom]);
 };
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -37,5 +37,5 @@ export const POST: RequestHandler = async ({ request }) => {
 		apiKey: apiKey ?? ''
 	});
 
-	return json(toApiProviderInfo(record), { status: 201 });
+	return Response.json(toApiProviderInfo(record), { status: 201 });
 };

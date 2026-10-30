@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import {
 	EMBEDDING_DEVICES,
 	findLocalEmbeddingModel,
@@ -35,7 +35,7 @@ async function embeddingStatus(): Promise<ApiEmbeddingStatus> {
 	};
 }
 
-export const GET: RequestHandler = async () => json(await embeddingStatus());
+export const GET: RequestHandler = async () => Response.json(await embeddingStatus());
 
 export const PATCH: RequestHandler = async ({ request }) => {
 	const body = (await request.json().catch(() => null)) as Partial<
@@ -57,5 +57,5 @@ export const PATCH: RequestHandler = async ({ request }) => {
 
 	await updateEmbeddingSettings({ provider: provider.id, model, device });
 	refreshStaleEmbeddings();
-	return json(await embeddingStatus());
+	return Response.json(await embeddingStatus());
 };

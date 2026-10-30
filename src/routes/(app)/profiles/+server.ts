@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 
 import { toolRegistry } from '#lib/server/tools';
 import { db } from '#lib/server/database/database';
@@ -17,7 +17,7 @@ export const GET: RequestHandler = async () => {
 		activeProfileId
 	};
 
-	return json(response);
+	return Response.json(response);
 };
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -52,5 +52,5 @@ export const POST: RequestHandler = async ({ request }) => {
 		})
 		.returning();
 
-	return json(row, { status: 201 });
+	return Response.json(row, { status: 201 });
 };

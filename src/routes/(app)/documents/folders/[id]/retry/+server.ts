@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import type { ApiDocumentFolderRetryResponse } from '#lib/types';
 import { SyncedFoldersRepository } from '#lib/server/repositories';
 import type { RequestHandler } from './$types';
@@ -9,5 +9,5 @@ export const POST: RequestHandler = async ({ params }) => {
 
 	const cleared = await SyncedFoldersRepository.clearMalformed(folder.id);
 	await SyncedFoldersRepository.setLastError(folder.id, null);
-	return json({ cleared } satisfies ApiDocumentFolderRetryResponse);
+	return Response.json({ cleared } satisfies ApiDocumentFolderRetryResponse);
 };

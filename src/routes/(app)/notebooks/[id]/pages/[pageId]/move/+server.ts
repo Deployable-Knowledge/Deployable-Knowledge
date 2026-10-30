@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { json, type RequestHandler } from '@sveltejs/kit';
+import type { RequestHandler } from '@sveltejs/kit';
 import { and, asc, eq, max } from 'drizzle-orm';
 import type { ApiNotebookPageMoveRequest } from '#lib/types';
 import { db } from '#lib/server/database/database';
@@ -13,12 +13,12 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 	const sourceNotebookId = params.id;
 	const pageId = params.pageId;
 	if (!sourceNotebookId || !pageId) {
-		return json({ error: 'Missing notebook or page id' }, { status: 400 });
+		return Response.json({ error: 'Missing notebook or page id' }, { status: 400 });
 	}
 
 	const { destinationNotebookId } = (await request.json()) as ApiNotebookPageMoveRequest;
 	if (!destinationNotebookId || destinationNotebookId === sourceNotebookId) {
-		return json({ error: 'Choose a different destination notebook' }, { status: 400 });
+		return Response.json({ error: 'Choose a different destination notebook' }, { status: 400 });
 	}
 
 	const [[sourceNotebook], [destinationNotebook], [page]] = await Promise.all([
@@ -39,10 +39,10 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 			.limit(1)
 	]);
 	if (!sourceNotebook || !page) {
-		return json({ error: 'Notebook page not found' }, { status: 404 });
+		return Response.json({ error: 'Notebook page not found' }, { status: 404 });
 	}
 	if (!destinationNotebook) {
-		return json({ error: 'Destination notebook not found' }, { status: 404 });
+		return Response.json({ error: 'Destination notebook not found' }, { status: 404 });
 	}
 
 	const destinationPages = await db
@@ -105,7 +105,7 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 	});
 
 	await setActiveNotebook(sourceNotebookId);
-	return json(await loadNotebookState());
+	return Response.json(await loadNotebookState());
 };
 
 function uniquePageTitle(title: string, existingTitles: string[]): string {

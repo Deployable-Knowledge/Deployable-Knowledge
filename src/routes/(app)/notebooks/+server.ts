@@ -1,4 +1,4 @@
-import { json, type RequestHandler } from '@sveltejs/kit';
+import type { RequestHandler } from '@sveltejs/kit';
 import { randomUUID } from 'node:crypto';
 import { max } from 'drizzle-orm';
 import type { ApiNotebookTitleRequest, ApiReorderResponse } from '#lib/types';
@@ -17,14 +17,14 @@ import {
 import { parseReorderRequest } from '#lib/server/utils/reorder';
 
 export const GET: RequestHandler = async () => {
-	return json(await loadNotebookState());
+	return Response.json(await loadNotebookState());
 };
 
 export const POST: RequestHandler = async ({ request }) => {
 	const body = (await request.json()) as ApiNotebookTitleRequest;
 	const title = body.title.trim();
 	if (!title) {
-		return json({ error: 'Notebook title is required' }, { status: 400 });
+		return Response.json({ error: 'Notebook title is required' }, { status: 400 });
 	}
 
 	const timestamp = new Date().toISOString();
@@ -55,16 +55,16 @@ export const POST: RequestHandler = async ({ request }) => {
 	await db.insert(notebookPages).values(page);
 	await setActiveNotebook(notebookId);
 
-	return json(await loadNotebookState(), { status: 201 });
+	return Response.json(await loadNotebookState(), { status: 201 });
 };
 
 export const PATCH: RequestHandler = async ({ request }) => {
 	const body = parseReorderRequest(await request.json().catch(() => null));
-	if (!body) return json({ error: 'Invalid notebook order' }, { status: 400 });
+	if (!body) return Response.json({ error: 'Invalid notebook order' }, { status: 400 });
 
 	if (!(await NotebooksRepository.reorderNotebooks(body.orderedIds))) {
-		return json({ error: 'Notebook order is out of date' }, { status: 409 });
+		return Response.json({ error: 'Notebook order is out of date' }, { status: 409 });
 	}
 
-	return json({ ok: true } satisfies ApiReorderResponse);
+	return Response.json({ ok: true } satisfies ApiReorderResponse);
 };

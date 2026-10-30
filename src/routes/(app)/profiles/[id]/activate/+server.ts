@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 
 import { db } from '#lib/server/database/database';
@@ -20,5 +20,5 @@ export const POST: RequestHandler = async ({ params }) => {
 		activeProfileId: profile.id
 	};
 
-	return json(response);
+	return Response.json(response);
 };

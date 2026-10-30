@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import type { ApiDocumentFolderMalformedRequest } from '#lib/types';
 import { markMalformed } from '#lib/server/documents/folder-file-sync';
 import { SyncedFoldersRepository } from '#lib/server/repositories';
@@ -34,5 +34,5 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		{ relativePath, lastModified: body.lastModified, size: body.size },
 		body.message
 	);
-	return json({ marked: true });
+	return Response.json({ marked: true });
 };

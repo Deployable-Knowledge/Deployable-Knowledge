@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { json, type RequestHandler } from '@sveltejs/kit';
+import type { RequestHandler } from '@sveltejs/kit';
 import { asc, eq } from 'drizzle-orm';
 import type { ApiNotebookSourcesRequest } from '#lib/types';
 import { db } from '#lib/server/database/database';
@@ -32,7 +32,7 @@ export type NotebookSourceItem = Pick<NotebookSource, 'id' | 'chunkId' | 'create
 // notebook page text, but visible here and to notebook-mode chat server-side.
 export const GET: RequestHandler = async ({ params }) => {
 	const notebookId = params.id;
-	if (!notebookId) return json({ error: 'Missing notebook id' }, { status: 400 });
+	if (!notebookId) return Response.json({ error: 'Missing notebook id' }, { status: 400 });
 
 	const rows = await db
 		.select({
@@ -50,7 +50,7 @@ export const GET: RequestHandler = async ({ params }) => {
 		.where(eq(notebookSources.notebookId, notebookId))
 		.orderBy(asc(notebookSources.createdAt));
 
-	return json({
+	return Response.json({
 		sources: rows.map(
 			(row): NotebookSourceItem => ({
 				id: row.id,
@@ -69,7 +69,7 @@ export const GET: RequestHandler = async ({ params }) => {
 // chunk is a no-op).
 export const POST: RequestHandler = async ({ params, request }) => {
 	const notebookId = params.id;
-	if (!notebookId) return json({ error: 'Missing notebook id' }, { status: 400 });
+	if (!notebookId) return Response.json({ error: 'Missing notebook id' }, { status: 400 });
 
 	const body = (await request.json()) as ApiNotebookSourcesRequest;
 	const chunkIds = [...new Set(body.chunk_ids.map((chunkId) => chunkId.trim()))];
@@ -84,14 +84,14 @@ export const POST: RequestHandler = async ({ params, request }) => {
 			});
 	}
 
-	return json({ ok: true, added: chunkIds.length });
+	return Response.json({ ok: true, added: chunkIds.length });
 };
 
 // Clear every source attached to this notebook.
 export const DELETE: RequestHandler = async ({ params }) => {
 	const notebookId = params.id;
-	if (!notebookId) return json({ error: 'Missing notebook id' }, { status: 400 });
+	if (!notebookId) return Response.json({ error: 'Missing notebook id' }, { status: 400 });
 
 	await db.delete(notebookSources).where(eq(notebookSources.notebookId, notebookId));
-	return json({ ok: true });
+	return Response.json({ ok: true });
 };

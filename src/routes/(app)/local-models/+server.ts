@@ -1,5 +1,3 @@
-import { json } from '@sveltejs/kit';
-
 import { LOCAL_MODELS, findLocalModelByFile } from '#lib/constants/local-models';
 import {
 	cancelActiveDownload,
@@ -33,16 +31,16 @@ export const GET: RequestHandler = async () => {
 		gpu: { supported: await getSupportedGpuTypes() }
 	};
 
-	return json(status);
+	return Response.json(status);
 };
 
 export const POST: RequestHandler = async ({ request }) => {
 	const body = (await request.json().catch(() => null)) as { fileName?: unknown } | null;
 	const model = typeof body?.fileName === 'string' ? findLocalModelByFile(body.fileName) : null;
 
-	if (!model) return json({ error: 'Unknown model.' }, { status: 400 });
+	if (!model) return Response.json({ error: 'Unknown model.' }, { status: 400 });
 	if (getActiveDownloadFile()) {
-		return json({ error: 'A model download is already in progress.' }, { status: 409 });
+		return Response.json({ error: 'A model download is already in progress.' }, { status: 409 });
 	}
 
 	return modelDownloadResponse(

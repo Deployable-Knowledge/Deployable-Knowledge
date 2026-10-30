@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import type {
 	ApiDocumentFolderFileDeleteRequest,
 	ApiDocumentFolderFileDeleteResponse
@@ -50,5 +50,5 @@ export const DELETE: RequestHandler = async ({ params, request }) => {
 	}
 
 	const result = await removeSyncedFiles(params.id, body.paths);
-	return json(result satisfies ApiDocumentFolderFileDeleteResponse);
+	return Response.json(result satisfies ApiDocumentFolderFileDeleteResponse);
 };

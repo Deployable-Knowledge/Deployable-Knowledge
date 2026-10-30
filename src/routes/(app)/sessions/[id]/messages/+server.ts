@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import {
 	DEFAULT_ASSISTANT_CONFIG,
@@ -48,12 +47,12 @@ export const POST: RequestHandler = async ({ params, request }) => {
 	const modelId = body.model_id.trim();
 	const providerId = body.provider_id.trim();
 	if (!message || !modelId || !providerId) {
-		return json({ error: 'Invalid request body' }, { status: 400 });
+		return Response.json({ error: 'Invalid request body' }, { status: 400 });
 	}
 
 	const provider = await findProvider(providerId);
 	if (!provider) {
-		return json(
+		return Response.json(
 			{ error: 'The selected provider no longer exists. Choose another model in settings.' },
 			{ status: 404 }
 		);
@@ -61,14 +60,14 @@ export const POST: RequestHandler = async ({ params, request }) => {
 
 	const skill = body.skill_id ? ((await SkillsRepository.find(body.skill_id)) ?? null) : null;
 	if (body.skill_id && !skill) {
-		return json({ error: 'The selected skill no longer exists.' }, { status: 404 });
+		return Response.json({ error: 'The selected skill no longer exists.' }, { status: 404 });
 	}
 
 	const includeLocalOnly = provider.id === LOCAL_MODEL_PROVIDER_ID;
 	const profile = await getActiveProfile();
 	const session = await SessionsRepository.find(params.id);
 	if (session?.localOnly && !includeLocalOnly) {
-		return json(
+		return Response.json(
 			{
 				error:
 					'This chat used local-only documents, so it can only continue with a llama.cpp model. Switch models or start a new chat.'

@@ -1,4 +1,4 @@
-import { json, type RequestHandler } from '@sveltejs/kit';
+import type { RequestHandler } from '@sveltejs/kit';
 import { randomUUID } from 'node:crypto';
 import { eq, max } from 'drizzle-orm';
 import type { ApiNotebookPageTitleRequest, ApiReorderResponse } from '#lib/types';
@@ -13,11 +13,11 @@ import {
 
 export const POST: RequestHandler = async ({ params, request }) => {
 	const notebookId = params.id;
-	if (!notebookId) return json({ error: 'Missing notebook id' }, { status: 400 });
+	if (!notebookId) return Response.json({ error: 'Missing notebook id' }, { status: 400 });
 	const body = (await request.json()) as ApiNotebookPageTitleRequest;
 	const title = body.title.trim();
 	if (!title) {
-		return json({ error: 'Page title is required' }, { status: 400 });
+		return Response.json({ error: 'Page title is required' }, { status: 400 });
 	}
 
 	const timestamp = new Date().toISOString();
@@ -44,19 +44,19 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		.where(eq(notebooks.id, notebookId));
 	await setActiveNotebook(notebookId);
 
-	return json(await loadNotebookState(), { status: 201 });
+	return Response.json(await loadNotebookState(), { status: 201 });
 };
 
 export const PATCH: RequestHandler = async ({ params, request }) => {
 	const notebookId = params.id;
-	if (!notebookId) return json({ error: 'Missing notebook id' }, { status: 400 });
+	if (!notebookId) return Response.json({ error: 'Missing notebook id' }, { status: 400 });
 
 	const body = parseReorderRequest(await request.json().catch(() => null));
-	if (!body) return json({ error: 'Invalid page order' }, { status: 400 });
+	if (!body) return Response.json({ error: 'Invalid page order' }, { status: 400 });
 
 	if (!(await NotebooksRepository.reorderPages(notebookId, body.orderedIds))) {
-		return json({ error: 'Page order is out of date' }, { status: 409 });
+		return Response.json({ error: 'Page order is out of date' }, { status: 409 });
 	}
 
-	return json({ ok: true } satisfies ApiReorderResponse);
+	return Response.json({ ok: true } satisfies ApiReorderResponse);
 };

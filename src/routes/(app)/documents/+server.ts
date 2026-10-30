@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import { db } from '#lib/server/database/database';
 import { documents } from '#lib/server/database/schema';
 import {
@@ -52,5 +52,5 @@ export const DELETE: RequestHandler = async () => {
 		if (await removeDocument(id)) removed += 1;
 	}
 
-	return json({ removed });
+	return Response.json({ removed });
 };

@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 
 import type { ApiSkillRequest } from '#lib/types';
 import { SkillsRepository } from '#lib/server/repositories';
@@ -20,7 +20,7 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 		throw error(404, 'Skill not found');
 	}
 
-	return json(skill);
+	return Response.json(skill);
 };
 
 export const DELETE: RequestHandler = async ({ params }) => {
@@ -30,5 +30,5 @@ export const DELETE: RequestHandler = async ({ params }) => {
 		throw error(404, 'Skill not found');
 	}
 
-	return json(skill);
+	return Response.json(skill);
 };

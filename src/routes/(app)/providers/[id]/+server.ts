@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 
 import type { ApiCustomProviderRequest } from '#lib/types';
 import {
@@ -20,9 +20,9 @@ export const GET: RequestHandler = async ({ params, url }) => {
 	}
 
 	try {
-		return json(await provider.listModels());
+		return Response.json(await provider.listModels());
 	} catch (cause) {
-		if (availableOnly) return json([]);
+		if (availableOnly) return Response.json([]);
 
 		const message = cause instanceof Error ? cause.message : String(cause);
 		throw error(502, message);
@@ -42,7 +42,7 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 		throw error(404, 'Provider not found');
 	}
 
-	return json(toApiProviderInfo(record));
+	return Response.json(toApiProviderInfo(record));
 };
 
 export const DELETE: RequestHandler = async ({ params }) => {
@@ -53,5 +53,5 @@ export const DELETE: RequestHandler = async ({ params }) => {
 	}
 
 	await resetEmbeddingProvider(record.id);
-	return json(toApiProviderInfo(record));
+	return Response.json(toApiProviderInfo(record));
 };

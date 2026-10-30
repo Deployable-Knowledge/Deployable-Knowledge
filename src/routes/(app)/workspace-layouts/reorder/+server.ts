@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 
 import { WorkspaceLayoutsRepository } from '#lib/server/repositories';
 import { parseReorderRequest } from '#lib/server/utils/reorder';
@@ -14,5 +14,5 @@ export const POST: RequestHandler = async ({ request }) => {
 		throw error(409, 'The layout order no longer matches the stored layouts');
 	}
 
-	return json(await WorkspaceLayoutsRepository.loadState());
+	return Response.json(await WorkspaceLayoutsRepository.loadState());
 };

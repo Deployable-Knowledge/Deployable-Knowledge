@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import type {
 	ApiDocumentFolderRegisterRequest,
 	ApiDocumentFolderRegisterResponse,
@@ -16,7 +16,7 @@ export const GET: RequestHandler = async () => {
 		...folder,
 		malformedCount: malformedCounts.get(folder.id) ?? 0
 	}));
-	return json({ folders } satisfies ApiDocumentFoldersResponse);
+	return Response.json({ folders } satisfies ApiDocumentFoldersResponse);
 };
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -38,7 +38,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	});
 	const folder = await SyncedFoldersRepository.find(id);
 	if (!folder) throw error(500, 'Folder registration failed.');
-	return json(
+	return Response.json(
 		{ folder: { ...folder, malformedCount: 0 } } satisfies ApiDocumentFolderRegisterResponse,
 		{
 			status: existing ? 200 : 201

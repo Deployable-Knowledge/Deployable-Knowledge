@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import { asc } from 'drizzle-orm';
 
 import type { ApiPromptTemplateRequest } from '#lib/types';
@@ -11,7 +11,7 @@ import type { RequestHandler } from './$types';
 export const GET: RequestHandler = async () => {
 	const rows = await db.select().from(promptTemplates).orderBy(asc(promptTemplates.name));
 
-	return json(rows);
+	return Response.json(rows);
 };
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -35,5 +35,5 @@ export const POST: RequestHandler = async ({ request }) => {
 		})
 		.returning();
 
-	return json(row, { status: 201 });
+	return Response.json(row, { status: 201 });
 };

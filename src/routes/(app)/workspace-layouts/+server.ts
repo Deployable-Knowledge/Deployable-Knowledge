@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 
 import type { ApiWorkspaceLayoutCreateRequest } from '#lib/types';
 import { WorkspaceLayoutsRepository } from '#lib/server/repositories';
@@ -10,7 +10,7 @@ import {
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async () => {
-	return json(await WorkspaceLayoutsRepository.loadState());
+	return Response.json(await WorkspaceLayoutsRepository.loadState());
 };
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -25,5 +25,5 @@ export const POST: RequestHandler = async ({ request }) => {
 	const name = normalizeLayoutName(body.name) ?? nextLayoutName(existing.map(({ name }) => name));
 	const layout = await WorkspaceLayoutsRepository.create({ name, snapshot });
 
-	return json(layout, { status: 201 });
+	return Response.json(layout, { status: 201 });
 };

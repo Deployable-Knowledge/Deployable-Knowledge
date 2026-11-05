@@ -38,6 +38,6 @@ Everything sits in the folder the server runs from (in the desktop app, your use
 | `logs/`      | Log files                         |
 
 More detail: [Chat pipeline](CHAT_PIPELINE.md), [Documents and search](DOCUMENTS_AND_SEARCH.md),
-[Agent tools](TOOLS.md).
+[Agent tools](TOOLS.md), [Embeddings and models](EMBEDDINGS.md).
 
 Return to [docs](README.md).

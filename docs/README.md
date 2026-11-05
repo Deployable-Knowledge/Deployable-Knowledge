@@ -4,6 +4,7 @@
 - [Architecture](ARCHITECTURE.md): how the code is laid out
 - [Chat pipeline](CHAT_PIPELINE.md): what happens when you send a message
 - [Documents and search](DOCUMENTS_AND_SEARCH.md): how files become searchable
+- [Embeddings and models](EMBEDDINGS.md): every model the app uses, and what for
 - [Agent tools](TOOLS.md): what the assistant can do, and adding a tool
 - [API reference](API_REFERENCE.md): the app's endpoints
 

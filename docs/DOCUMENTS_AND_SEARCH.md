@@ -18,23 +18,40 @@
 3. It cuts the text into **chunks** of about 1,200 characters. Each chunk remembers its page,
    sheet or timestamp, which is how answers link back to the exact spot.
 4. Chunks go into a keyword index and get an **embedding** for meaning search. CSV files are
-   keyword-only.
+   keyword-only. See [Embeddings and models](EMBEDDINGS.md).
 
 ## Searching
 
 Only **active** documents are searched.
 
-| Method       | Finds                                | Good for                        |
-| ------------ | ------------------------------------ | ------------------------------- |
-| **Lexical**  | Chunks with the same words (BM25)    | Names, codes, exact phrases     |
-| **Semantic** | Chunks with the same meaning         | Questions in your own words     |
-| **Hybrid**   | Both, then a reranker picks the best | Almost everything (the default) |
+```mermaid
+flowchart TD
+    Q["Your search"] --> M{"Method"}
+
+    M -->|"Lexical"| L1["Split it into words"]
+    L1 --> L2["Find chunks with those words"]
+    L2 --> L3["Rank with BM25"]
+
+    M -->|"Semantic"| S1["Turn it into an embedding"]
+    S1 --> S2["Compare with every chunk's embedding"]
+    S2 --> S3["Rank by closest meaning"]
+
+    M -->|"Hybrid"| H1["Run Lexical and Semantic"]
+    H1 --> H2["Merge and drop duplicates"]
+    H2 --> H3["Reranker scores each chunk"]
+
+    L3 --> Out["Top results"]
+    S3 --> Out
+    H3 --> Out
+```
+
+| Method       | Good for                        |
+| ------------ | ------------------------------- |
+| **Lexical**  | Names, codes, exact phrases     |
+| **Semantic** | Questions in your own words     |
+| **Hybrid**   | Almost everything (the default) |
 
 The code is in `src/lib/server/documents/` (adding files) and `src/lib/server/rag/` (chunking,
 embeddings and search).
-
-<img width="2600" height="1600" alt="semantic-search-pipeline" src="https://github.com/user-attachments/assets/c90fe6bf-6a69-41c1-b828-0f503f4c7a81" />
-<img width="2600" height="1600" alt="bm25-search-pipeline" src="https://github.com/user-attachments/assets/d1c87729-a392-454e-9478-ae4e9f3f7cae" />
-<img width="2600" height="1600" alt="hybrid-search-pipeline" src="https://github.com/user-attachments/assets/6c46792c-637b-4253-801e-57c75ec5797a" />
 
 Return to [docs](README.md).

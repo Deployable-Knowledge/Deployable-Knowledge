@@ -117,11 +117,11 @@ through whatever you touched.
 | Desktop             | Electron, adapter-node                                    |
 | UI                  | Tailwind CSS 4, shadcn-svelte primitives, bits-ui, Lucide |
 | Database            | SQLite/libSQL with Drizzle ORM                            |
-| Retrieval           | Transformers.js embeddings, BM25, hybrid search           |
+| Retrieval           | llama.cpp embeddings, SQLite FTS5 BM25, reranked hybrid   |
 | Document processing | pdf-parse, Tesseract.js, Sharp, LibreOffice               |
 | Audio               | FFmpeg, Whisper, WeSpeaker                                |
 | Model providers     | llama.cpp, Ollama, OpenAI-compatible APIs                 |
-| Agent tools         | Local search, Pyodide Python, date/time                   |
+| Agent tools         | Search, chunk reading, Pyodide Python, skills, goals      |
 
 ## Architecture
 
@@ -138,8 +138,7 @@ Routes and components → runes stores → services → SvelteKit endpoints
 - Stateless services own HTTP and streaming I/O.
 - SvelteKit endpoints orchestrate the database, RAG pipeline, providers, and agent runner.
 
-See [Architecture](docs/ARCHITECTURE.md), [API Reference](docs/API_REFERENCE.md),
-[Backend Services](docs/BACKEND_SERVICES.md), and [Agent Tools](docs/TOOLS.md) for more detail.
+See the [docs](docs/README.md) for more, starting with the [Chat pipeline](docs/CHAT_PIPELINE.md).
 
 ## Project Structure
 

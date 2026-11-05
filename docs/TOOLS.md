@@ -1,69 +1,26 @@
 # Agent tools
 
-Tools live in `src/lib/server/tools`. Each tool implements `AgentTool` with:
+Tools let the model do more than write text. It decides when to use them. You switch them on with
+the **Tools** button in the chat box and pick which ones in **Settings → Tools**.
 
-- a provider-neutral structured function definition;
-- one `execute(arguments, context)` method;
-- a result created through `createToolResult`, with compact model data and one
-  typed `outputs` list for user-facing context.
+| Tool             | What it does                                               | Modes            |
+| ---------------- | ---------------------------------------------------------- | ---------------- |
+| `search`         | Searches your documents                                    | Search           |
+| `read_chunks`    | Reads the text around a passage it found                   | Search           |
+| `corpus_details` | Lists the documents in the library                         | Search, Notebook |
+| `get_datetime`   | Checks the current date and time                           | Search, Notebook |
+| `python`         | Runs calculations and draws charts, can read CSVs          | Search, Notebook |
+| `use_skill`      | Loads one of your skills when a request matches it         | Search, Notebook |
+| `goals`          | Keeps a checklist for multi-part requests (off by default) | Search, Notebook |
 
-`ToolOutput` is a discriminated union supporting `source`, `image`, `text`, and
-structured `data` items. The agent annotates every item with its originating
-tool call and stores one ordered output list on the assistant message. The UI
-renders that list through one reusable component. Adding another output type
-only requires extending the union and its renderer; there are no parallel
-source/image metadata paths.
+Python runs in a sandbox (Pyodide), so it doesn't need Python installed.
 
-Agent activity is stored separately as one ordered trace of reusable
-`{ title, output }` disclosure items. Tool entries include their inputs and
-actual returned data; reasoning entries use the same presentation. The live
-stream and saved message history render the same trace representation.
+## Adding a tool
 
-Shared validation helpers such as `readObject`, `clampText`, `clampInteger`,
-`compactText`, and `toJsonValue` live in `src/lib/server/utils/values.ts`.
+1. Add a file in `src/lib/server/tools/` that exports an `AgentTool`: an id, a label, the modes
+   it works in, a JSON schema for its arguments, and an `execute` function.
+2. Register it in `src/lib/server/tools/index.ts`.
 
-`ToolRegistry` owns registration, definition selection, argument parsing,
-unknown-tool handling, and execution errors. Add a tool by creating an
-`AgentTool`, registering it in `tools/index.ts`, and adding its name to the
-appropriate chat mode's allow-list. No provider or agent-loop changes are
-needed.
+That's it. It shows up in Settings and the model can call it.
 
-Built-in tools:
-
-- `corpus_details` reports the number of documents in the corpus and pages
-  through their titles alphabetically. It honors the chat's selected document
-  scope and counts only active documents, matching what search can reach.
-- `get_datetime` returns the current ISO time plus a formatted value in an
-  optional IANA timezone.
-- `search` queries the local document store using semantic, BM25, hybrid, or
-  API-only comparison mode. Chat supplies the selected document IDs,
-  retrieval-mode default, and result limit through execution context, so model
-  arguments cannot broaden the selected document scope.
-- `python` runs backend Python code in Pyodide's WebAssembly runtime, so the
-  host does not need a native Python installation. NumPy and Matplotlib are
-  loaded when the worker starts. Printed output and the final expression are
-  returned to the model. Open Matplotlib figures are captured automatically as
-  compact PNG images and returned through the same typed output list as source
-  context; there is no chart-specific browser renderer or graph specification
-  format. The managed `documents/` directory is mounted read-only at
-  `/documents`, showing only files of active documents in the chat's selected
-  scope, and each call writes `/documents.json` mapping every such document's
-  ID, title, and source type to its path so the model can load CSV or text data
-  directly.
-- `use_skill` loads the instructions of a user-written skill by name. Chat lists
-  the skills marked "model can use" in the system prompt and passes them through
-  execution context; the tool is withheld when no such skill exists. Users can
-  also run a skill directly with `/name` in the composer, which adds its
-  instructions to the system prompt for that turn only.
-
-The Pyodide worker is reused between calls, but each call receives fresh Python
-globals. Calls are serialized and interrupted after ten seconds. The first use
-downloads Pyodide's official NumPy and Matplotlib packages into the configured
-cache; later calls reuse them.
-
-The agent runner accepts normalized streamed call deltas and the object-form
-arguments returned by some local servers. It preserves assistant content and
-reasoning between calls, appends each result as a `tool` message, supports
-multiple calls/turns, and disables tools after the configured tool-turn budget
-to obtain a final answer. Tool selection remains with the model; the runner does
-not force `search` or any other tool as generic uncertainty recovery.
+Return to [docs](README.md).

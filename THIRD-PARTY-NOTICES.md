@@ -143,6 +143,10 @@ By downloading a Gemma model through this application, you agree to those terms.
 
 - `nomic-ai/nomic-embed-text-v1.5` — embeddings. Apache-2.0.
 - `Xenova/whisper-tiny.en` — audio transcription. ONNX conversion of OpenAI Whisper (MIT).
+- `onnx-community/wespeaker-voxceleb-resnet34-LM` — speaker identification in transcripts. ONNX
+  conversion of `pyannote/wespeaker-voxceleb-resnet34-LM`, the pyannote.audio wrapper around the
+  [WeSpeaker](https://github.com/wenet-e2e/wespeaker) `wespeaker-voxceleb-resnet34-LM` pretrained
+  speaker embedding model, trained on VoxCeleb. CC-BY-4.0.
 - `cross-encoder/ettin-reranker-32m-v1` — default cross-encoder reranking. Apache-2.0.
 - `Xenova/ms-marco-MiniLM-L-6-v2` — alternative cross-encoder reranking. Apache-2.0.
 - `tesseract-ocr/tessdata` `eng.traineddata` (4.1.0) — OCR language data. Apache-2.0.

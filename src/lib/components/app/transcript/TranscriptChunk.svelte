@@ -19,10 +19,9 @@
 	);
 
 	const cardClass = $derived([
-		'grid w-full select-text gap-2 border-l-2 pl-3 text-left transition-colors',
-		active ? 'border-primary' : 'border-transparent',
+		'grid w-full select-text gap-2 rounded-lg px-3 py-2.5 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/40',
 		seekable && 'cursor-pointer',
-		seekable && !active && 'hover:border-primary/40'
+		seekable && !active && 'hover:bg-muted/60'
 	]);
 
 	function seekUnlessSelecting(): void {

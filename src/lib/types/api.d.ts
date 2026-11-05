@@ -173,7 +173,7 @@ export interface ApiDocumentIdsResponse {
 
 export type TranscriptChunkRow = Pick<
 	DocumentChunk,
-	'id' | 'chunkIndex' | 'content' | 'startMs' | 'endMs'
+	'id' | 'chunkIndex' | 'content' | 'startMs' | 'endMs' | 'speaker'
 >;
 
 export interface ApiTranscriptResponse {

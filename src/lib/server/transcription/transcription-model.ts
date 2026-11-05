@@ -5,7 +5,8 @@ as accurately on complex/chaotic audio scenarios. Looking into using larger mode
 import {
 	ModelRegistry,
 	pipeline,
-	type AutomaticSpeechRecognitionPipeline
+	type AutomaticSpeechRecognitionPipeline,
+	type ProgressCallback
 } from '@huggingface/transformers';
 import {
 	combineFileProgress,
@@ -13,6 +14,7 @@ import {
 	type DownloadProgressHandler
 } from '#lib/server/utils/download-progress';
 import { TRANSFORMERS_CACHE_DIR } from '#lib/server/utils/transformers-env';
+import { installSpeakerModel, isSpeakerModelInstalled } from './speaker-diarization';
 
 export const TRANSCRIPTION_MODEL = 'Xenova/whisper-tiny.en';
 
@@ -20,26 +22,36 @@ const TRANSCRIPTION_TASK = 'automatic-speech-recognition';
 
 let transcriptionPipeline: Promise<AutomaticSpeechRecognitionPipeline> | undefined;
 
-export function isTranscriptionModelInstalled(): Promise<boolean> {
-	return ModelRegistry.is_pipeline_cached(TRANSCRIPTION_TASK, TRANSCRIPTION_MODEL, {
-		cache_dir: TRANSFORMERS_CACHE_DIR
+export async function isTranscriptionModelInstalled(): Promise<boolean> {
+	const [whisperInstalled, speakerInstalled] = await Promise.all([
+		ModelRegistry.is_pipeline_cached(TRANSCRIPTION_TASK, TRANSCRIPTION_MODEL, {
+			cache_dir: TRANSFORMERS_CACHE_DIR
+		}),
+		isSpeakerModelInstalled()
+	]);
+	return whisperInstalled && speakerInstalled;
+}
+
+async function installWhisper(progress_callback: ProgressCallback): Promise<void> {
+	const transcriber = await pipeline(TRANSCRIPTION_TASK, TRANSCRIPTION_MODEL, {
+		cache_dir: TRANSFORMERS_CACHE_DIR,
+		progress_callback
 	});
+	await transcriber.dispose();
 }
 
 export async function installTranscriptionModel(
 	onProgress: DownloadProgressHandler
 ): Promise<void> {
-	const transcriber = await pipeline(TRANSCRIPTION_TASK, TRANSCRIPTION_MODEL, {
-		cache_dir: TRANSFORMERS_CACHE_DIR,
-		progress_callback: transformersProgress(combineFileProgress(onProgress))
-	});
-	await transcriber.dispose();
+	const progress_callback = transformersProgress(combineFileProgress(onProgress));
+	await Promise.all([installWhisper(progress_callback), installSpeakerModel(progress_callback)]);
 }
 
 export type TranscriptSegment = {
 	startMs: number;
 	endMs: number;
 	text: string;
+	speaker?: number;
 };
 
 export type TranscriptionResult = {

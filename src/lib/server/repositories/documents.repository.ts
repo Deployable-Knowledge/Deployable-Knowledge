@@ -261,7 +261,8 @@ export class DocumentsRepository {
 				chunkIndex: documentChunks.chunkIndex,
 				content: documentChunks.content,
 				startMs: documentChunks.startMs,
-				endMs: documentChunks.endMs
+				endMs: documentChunks.endMs,
+				speaker: documentChunks.speaker
 			})
 			.from(documentChunks)
 			.where(eq(documentChunks.documentId, documentId))

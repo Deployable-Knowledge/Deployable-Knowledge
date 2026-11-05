@@ -3,7 +3,7 @@
 	import { Button } from '#lib/components/ui/button';
 	import type { ApiTranscriptResponse } from '#lib/types';
 	import { watchUrl, watchUrlAtMs } from '#lib/utils';
-	import TranscriptChunk from './TranscriptChunk.svelte';
+	import TranscriptChunkList from './TranscriptChunkList.svelte';
 	import { formatTimestamp } from './timestamp';
 
 	interface Props {
@@ -69,13 +69,7 @@
 				</div>
 			</header>
 
-			<div class="grid gap-5">
-				{#each chunks as chunk, index (chunk.id)}
-					<div bind:this={rows[index]} class="scroll-my-2">
-						<TranscriptChunk active={index === focusIndex} {chunk} onSeek={openAt} />
-					</div>
-				{/each}
-			</div>
+			<TranscriptChunkList activeIndex={focusIndex} bind:rows {chunks} onSeek={openAt} />
 		</div>
 	</div>
 </main>

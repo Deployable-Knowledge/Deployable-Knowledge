@@ -72,8 +72,9 @@ npm run dev
 ```
 
 `npm run dev` syncs the local SQLite schema before Vite starts. The first time you open the app it
-shows a setup page that downloads the OCR data, Whisper, the search reranker, and the embedding
-model, then offers a local chat model. Skipped components download the first time they are needed.
+shows a setup page that downloads the OCR data, Whisper and its speaker model, the search reranker,
+and the embedding model, then offers a local chat model. Skipped components download the first
+time they are needed.
 More chat models can be downloaded later from settings.
 
 ### Desktop app
@@ -118,7 +119,7 @@ through whatever you touched.
 | Database            | SQLite/libSQL with Drizzle ORM                            |
 | Retrieval           | Transformers.js embeddings, BM25, hybrid search           |
 | Document processing | pdf-parse, Tesseract.js, Sharp, LibreOffice               |
-| Audio               | FFmpeg, Whisper                                           |
+| Audio               | FFmpeg, Whisper, WeSpeaker                                |
 | Model providers     | llama.cpp, Ollama, OpenAI-compatible APIs                 |
 | Agent tools         | Local search, Pyodide Python, date/time                   |
 

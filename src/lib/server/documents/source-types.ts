@@ -10,10 +10,7 @@ import { extractText } from '#lib/server/rag/chunk/text-extract';
 import { extractPlainText } from '#lib/server/rag/chunk/text-file-extract';
 import { extractCsv } from '#lib/server/rag/chunk/tabular-extract';
 import { extractSpreadsheet } from '#lib/server/rag/chunk/spreadsheet-extract';
-import {
-	attachTranscriptTimings,
-	extractTranscript
-} from '#lib/server/rag/chunk/transcript-extract';
+import { chunkTranscript, extractTranscript } from '#lib/server/rag/chunk/transcript-extract';
 import { extractYoutubeTranscript } from '#lib/server/rag/chunk/youtube-extract';
 import { convertOfficeToPdf } from './office-converter';
 
@@ -32,7 +29,7 @@ export type SourceTypeHandler = {
 		source: Source,
 		onProgress: (ratio: number, message: string) => void
 	) => Promise<ExtractionResult>;
-	finalize?: (chunks: ParsedChunk[], extraction: ExtractionResult) => ParsedChunk[];
+	chunk?: (extraction: ExtractionResult) => ParsedChunk[];
 };
 
 function assertTextBuffer(buffer: Buffer): void {
@@ -74,7 +71,7 @@ const audioHandler: SourceTypeHandler = {
 	emptyResultMessage: 'No speech long enough to index was found in this audio file.',
 	validateFile: ({ size }) => assertIngestableAudioSize(size),
 	extract: (source, onProgress) => extractTranscript(source, onProgress),
-	finalize: (chunks, extraction) => attachTranscriptTimings(chunks, extraction.chunks[0]?.timeline)
+	chunk: chunkTranscript
 };
 
 const youtubeHandler: SourceTypeHandler = {
@@ -85,7 +82,7 @@ const youtubeHandler: SourceTypeHandler = {
 	startMessage: 'Reading video details',
 	emptyResultMessage: 'This video has no captions long enough to index.',
 	extract: (source, onProgress) => extractYoutubeTranscript(source, onProgress),
-	finalize: (chunks, extraction) => attachTranscriptTimings(chunks, extraction.chunks[0]?.timeline)
+	chunk: chunkTranscript
 };
 
 const docxHandler: SourceTypeHandler = {

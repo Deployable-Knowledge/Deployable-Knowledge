@@ -73,6 +73,7 @@ function buildChunkRow(
 		content: chunk.content,
 		startMs: chunk.startMs ?? null,
 		endMs: chunk.endMs ?? null,
+		speaker: chunk.speaker ?? null,
 		embedding: embedding === null ? null : embeddingToBuffer(embedding.vector),
 		embeddingModel: embedding?.key ?? null,
 		createdAt: now

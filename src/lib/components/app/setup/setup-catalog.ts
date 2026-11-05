@@ -13,7 +13,7 @@ export interface SetupComponentDetails {
 
 export const SETUP_COMPONENT_DETAILS: Record<SetupComponentId, SetupComponentDetails> = {
 	ocr: { name: 'Text recognition', icon: ScanText, sizeBytes: 23_466_654 },
-	transcription: { name: 'Speech transcription', icon: AudioLines, sizeBytes: 153_621_062 },
+	transcription: { name: 'Speech transcription', icon: AudioLines, sizeBytes: 180_157_020 },
 	reranker: { name: 'Search reranker', icon: ListOrdered, sizeBytes: 36_596_448 },
 	embedding: { name: 'Semantic search', icon: Waypoints, sizeBytes: 146_146_432 }
 };

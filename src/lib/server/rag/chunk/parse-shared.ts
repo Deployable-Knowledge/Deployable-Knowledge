@@ -26,6 +26,7 @@ export type ExtractedChunk = {
 	pageIndex: DocumentChunk['pageIndex'];
 	content: DocumentChunk['content'];
 	timeline?: TranscriptTimelineEntry[];
+	speaker?: number;
 };
 
 export type ParsedChunk = {
@@ -35,11 +36,9 @@ export type ParsedChunk = {
 	pageIndex: DocumentChunk['pageIndex'];
 	chunkIndex: DocumentChunk['chunkIndex'];
 	content: DocumentChunk['content'];
-	// Offsets into the prepared page text, kept so audio chunks can resolve their timings
-	startChar?: number;
-	endChar?: number;
 	startMs?: number | null;
 	endMs?: number | null;
+	speaker?: number | null;
 };
 
 // Every extractor hands back the same page-shaped result, so the rest of the pipeline is shared
@@ -62,7 +61,11 @@ export function countWords(text: string): number {
 }
 
 // Create unique chunkId for each chunk, prevents duplicate chunks
-export function buildChunkId(page: ExtractedChunk, chunkIndex: number, content: string): string {
+export function buildChunkId(
+	page: Pick<ExtractedChunk, 'source' | 'pageIndex' | 'chunkType'>,
+	chunkIndex: number,
+	content: string
+): string {
 	return createHash('sha256')
 		.update(page.source.path)
 		.update('\n')

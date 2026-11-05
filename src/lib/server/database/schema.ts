@@ -285,6 +285,7 @@ export const documentChunks = sqliteTable(
 		content: text('content').notNull(),
 		startMs: integer('start_ms'),
 		endMs: integer('end_ms'),
+		speaker: integer('speaker'),
 		embedding: blob('embedding', { mode: 'buffer' }),
 		// Vectors are only comparable with vectors from the same model.
 		embeddingModel: text('embedding_model'),

@@ -169,23 +169,16 @@ function getChunkContent(content: string, startChar: number, endChar: number): s
 	return normalizeWhitespace(content.slice(startChar, endChar).replace(/\n/g, ' '));
 }
 
-function chunkSentenceSpans(
-	page: ExtractedChunk,
-	content: string,
-	spans: SentenceSpan[]
-): ParsedChunk[] {
-	const boundedSpans = splitOversizedSpans(content, spans);
-	if (boundedSpans.length === 0) return [];
-
-	const chunks: ParsedChunk[] = [];
-	let chunkIndex = 0;
+export function splitSentenceWindows(content: string): SentenceSpan[] {
+	const spans = splitOversizedSpans(content, splitSentencesWithOffsets(content));
+	const windows: SentenceSpan[] = [];
 	let cursor = 0;
 
-	while (cursor < boundedSpans.length) {
+	while (cursor < spans.length) {
 		let end = cursor + 1;
 
-		while (end < boundedSpans.length) {
-			const candidateLength = boundedSpans[end].end - boundedSpans[cursor].start;
+		while (end < spans.length) {
+			const candidateLength = spans[end].end - spans[cursor].start;
 
 			if (candidateLength > RAG_CHUNK_CHARACTER_LIMIT) {
 				break;
@@ -194,26 +187,13 @@ function chunkSentenceSpans(
 			end += 1;
 		}
 
-		const selected = boundedSpans.slice(cursor, end);
-		const startChar = selected[0].start;
-		const endChar = selected[selected.length - 1].end;
-		const chunkContent = getChunkContent(content, startChar, endChar);
+		const start = spans[cursor].start;
+		const windowEnd = spans[end - 1].end;
+		const text = getChunkContent(content, start, windowEnd);
 
-		if (chunkContent && countWords(chunkContent) >= MIN_WORDS) {
-			chunks.push({
-				chunkId: buildChunkId(page, chunkIndex, chunkContent),
-				chunkType: page.chunkType,
-				source: page.source,
-				pageIndex: page.pageIndex,
-				chunkIndex,
-				content: chunkContent,
-				startChar,
-				endChar
-			});
-			chunkIndex += 1;
-		}
+		if (text) windows.push({ text, start, end: windowEnd });
 
-		if (end >= boundedSpans.length) {
+		if (end >= spans.length) {
 			break;
 		}
 
@@ -221,7 +201,20 @@ function chunkSentenceSpans(
 		cursor = Math.max(end - OVERLAP_SENTENCES, cursor + 1);
 	}
 
-	return chunks;
+	return windows;
+}
+
+function chunkSentenceWindows(page: ExtractedChunk, content: string): ParsedChunk[] {
+	return splitSentenceWindows(content)
+		.filter(({ text }) => countWords(text) >= MIN_WORDS)
+		.map(({ text }, chunkIndex) => ({
+			chunkId: buildChunkId(page, chunkIndex, text),
+			chunkType: page.chunkType,
+			source: page.source,
+			pageIndex: page.pageIndex,
+			chunkIndex,
+			content: text
+		}));
 }
 
 function preparePageContent(page: ExtractedChunk): string {
@@ -266,8 +259,7 @@ function chunkPage(page: ExtractedChunk): ParsedChunk[] {
 		});
 	}
 
-	const spans = splitSentencesWithOffsets(content);
-	return chunkSentenceSpans(page, content, spans);
+	return chunkSentenceWindows(page, content);
 }
 
 export function chunkPages(pages: ExtractedChunk[]): ParsedChunk[] {

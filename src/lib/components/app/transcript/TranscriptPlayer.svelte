@@ -7,7 +7,7 @@
 	import { ActionIcon } from '#lib/components/app/actions';
 	import { Button } from '#lib/components/ui/button';
 	import type { ApiTranscriptResponse } from '#lib/types';
-	import TranscriptChunk from './TranscriptChunk.svelte';
+	import TranscriptChunkList from './TranscriptChunkList.svelte';
 	import { formatTimestamp } from './timestamp';
 
 	interface Props {
@@ -174,13 +174,7 @@
 				</p>
 			</header>
 
-			<div class="grid gap-5">
-				{#each chunks as chunk, index (chunk.id)}
-					<div bind:this={rows[index]} class="scroll-my-2">
-						<TranscriptChunk active={index === highlightIndex} {chunk} onSeek={seek} />
-					</div>
-				{/each}
-			</div>
+			<TranscriptChunkList activeIndex={highlightIndex} bind:rows {chunks} onSeek={seek} />
 		</div>
 	</div>
 

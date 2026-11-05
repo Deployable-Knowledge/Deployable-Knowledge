@@ -52,9 +52,8 @@ export async function ingestDocument(
 	const started = Date.now();
 	const extraction = await extract(source, (ratio, message) => report(ratio * 50, message));
 
-	const rawChunks = chunkPages(extraction.chunks);
-	const assembled = assembleChunks(extraction.chunks, rawChunks);
-	const chunks = handler.finalize?.(assembled, extraction) ?? assembled;
+	const chunks =
+		handler.chunk?.(extraction) ?? assembleChunks(extraction.chunks, chunkPages(extraction.chunks));
 
 	if (chunks.length === 0) throw new Error(identity.emptyResultMessage);
 	const shouldEmbed = source.type !== 'CSV';

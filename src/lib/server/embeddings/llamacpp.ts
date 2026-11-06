@@ -11,7 +11,7 @@ import {
 } from '#lib/constants';
 import type { EmbeddingBackend } from '#lib/types';
 import { createLogger } from '#lib/server/logging';
-import { createGgufDownloader } from '#lib/server/providers/llamacpp-runtime';
+import { AUTO_GPU, createGgufDownloader } from '#lib/server/providers/llamacpp-runtime';
 import { INFERENCE_THREADS } from '#lib/server/utils/inference-threads';
 import { EmbeddingProvider, normalizeVector } from './provider';
 
@@ -134,13 +134,13 @@ export class LlamaCppEmbeddingProvider extends EmbeddingProvider {
 		const { getLlama, LlamaLogLevel } = await import('node-llama-cpp');
 		// Error level only: llama.cpp logs a warning for every embedding otherwise.
 		const llama = await getLlama({
-			gpu: device === 'cpu' ? false : 'auto',
+			gpu: device === 'cpu' ? false : AUTO_GPU,
 			logLevel: LlamaLogLevel.error
 		});
 
 		try {
 			if (device === 'gpu' && !llama.gpu) {
-				throw new Error('No GPU (CUDA, Vulkan, or Metal) is available for embeddings.');
+				throw new Error('No GPU (Vulkan or Metal) is available for embeddings.');
 			}
 			const model = await llama.loadModel({
 				modelPath: join(MODELS_DIR, fileName),

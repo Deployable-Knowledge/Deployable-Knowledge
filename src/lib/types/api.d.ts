@@ -15,7 +15,7 @@ import type {
 } from './database';
 import type { WorkspaceLayoutSnapshot } from './workspace';
 
-export type LlamaGpuMode = 'auto' | 'cpu' | 'cuda' | 'vulkan';
+export type LlamaGpuMode = 'auto' | 'cpu' | 'vulkan';
 
 export interface AssistantConfig {
 	provider: string;

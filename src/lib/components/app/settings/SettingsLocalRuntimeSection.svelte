@@ -12,7 +12,6 @@
 	const GPU_LABELS: Record<LlamaGpuMode, string> = {
 		auto: 'Auto (recommended)',
 		cpu: 'CPU only',
-		cuda: 'CUDA (NVIDIA)',
 		vulkan: 'Vulkan'
 	};
 

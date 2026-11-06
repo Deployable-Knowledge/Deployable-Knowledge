@@ -10,21 +10,32 @@ asar: false
 npmRebuild: false
 publish: null
 
+# Keep every pattern here: a platform-level `files` list replaces this one instead of extending it.
 files:
   - build/**
   - drizzle/**
   - electron/*.{cjs,ts}
   - LICENSE
   - THIRD-PARTY-NOTICES.md
+  # transformers.js inlines the ONNX Runtime Web code it needs and runs models on onnxruntime-node.
+  - '!node_modules/onnxruntime-web/**'
+  # onnxruntime-node bundles every platform, in folders named win32, linux and darwin. `${os}` is
+  # the target (win, linux), so the prefix match keeps only its folder. Every model runs on the
+  # CPU execution provider.
+  - '!node_modules/onnxruntime-node/bin/napi-v6/!(${os}*)/**'
+  - '!node_modules/onnxruntime-node/bin/napi-v6/${os}*/!(${arch})/**'
+  - '!node_modules/onnxruntime-node/bin/napi-v6/linux/x64/libonnxruntime_providers_{cuda,tensorrt}.so'
+  # llama.cpp ships without CUDA: its prebuilt binaries need a CUDA Toolkit install to load, and
+  # Vulkan covers NVIDIA GPUs without one. The ARM packages install on x64 hosts too, and every
+  # target below is x64.
+  - '!node_modules/@node-llama-cpp/*-cuda{,-ext}/**'
+  - '!node_modules/@node-llama-cpp/*-{arm64,armv7l}/**'
 
 win:
   target:
     - target: nsis
       arch:
         - x64
-  files:
-    - '!node_modules/onnxruntime-node/bin/napi-v6/{darwin,linux}/**'
-    - '!node_modules/onnxruntime-node/bin/napi-v6/win32/arm64/**'
 
 nsis:
   oneClick: false
@@ -39,9 +50,6 @@ linux:
         - x64
   category: Utility
   maintainer: The Deployable Knowledge contributors
-  files:
-    - '!node_modules/onnxruntime-node/bin/napi-v6/{darwin,win32}/**'
-    - '!node_modules/onnxruntime-node/bin/napi-v6/linux/arm64/**'
 
 deb:
   artifactName: ${productName}-${version}-ubuntu-amd64.${ext}

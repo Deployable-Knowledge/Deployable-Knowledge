@@ -107,7 +107,6 @@
 				'context size',
 				'gpu',
 				'compute device',
-				'cuda',
 				'vulkan',
 				'vulkan gpu',
 				'integrated gpu',
@@ -138,8 +137,7 @@
 				'vulkan',
 				'vulkan gpu',
 				'integrated gpu',
-				'dedicated gpu',
-				'cuda'
+				'dedicated gpu'
 			]
 		},
 		{

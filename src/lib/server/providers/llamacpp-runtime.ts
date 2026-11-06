@@ -2,13 +2,24 @@ import { mkdir, readdir, unlink } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 
-import type { Llama, LlamaChat, LlamaContext, LlamaModel, ModelDownloader } from 'node-llama-cpp';
+import type {
+	Llama,
+	LlamaChat,
+	LlamaContext,
+	LlamaModel,
+	LlamaOptions,
+	ModelDownloader
+} from 'node-llama-cpp';
 
 import type { DownloadableModel, LocalModel } from '#lib/constants/local-models';
 import type { LlamaGpuMode } from '#lib/types';
 import { createLogger } from '#lib/server/logging';
 
 export type SupportedGpuType = Exclude<LlamaGpuMode, 'auto' | 'cpu'>;
+
+// The installers leave out the CUDA binaries (see electron-builder.yml), so development skips
+// CUDA too and behaves like the shipped app.
+export const AUTO_GPU: LlamaOptions['gpu'] = { type: 'auto', exclude: ['cuda'] };
 
 const MODELS_DIR = resolve(process.cwd(), 'models');
 const log = createLogger('models');
@@ -36,7 +47,7 @@ const loadNlc = () => (state.nlc ??= import('node-llama-cpp'));
 
 async function createLlama(gpu: LlamaGpuMode): Promise<Llama> {
 	const mod = await loadNlc();
-	if (gpu === 'auto') return mod.getLlama();
+	if (gpu === 'auto') return mod.getLlama({ gpu: AUTO_GPU });
 	if (gpu === 'cpu') return mod.getLlama({ gpu: false });
 	try {
 		return await mod.getLlama({ gpu });
@@ -68,9 +79,7 @@ async function getLlamaFor(gpu: LlamaGpuMode): Promise<Llama> {
 export function getSupportedGpuTypes(): Promise<SupportedGpuType[]> {
 	return (state.gpuTypes ??= loadNlc()
 		.then((mod) => mod.getLlamaGpuTypes('supported'))
-		.then((types) =>
-			types.filter((type): type is SupportedGpuType => type === 'cuda' || type === 'vulkan')
-		)
+		.then((types) => types.filter((type): type is SupportedGpuType => type === 'vulkan'))
 		.catch(() => []));
 }
 

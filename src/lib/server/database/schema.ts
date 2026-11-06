@@ -206,7 +206,7 @@ export const profiles = sqliteTable(
 		agentMaxTurns: integer('agent_max_turns')
 			.notNull()
 			.default(DEFAULT_ASSISTANT_CONFIG.agentMaxTurns),
-		gpuMode: text('gpu_mode', { enum: ['auto', 'cpu', 'cuda', 'vulkan'] })
+		gpuMode: text('gpu_mode', { enum: ['auto', 'cpu', 'vulkan'] })
 			.notNull()
 			.default(DEFAULT_ASSISTANT_CONFIG.gpuMode),
 		enabledTools: text('enabled_tools', { mode: 'json' })

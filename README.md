@@ -39,8 +39,8 @@ same way, no matter what it started as.
   models are downloaded from settings, and OpenAI-compatible providers are added there too.
 - Ask against the active documents, or against the sources collected in a notebook.
 - The assistant can call tools over several turns: document search, reading a range of chunks,
-  corpus details, goal tracking, Python, and the current date and time.
-- Tool calls, citations, generated data, and images show up inline while it works.
+  corpus details, goal tracking, and the current date and time.
+- Tool calls, citations, and generated data show up inline while it works.
 - A goal checklist tracks multi-part requests, and a context meter shows how much room is left in
   the window before you send.
 
@@ -121,7 +121,7 @@ through whatever you touched.
 | Document processing | pdf-parse, Tesseract.js, Sharp, LibreOffice               |
 | Audio               | FFmpeg, Whisper, WeSpeaker                                |
 | Model providers     | llama.cpp, Ollama, OpenAI-compatible APIs                 |
-| Agent tools         | Search, chunk reading, Pyodide Python, skills, goals      |
+| Agent tools         | Search, chunk reading, skills, goals                      |
 
 ## Architecture
 

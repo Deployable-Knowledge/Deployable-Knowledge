@@ -22,7 +22,7 @@ flowchart TD
     NB --> LLM
     Plain --> LLM
 
-    LLM --> Out["Answer streams in<br/>with sources, charts and activity"]
+    LLM --> Out["Answer streams in<br/>with sources and activity"]
     Out --> Save[("Saved to Chat History")]
 ```
 

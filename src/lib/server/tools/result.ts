@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
 
-import type { ImageArtifact } from '#lib/types';
 import type { SourceArtifact, ToolOutput } from '#lib/types';
 import type { ToolExecutionResult } from './types';
 
@@ -26,16 +25,4 @@ export function sourceOutput(source: SourceArtifact): ToolOutput {
 		type: 'source',
 		data: source
 	};
-}
-
-export function imageOutput(image: ImageArtifact): ToolOutput {
-	return { id: image.id, type: 'image', data: image };
-}
-
-export function textOutput(id: string, data: string, label?: string): ToolOutput {
-	return { id, type: 'text', data, ...(label ? { label } : {}) };
-}
-
-export function dataOutput(id: string, data: unknown, label?: string): ToolOutput {
-	return { id, type: 'data', data, ...(label ? { label } : {}) };
 }

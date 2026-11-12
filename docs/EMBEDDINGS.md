@@ -82,7 +82,7 @@ find "applying a tourniquet" when you search "stop the bleeding".
 - **Switching embedding model** re-embeds everything in the background. Embeddings from
   different models can't be compared, so Semantic search only finds what's been redone so far.
 - **Local-only documents** are only embedded by a local embedding model.
-- **CSV files** aren't embedded. They're found by keyword search, and Python can read them.
+- **CSV files** aren't embedded. They're found by keyword search.
 
 The code is in `src/lib/server/embeddings/` and `src/lib/server/rag/embedding.ts`.
 

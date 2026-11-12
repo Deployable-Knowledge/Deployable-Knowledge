@@ -12,7 +12,6 @@ type CorpusDetailsData = {
 	returned: number;
 	documents: {
 		documentId: string;
-		documentPath: string | null;
 		title: string;
 		sourceType: string;
 	}[];
@@ -22,15 +21,15 @@ type CorpusDetailsData = {
 export const corpusDetailsTool: AgentTool<CorpusDetailsData> = {
 	id: 'corpus_details',
 	label: 'Corpus details',
-	description: 'Lists corpus documents with their titles and paths for Python.',
+	description: 'Lists corpus documents with their titles and source types.',
 	modes: ['document', 'notebook'],
 	instructions: `CORPUS DETAILS POLICY:
 - corpus_details reports what the corpus contains — the document count and document titles — not what the documents say. Use it when the user asks what documents exist, how many there are, or which documents are available.
-- Use the returned path to read a CSV with Python. A null path means the source has no managed file available to Python. Use search for document excerpts and Python for calculations over CSV data.
+- Use search for document excerpts.
 - Titles are returned alphabetically in pages of at most ${MAX_PAGE_SIZE}. When totalDocuments is larger than offset + returned, call again with offset advanced past the titles already seen; only claim a complete list after every page has been read.`,
 	definition: {
 		description:
-			'List documents available in this chat: the total count, titles, source types, and read-only paths for Python, in alphabetical order. Use this to find a CSV path before analyzing it with Python. It does not search document content.',
+			'List documents available in this chat: the total count, titles, and source types, in alphabetical order. It does not search document content.',
 		parameters: {
 			type: 'object',
 			properties: {
@@ -81,7 +80,6 @@ export const corpusDetailsTool: AgentTool<CorpusDetailsData> = {
 			returned: documents.length,
 			documents: documents.map((document) => ({
 				documentId: document.id,
-				documentPath: document.sourceType === 'YOUTUBE' ? null : `/${document.sourcePath}`,
 				title: document.title,
 				sourceType: document.sourceType
 			})),

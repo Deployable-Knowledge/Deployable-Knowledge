@@ -6,13 +6,6 @@ export interface AgentGoal {
 	answer?: string;
 }
 
-export interface ImageArtifact {
-	id: string;
-	mimeType: 'image/png';
-	base64: string;
-	alt: string;
-}
-
 export interface SourceArtifact {
 	url?: string;
 	title?: string;
@@ -26,11 +19,7 @@ export interface SourceArtifact {
 	totalChunks?: number;
 }
 
-export type ToolOutput =
-	| { id: string; type: 'source'; data: SourceArtifact }
-	| { id: string; type: 'image'; data: ImageArtifact }
-	| { id: string; type: 'text'; label?: string; data: string }
-	| { id: string; type: 'data'; label?: string; data: unknown };
+export type ToolOutput = { id: string; type: 'source'; data: SourceArtifact };
 
 export type AgentOutput = ToolOutput & {
 	toolCallId: string;

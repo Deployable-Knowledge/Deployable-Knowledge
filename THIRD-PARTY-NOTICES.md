@@ -87,23 +87,7 @@ from the upstream projects above. The MPL-2.0 text is available at
 
 ---
 
-## 4. Pyodide — Mozilla Public License 2.0
-
-**Component:** `pyodide@314.0.2`, the WebAssembly Python runtime backing the assistant's Python tool
-(`src/lib/server/tools/python.ts`).
-**License:** MPL-2.0. Upstream: <https://github.com/pyodide/pyodide>.
-
-Pyodide embeds CPython, distributed under the Python Software Foundation License 2.0, in
-`python_stdlib.zip` (<https://docs.python.org/3/license.html>).
-
-Pyodide additionally downloads scientific packages **at runtime** into the directory named by
-`PYODIDE_PACKAGE_CACHE_DIR`; these are fetched on demand and are **not** bundled in the installer.
-They include NumPy and pandas (BSD-3-Clause) and Matplotlib (Matplotlib License, a
-BSD-style/PSF-derived license). Each carries its own terms.
-
----
-
-## 5. Tesseract OCR — Apache License 2.0
+## 4. Tesseract OCR — Apache License 2.0
 
 **Components:**
 
@@ -119,7 +103,7 @@ Apache-2.0 §4.
 
 ---
 
-## 6. Models downloaded at runtime
+## 5. Models downloaded at runtime
 
 Model weights and OCR language data are **not** bundled in the installer. The first-run setup page
 downloads them from Hugging Face and GitHub, or they download on first use when setup is skipped.
@@ -153,7 +137,7 @@ By downloading a Gemma model through this application, you agree to those terms.
 
 ---
 
-## 7. Other bundled runtimes
+## 6. Other bundled runtimes
 
 | Component                   | Version | License                                                   |
 | --------------------------- | ------- | --------------------------------------------------------- |
@@ -168,7 +152,7 @@ By downloading a Gemma model through this application, you agree to those terms.
 
 ---
 
-## 8. Permissively licensed dependencies
+## 7. Permissively licensed dependencies
 
 The remaining ~730 packages in the dependency tree are distributed under permissive licenses: MIT,
 ISC, Apache-2.0, BSD-3-Clause, BSD-2-Clause, BlueOak-1.0.0, and single packages under 0BSD,

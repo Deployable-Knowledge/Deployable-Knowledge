@@ -20,7 +20,7 @@ export function messageTrace(agent?: StoredAgentRun): AgentTraceItem[] {
 
 export function sourceChunkIds(message: SessionMessage): string[] {
 	return (messageMetadata(message).outputs ?? []).flatMap((output) =>
-		output.type === 'source' && output.data.chunkId ? [output.data.chunkId] : []
+		output.data.chunkId ? [output.data.chunkId] : []
 	);
 }
 

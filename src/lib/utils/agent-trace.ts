@@ -35,7 +35,7 @@ export function createToolTrace({
 		id,
 		kind: 'tool',
 		title: toolTitle(name, argumentsValue, status),
-		input: toolInput(name, argumentsValue),
+		input: formatTraceValue(argumentsValue),
 		output: toolOutput(name, resultValue, status),
 		status,
 		...(isError ? { isError: true } : {})
@@ -56,8 +56,6 @@ export function legacyToolCallTrace(call: StoredToolCall, index: number): AgentT
 function toolTitle(name: string, argumentsValue: unknown, status: TraceStatus): string {
 	const running = status === 'running';
 	const args = readObject(argumentsValue);
-
-	if (name === 'python') return running ? 'Running Python…' : 'Ran Python';
 
 	if (name === 'search') {
 		const query = typeof args.query === 'string' ? args.query.trim() : '';
@@ -90,12 +88,6 @@ function toolTitle(name: string, argumentsValue: unknown, status: TraceStatus): 
 
 	const label = name.replaceAll('_', ' ');
 	return running ? `Running ${label}…` : `Ran ${label}`;
-}
-
-function toolInput(name: string, argumentsValue: unknown): string {
-	const args = readObject(argumentsValue);
-	if (name === 'python' && typeof args.code === 'string') return args.code;
-	return formatTraceValue(argumentsValue);
 }
 
 function toolOutput(name: string, resultValue: unknown, status: TraceStatus): string {

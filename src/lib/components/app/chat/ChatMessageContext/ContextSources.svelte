@@ -16,11 +16,9 @@
 		'cursor-pointer text-muted-foreground hover:text-foreground'
 	);
 
-	type SourceOutput = Extract<AgentOutput, { type: 'source' }>;
-
 	interface Props {
 		onSaveChunk?: (chunkId: string) => Promise<void> | void;
-		sources: SourceOutput[];
+		sources: AgentOutput[];
 	}
 
 	let { onSaveChunk, sources }: Props = $props();
@@ -36,12 +34,12 @@
 	);
 	const hiddenCount = $derived(sources.length - COLLAPSE_THRESHOLD);
 
-	function hrefFor(output: SourceOutput): string | undefined {
+	function hrefFor(output: AgentOutput): string | undefined {
 		if (!output.data.documentId) return output.data.url;
 		return documentViewerHref(output.data.sourceType, output.data.documentId, output.data);
 	}
 
-	function iconFor(output: SourceOutput) {
+	function iconFor(output: AgentOutput) {
 		if (!output.data.documentId) return Globe;
 		if (output.data.sourceType === 'AUDIO') return AudioLines;
 		if (output.data.sourceType === 'YOUTUBE') return Video;

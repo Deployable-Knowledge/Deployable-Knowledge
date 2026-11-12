@@ -260,12 +260,9 @@ async function resolveToolNames(
 ): Promise<string[]> {
 	if (body.tools_enabled === false || !(await provider.supportsTools(modelId))) return [];
 	const enabled = toolRegistry.filterIds(body.enabled_tools ?? profile?.enabledTools);
-	const names = toolRegistry
+	return toolRegistry
 		.idsForMode(body.conversational ? 'notebook' : 'document')
 		.filter((name) => enabled.includes(name));
-
-	if (names.includes('python') && !names.includes('corpus_details')) names.push('corpus_details');
-	return names;
 }
 
 async function notebookContext(

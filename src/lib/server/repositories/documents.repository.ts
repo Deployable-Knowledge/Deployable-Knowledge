@@ -220,7 +220,7 @@ export class DocumentsRepository {
 		options: ScopedDocumentsOptions & { limit?: number; offset?: number } = {}
 	): Promise<{
 		total: number;
-		documents: Pick<DocumentRow, 'id' | 'title' | 'sourceType' | 'sourcePath'>[];
+		documents: Pick<DocumentRow, 'id' | 'title' | 'sourceType'>[];
 	}> {
 		const where = scopedConditions(options);
 
@@ -228,8 +228,7 @@ export class DocumentsRepository {
 			.select({
 				id: documents.id,
 				title: documents.title,
-				sourceType: documents.sourceType,
-				sourcePath: documents.sourcePath
+				sourceType: documents.sourceType
 			})
 			.from(documents)
 			.where(where)
@@ -241,21 +240,6 @@ export class DocumentsRepository {
 		]);
 
 		return { total, documents: rows };
-	}
-
-	static async files(
-		options: ScopedDocumentsOptions = {}
-	): Promise<Pick<DocumentRow, 'id' | 'title' | 'sourceType' | 'sourcePath'>[]> {
-		return db
-			.select({
-				id: documents.id,
-				title: documents.title,
-				sourceType: documents.sourceType,
-				sourcePath: documents.sourcePath
-			})
-			.from(documents)
-			.where(scopedConditions(options))
-			.orderBy(asc(sql`${documents.title} COLLATE NOCASE`), asc(documents.id));
 	}
 
 	static async exportRecords(documentIds: string[]): Promise<DocumentExportRecord[]> {

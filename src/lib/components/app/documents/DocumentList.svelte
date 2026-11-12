@@ -3,12 +3,8 @@
 	import ClipboardPen from '@lucide/svelte/icons/clipboard-pen';
 	import Files from '@lucide/svelte/icons/files';
 	import FolderSync from '@lucide/svelte/icons/folder-sync';
-	import FolderX from '@lucide/svelte/icons/folder-x';
 	import Plug from '@lucide/svelte/icons/plug';
 	import RefreshCw from '@lucide/svelte/icons/refresh-cw';
-	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
-	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import WandSparkles from '@lucide/svelte/icons/wand-sparkles';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { infiniteScroll } from '#lib/actions';
 	import { ActionIcon } from '#lib/components/app/actions';
@@ -25,6 +21,7 @@
 		DocumentRow,
 		PendingDocument
 	} from '#lib/types';
+	import DocumentGroupMenu from './DocumentGroupMenu.svelte';
 	import DocumentListItem from './DocumentListItem.svelte';
 	import DocumentPendingItem from './DocumentPendingItem.svelte';
 
@@ -62,6 +59,7 @@
 		onAutotagGroup: (group: string) => void;
 		onCreateTag: (document: DocumentRow, tag: string) => Promise<void> | void;
 		onDeleteDocument: (document: DocumentRow) => void;
+		onExportGroup: (group: string, label: string) => void;
 		onLoadMore: (group: string) => void;
 		onReconnectFolder?: (folder: ApiSyncedFolder) => void;
 		onRemoveFolder: (folder: ApiSyncedFolder, removeDocuments: boolean) => void;
@@ -88,6 +86,7 @@
 		onAutotagGroup,
 		onCreateTag,
 		onDeleteDocument,
+		onExportGroup,
 		onLoadMore,
 		onReconnectFolder = () => {},
 		onRemoveFolder,
@@ -183,29 +182,7 @@
 								· <span class="text-destructive">{group.folder.malformedCount} malformed</span>{/if}
 						</div>
 					</div>
-					<ActionIcon
-						class="border-0 bg-transparent shadow-none"
-						disabled={busy || !group.total}
-						label={`Autotag ${group.label}`}
-						size="icon-sm"
-						variant="ghost"
-						onclick={() => onAutotagGroup(group.key)}
-					>
-						<WandSparkles />
-					</ActionIcon>
 					{#if group.folder}
-						{#if group.folder.malformedCount > 0}
-							<ActionIcon
-								class="border-0 bg-transparent text-destructive shadow-none"
-								disabled={busy}
-								label={`Retry ${group.folder.malformedCount} malformed file${group.folder.malformedCount === 1 ? '' : 's'} in ${group.label}`}
-								size="icon-sm"
-								variant="ghost"
-								onclick={() => onRetryFolder(group.folder!)}
-							>
-								<RotateCcw />
-							</ActionIcon>
-						{/if}
 						{#if syncStatuses.get(group.folder.id) === 'handle-missing' || syncStatuses.get(group.folder.id) === 'permission-needed'}
 							<ActionIcon
 								class="border-0 bg-transparent shadow-none"
@@ -228,27 +205,17 @@
 						>
 							<RefreshCw />
 						</ActionIcon>
-						<ActionIcon
-							class="border-0 bg-transparent shadow-none"
-							disabled={busy}
-							label={`Stop watching ${group.label}`}
-							size="icon-sm"
-							variant="ghost"
-							onclick={() => onRemoveFolder(group.folder!, false)}
-						>
-							<FolderX />
-						</ActionIcon>
-						<ActionIcon
-							class="border-0 bg-transparent shadow-none hover:text-destructive"
-							disabled={busy}
-							label={`Remove ${group.label} and its documents`}
-							size="icon-sm"
-							variant="ghost"
-							onclick={() => onRemoveFolder(group.folder!, true)}
-						>
-							<Trash2 />
-						</ActionIcon>
 					{/if}
+					<DocumentGroupMenu
+						{busy}
+						folder={group.folder}
+						label={group.label}
+						total={group.total}
+						onAutotag={() => onAutotagGroup(group.key)}
+						onExport={() => onExportGroup(group.key, group.label)}
+						onRemove={onRemoveFolder}
+						onRetry={onRetryFolder}
+					/>
 					<ActionIcon
 						class={cn(
 							'size-7 border-0 bg-transparent shadow-none',

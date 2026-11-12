@@ -5,6 +5,7 @@ import type {
 	ApiDocumentAutotagEvent,
 	ApiDocumentAutotagRequest,
 	ApiDocumentAutotagResult,
+	ApiDocumentExportRequest,
 	ApiDocumentFolderFileDeleteRequest,
 	ApiDocumentFolderFileDeleteResponse,
 	ApiDocumentFolderMalformedRequest,
@@ -15,7 +16,7 @@ import type {
 	ApiDocumentFolderRetryResponse,
 	ApiDocumentFoldersResponse,
 	ApiDocumentIdsResponse,
-	ApiDocumentIngestEvent,
+	ApiDocumentImportResult,
 	ApiDocumentIngestProgress,
 	ApiDocumentIngestResult,
 	ApiDocumentLocalOnlyRequest,
@@ -24,11 +25,20 @@ import type {
 	ApiDocumentTagAssignmentRequest,
 	ApiDocumentTagRequest,
 	ApiDocumentTagsResponse,
+	ApiDocumentTaskEvent,
 	ApiDocumentTextRequest,
 	ApiDocumentUrlRequest,
 	ApiSyncFileStat
 } from '#lib/types';
-import { apiDelete, apiFetch, apiPatch, apiPost, apiStream, parseNdjsonStream } from '#lib/utils';
+import {
+	apiDelete,
+	apiDownload,
+	apiFetch,
+	apiPatch,
+	apiPost,
+	apiStream,
+	parseNdjsonStream
+} from '#lib/utils';
 
 function searchString(entries: [string, string | number | string[] | undefined][]): string {
 	const params = new URLSearchParams();
@@ -105,6 +115,34 @@ export class DocumentsService {
 			else throw new Error(event.message);
 		}
 		throw new Error('Autotagging ended before completion.');
+	}
+
+	static exportDocuments(documentIds: string[], name?: string) {
+		return apiDownload(API_DOCUMENTS.EXPORT, 'documents.zip', {
+			method: 'POST',
+			body: JSON.stringify({ documentIds, name } satisfies ApiDocumentExportRequest)
+		});
+	}
+
+	static async importPackage(
+		file: File,
+		localOnly: boolean,
+		onProgress?: (progress: ApiDocumentIngestProgress) => void,
+		signal?: AbortSignal
+	): Promise<ApiDocumentImportResult> {
+		const search = searchString([['localOnly', localOnly ? 'true' : undefined]]);
+		const response = await apiStream(`${API_DOCUMENTS.IMPORT}${search}`, {
+			method: 'POST',
+			body: file,
+			headers: { 'Content-Type': 'application/zip' },
+			signal
+		});
+		return this.readTaskStream<ApiDocumentImportResult>(
+			response,
+			'Document import ended before completion.',
+			onProgress,
+			signal
+		);
 	}
 
 	static setActivation(value: ApiDocumentActivationRequest) {
@@ -227,12 +265,26 @@ export class DocumentsService {
 		return apiDelete<{ removed: true }>(API_DOCUMENTS.byId(id));
 	}
 
-	private static async readIngestStream(
+	private static readIngestStream(
 		response: Response,
 		onProgress?: (progress: ApiDocumentIngestProgress) => void,
 		signal?: AbortSignal
 	): Promise<ApiDocumentIngestResult> {
-		for await (const event of parseNdjsonStream<ApiDocumentIngestEvent>(response, signal)) {
+		return this.readTaskStream<ApiDocumentIngestResult>(
+			response,
+			'Document ingestion ended before completion.',
+			onProgress,
+			signal
+		);
+	}
+
+	private static async readTaskStream<TResult>(
+		response: Response,
+		endedEarlyMessage: string,
+		onProgress?: (progress: ApiDocumentIngestProgress) => void,
+		signal?: AbortSignal
+	): Promise<TResult> {
+		for await (const event of parseNdjsonStream<ApiDocumentTaskEvent<TResult>>(response, signal)) {
 			// Hand on the progress fields alone. Passing the event through leaks its
 			// `status` discriminant into callers that carry a status of their own.
 			if (event.status === 'progress') {
@@ -240,6 +292,6 @@ export class DocumentsService {
 			} else if (event.status === 'complete') return event.result;
 			else throw new Error(event.message);
 		}
-		throw new Error('Document ingestion ended before completion.');
+		throw new Error(endedEarlyMessage);
 	}
 }

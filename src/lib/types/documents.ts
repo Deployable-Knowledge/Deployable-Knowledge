@@ -4,3 +4,8 @@ export interface PendingDocument {
 	group: string;
 	title: string;
 }
+
+export interface DocumentExportResult {
+	count: number;
+	filename: string;
+}

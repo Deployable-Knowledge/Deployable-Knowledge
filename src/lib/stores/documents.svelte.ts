@@ -5,11 +5,13 @@ import { DEFAULT_DOCUMENT_SORT } from '#lib/utils';
 import type {
 	ApiDocumentAutotagEntry,
 	ApiDocumentAutotagResult,
+	ApiDocumentImportResult,
 	ApiDocumentIngestProgress,
 	ApiDocumentIngestResult,
 	ApiDocumentListQuery,
 	ApiDocumentListResponse,
 	ApiSyncedFolder,
+	DocumentExportResult,
 	DocumentListMode,
 	DocumentSortMode,
 	PendingDocument
@@ -31,9 +33,9 @@ interface DocumentGroupPage extends ApiDocumentListResponse {
 	offset: number;
 }
 
-type IngestRequest = (
+type IngestRequest<TResult = ApiDocumentIngestResult> = (
 	onProgress: (progress: ApiDocumentIngestProgress) => void
-) => Promise<ApiDocumentIngestResult>;
+) => Promise<TResult>;
 
 class DocumentsStore {
 	private _pages = $state.raw<Record<string, DocumentGroupPage>>({});
@@ -58,6 +60,7 @@ class DocumentsStore {
 	autotagProgress = $state<ApiDocumentIngestProgress | null>(null);
 	syncing = $state(false);
 	autotagging = $state(false);
+	exporting = $state(false);
 	loading = $state(false);
 	error = $state<string | null>(null);
 
@@ -266,6 +269,26 @@ class DocumentsStore {
 		return this.autotagDocuments(ids);
 	}
 
+	async exportDocuments(
+		documentIds: string[],
+		name?: string
+	): Promise<DocumentExportResult | null> {
+		if (this.exporting || documentIds.length === 0) return null;
+		this.exporting = true;
+		try {
+			const filename = await DocumentsService.exportDocuments(documentIds, name);
+			return { count: documentIds.length, filename };
+		} finally {
+			this.exporting = false;
+		}
+	}
+
+	async exportGroup(group: string, name: string): Promise<DocumentExportResult | null> {
+		if (this.exporting) return null;
+		const { ids } = await DocumentsService.listIds({ ...this.listQuery(), group });
+		return this.exportDocuments(ids, name);
+	}
+
 	async setActivation(documentIds: string[] | null, active: boolean): Promise<void> {
 		await DocumentsService.setActivation(documentIds ? { documentIds, active } : { active });
 		await this.refresh();
@@ -322,16 +345,24 @@ class DocumentsStore {
 		);
 	}
 
+	importPackage(file: File): Promise<ApiDocumentImportResult> {
+		const [entry] = this.enqueueDocuments('individual', [file.name]);
+		const localOnly = this._addLocalOnly;
+		return this.ingestPending(entry, (onProgress) =>
+			DocumentsService.importPackage(file, localOnly, onProgress)
+		);
+	}
+
 	enqueueDocuments(group: string, titles: string[]): PendingDocument[] {
 		const entries = titles.map((title) => ({ key: crypto.randomUUID(), group, title }));
 		if (entries.length) this._pending = [...this._pending, ...entries];
 		return entries;
 	}
 
-	async ingestPending(
+	async ingestPending<TResult = ApiDocumentIngestResult>(
 		entry: PendingDocument,
-		ingest: IngestRequest
-	): Promise<ApiDocumentIngestResult> {
+		ingest: IngestRequest<TResult>
+	): Promise<TResult> {
 		this._ingestProgress.set(entry.key, { percent: 0, label: 'Ingesting', message: 'Starting' });
 		try {
 			const result = await ingest((progress) => this._ingestProgress.set(entry.key, progress));

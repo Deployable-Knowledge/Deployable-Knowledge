@@ -80,6 +80,14 @@ class FolderSyncEngine {
 		}
 	}
 
+	markUnconnectedFolders(): void {
+		if (!this.initialized) return;
+		const status: FolderSyncStatus = this.supported ? 'handle-missing' : 'unsupported';
+		for (const { id } of documentsStore.folders) {
+			if (!this.handles.has(id) && !this._statuses.has(id)) this._statuses.set(id, status);
+		}
+	}
+
 	async addFolder(handle: FileSystemDirectoryHandle): Promise<ApiDocumentSyncResult | null> {
 		const id = crypto.randomUUID();
 		await putFolder({ id, name: handle.name, handle });

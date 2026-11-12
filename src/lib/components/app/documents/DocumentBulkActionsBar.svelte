@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Cloud from '@lucide/svelte/icons/cloud';
 	import CloudOff from '@lucide/svelte/icons/cloud-off';
+	import Download from '@lucide/svelte/icons/download';
 	import Power from '@lucide/svelte/icons/power';
 	import PowerOff from '@lucide/svelte/icons/power-off';
 	import Tag from '@lucide/svelte/icons/tag';
@@ -13,12 +14,21 @@
 		onAllowAll: () => void;
 		onApplyTag: () => void;
 		onDeactivate: () => void;
+		onExport: () => void;
 		onKeepLocal: () => void;
 		onRemoveTag: () => void;
 	}
 
-	let { count, onActivate, onAllowAll, onApplyTag, onDeactivate, onKeepLocal, onRemoveTag }: Props =
-		$props();
+	let {
+		count,
+		onActivate,
+		onAllowAll,
+		onApplyTag,
+		onDeactivate,
+		onExport,
+		onKeepLocal,
+		onRemoveTag
+	}: Props = $props();
 </script>
 
 {#if count > 0}
@@ -30,5 +40,6 @@
 		<Button variant="outline" size="sm" onclick={onDeactivate}><PowerOff /> Deactivate</Button>
 		<Button variant="outline" size="sm" onclick={onKeepLocal}><CloudOff /> Local only</Button>
 		<Button variant="outline" size="sm" onclick={onAllowAll}><Cloud /> Allow all</Button>
+		<Button variant="outline" size="sm" onclick={onExport}><Download /> Export</Button>
 	</div>
 {/if}

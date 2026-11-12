@@ -21,7 +21,14 @@ export async function writeManagedArtifacts(
 ): Promise<void> {
 	const artifact = handler.convert ? await handler.convert.run(originalBuffer) : originalBuffer;
 	await writeFile(managedPath, artifact);
+	await writePreviewArtifact(handler, originalBuffer, managedPath);
+}
 
+export async function writePreviewArtifact(
+	handler: SourceTypeHandler,
+	originalBuffer: Buffer,
+	managedPath: string
+): Promise<void> {
 	if (!handler.preview) return;
 	try {
 		await writeFile(previewPathFor(managedPath), await handler.preview.run(originalBuffer));

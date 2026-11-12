@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ClipboardPen from '@lucide/svelte/icons/clipboard-pen';
 	import CloudOff from '@lucide/svelte/icons/cloud-off';
+	import FileArchive from '@lucide/svelte/icons/file-archive';
 	import FilePlus from '@lucide/svelte/icons/file-plus';
 	import FolderPlus from '@lucide/svelte/icons/folder-plus';
 	import Plus from '@lucide/svelte/icons/plus';
@@ -21,7 +22,13 @@
 	import * as Tooltip from '#lib/components/ui/tooltip';
 	import { INGESTABLE_FILE_ACCEPT, INGESTABLE_FILE_EXTENSIONS } from '#lib/constants';
 	import { documentsStore } from '#lib/stores';
-	import type { ApiDocumentSyncResult, ApiSyncedFolder, DocumentRow } from '#lib/types';
+	import type {
+		ApiDocumentImportResult,
+		ApiDocumentSyncResult,
+		ApiSyncedFolder,
+		DocumentExportResult,
+		DocumentRow
+	} from '#lib/types';
 	import {
 		FOLDER_SYNC_UNSUPPORTED_MESSAGE,
 		pickDirectory,
@@ -73,7 +80,11 @@
 	let status = $state('');
 
 	const busy = $derived(
-		uploading || documentsStore.loading || documentsStore.syncing || documentsStore.autotagging
+		uploading ||
+			documentsStore.loading ||
+			documentsStore.syncing ||
+			documentsStore.autotagging ||
+			documentsStore.exporting
 	);
 	const selectedCount = $derived(documentsStore.selectedIds.size);
 	const folderSyncSupported = supportsFolderSync();
@@ -105,6 +116,46 @@
 			if (succeeded) toast.success(`${succeeded} file${succeeded === 1 ? '' : 's'} ingested`);
 		} finally {
 			uploading = false;
+		}
+	}
+
+	async function importPackage(): Promise<void> {
+		const [file] = await pickFiles({
+			extensions: ['.zip'],
+			accept: { 'application/zip': ['.zip'] },
+			description: 'Exported documents'
+		});
+
+		if (!file) return;
+
+		uploading = true;
+
+		try {
+			reportImport(await documentsStore.importPackage(file));
+			folderSyncEngine.markUnconnectedFolders();
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : String(error));
+		} finally {
+			uploading = false;
+		}
+	}
+
+	function reportImport({ imported, skipped, failed }: ApiDocumentImportResult): void {
+		const summary = [`Imported ${imported} document${imported === 1 ? '' : 's'}`];
+		if (skipped) summary.push(`${skipped} already in the library`);
+		if (failed.length) summary.push(`${failed.length} failed`);
+		status = `${summary.join('; ')}.`;
+
+		if (imported) {
+			toast.success(summary[0]);
+		} else if (skipped && !failed.length) {
+			toast.info('Every document is already in the library');
+		}
+
+		if (failed.length) {
+			const [{ title, message }] = failed;
+			const more = failed.length > 1 ? ` (and ${failed.length - 1} more)` : '';
+			toast.error(`Couldn't import “${title}”: ${message}${more}`);
 		}
 	}
 
@@ -282,6 +333,29 @@
 		}
 	}
 
+	function reportExport(result: DocumentExportResult | null): void {
+		if (!result) return;
+		const documents = `${result.count} document${result.count === 1 ? '' : 's'}`;
+		status = `Exported ${documents} to ${result.filename}.`;
+		toast.success(`Exported ${documents}`);
+	}
+
+	async function exportSelected(): Promise<void> {
+		try {
+			reportExport(await documentsStore.exportDocuments([...documentsStore.selectedIds]));
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : String(error));
+		}
+	}
+
+	async function exportGroup(group: string, label: string): Promise<void> {
+		try {
+			reportExport(await documentsStore.exportGroup(group, label));
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : String(error));
+		}
+	}
+
 	async function bulkSetActivation(active: boolean): Promise<void> {
 		try {
 			await documentsStore.setActivation([...documentsStore.selectedIds], active);
@@ -409,6 +483,7 @@
 				onAllowAll={() => void bulkSetLocalOnly(false)}
 				onApplyTag={() => openBulkPicker('add')}
 				onDeactivate={() => void bulkSetActivation(false)}
+				onExport={() => void exportSelected()}
 				onKeepLocal={() => void bulkSetLocalOnly(true)}
 				onRemoveTag={() => openBulkPicker('remove')}
 			/>
@@ -421,6 +496,7 @@
 				onAutotagGroup={(group) => void autotagGroup(group)}
 				onCreateTag={(document, tag) => createAndAssignTag(document, tag)}
 				onDeleteDocument={(document) => (pendingDeleteDocument = document)}
+				onExportGroup={(group, label) => void exportGroup(group, label)}
 				onLoadMore={(group) => void documentsStore.loadMore(group)}
 				onReconnectFolder={(folder) => void reconnectFolder(folder)}
 				onRemoveFolder={(folder, removeDocuments) =>
@@ -475,6 +551,9 @@
 					</DropdownMenu.Item>
 					<DropdownMenu.Item onclick={() => (youtubeEntryOpen = true)}>
 						<Video /> Add video
+					</DropdownMenu.Item>
+					<DropdownMenu.Item onclick={() => void importPackage()}>
+						<FileArchive /> Import zip
 					</DropdownMenu.Item>
 					<DropdownMenu.Separator />
 					<DropdownMenu.CheckboxItem

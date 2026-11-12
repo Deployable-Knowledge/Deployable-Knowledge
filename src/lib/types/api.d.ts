@@ -87,13 +87,33 @@ export interface ApiDocumentIngestResult {
 	chunkCount: number;
 }
 
-export type ApiDocumentIngestEvent =
+export type ApiDocumentTaskEvent<TResult> =
 	| ({ status: 'progress' } & ApiDocumentIngestProgress)
-	| { status: 'complete'; result: ApiDocumentIngestResult }
+	| { status: 'complete'; result: TResult }
 	| { status: 'error'; message: string };
+
+export type ApiDocumentIngestEvent = ApiDocumentTaskEvent<ApiDocumentIngestResult>;
 
 export interface ApiDocumentAutotagRequest {
 	documentIds: string[];
+}
+
+export interface ApiDocumentImportFailure {
+	title: string;
+	message: string;
+}
+
+export interface ApiDocumentImportResult {
+	imported: number;
+	skipped: number;
+	failed: ApiDocumentImportFailure[];
+}
+
+export type ApiDocumentImportEvent = ApiDocumentTaskEvent<ApiDocumentImportResult>;
+
+export interface ApiDocumentExportRequest {
+	documentIds: string[];
+	name?: string;
 }
 
 export type ApiDocumentAutotagStatus = 'tagged' | 'unchanged' | 'skipped';

@@ -9,13 +9,12 @@ import {
 	type NewDocumentChunk
 } from '../database/schema';
 import { createLogger } from '../logging';
-import { DocumentsRepository } from '../repositories';
+import { ChunksRepository, DocumentsRepository } from '../repositories';
 import type { ParsedChunk } from './chunk/parse-shared';
 import { embedTexts, getActiveEmbedding } from './embedding-model';
 import { putChunkVectors, removeDocumentVectors } from './search/vector-index';
 import type { VectorIndexRow } from './search/vector-store';
 
-const INSERT_BATCH_SIZE = 100; //Can adjust later
 // Embed in bounded slices so a huge document never holds every raw vector at once
 const EMBED_SLICE_SIZE = 256;
 const REFRESH_BATCH_SIZE = 128;
@@ -39,16 +38,20 @@ export type StoreDocumentProgress = {
 };
 
 // SQLite DB stores embeddings as bytes, however semantic search reads them back as Float32 vectors
-function embeddingToBuffer(values: Float32Array): Buffer {
+export function embeddingToBuffer(values: Float32Array): Buffer {
 	return Buffer.from(values.buffer, values.byteOffset, values.byteLength);
 }
 
 // The document id is path based so reingesting the same file replaces the same document. Prevents duplicate documents!
+export function documentIdFor(sourcePath: string): string {
+	return createHash('sha256').update(sourcePath).digest('hex');
+}
+
 function buildDocumentRow(chunks: ParsedChunk[], now: string): NewDocument {
 	const source = chunks[0].source;
 
 	return {
-		id: createHash('sha256').update(source.path).digest('hex'),
+		id: documentIdFor(source.path),
 		title: source.title,
 		sourcePath: source.path,
 		sourceType: source.type,
@@ -122,15 +125,9 @@ export async function storeDocumentChunks(
 
 		await tx.delete(documentChunks).where(eq(documentChunks.documentId, documentRow.id));
 
-		// Batch SQL inserts so large PDFs do not break the code
-		for (let index = 0; index < chunkRows.length; index += INSERT_BATCH_SIZE) {
-			await tx.insert(documentChunks).values(chunkRows.slice(index, index + INSERT_BATCH_SIZE));
-			onProgress?.({
-				stage: 'storing',
-				current: Math.min(index + INSERT_BATCH_SIZE, chunkRows.length),
-				total: chunkRows.length
-			});
-		}
+		await ChunksRepository.insertBatched(tx, chunkRows, (inserted) =>
+			onProgress?.({ stage: 'storing', current: inserted, total: chunkRows.length })
+		);
 	});
 
 	removeDocumentVectors(documentRow.id);

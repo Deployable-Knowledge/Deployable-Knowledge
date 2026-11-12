@@ -1,11 +1,16 @@
-import { and, count, eq } from 'drizzle-orm';
+import { and, asc, count, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import { databaseClient, db } from '#lib/server/database/database';
 import {
 	documentChunks,
 	documents,
 	type Document,
-	type DocumentChunk
+	type DocumentChunk,
+	type NewDocumentChunk
 } from '#lib/server/database/schema';
+
+const INSERT_BATCH_SIZE = 100;
+
+export type ChunkWriter = Pick<typeof db, 'insert'>;
 
 export type ChunkWindowChunk = {
 	chunkId: string;
@@ -24,7 +29,78 @@ export type ChunkWindow = {
 	chunks: ChunkWindowChunk[];
 };
 
+export type ExportChunk = Pick<
+	DocumentChunk,
+	| 'id'
+	| 'chunkIndex'
+	| 'pageIndex'
+	| 'chunkType'
+	| 'content'
+	| 'startMs'
+	| 'endMs'
+	| 'speaker'
+	| 'embedding'
+	| 'embeddingModel'
+>;
+
+export type EmbeddingSummary = {
+	documentId: string;
+	minBytes: number;
+	maxBytes: number;
+};
+
 export class ChunksRepository {
+	static async insertBatched(
+		writer: ChunkWriter,
+		rows: NewDocumentChunk[],
+		onBatch?: (inserted: number) => void
+	): Promise<void> {
+		for (let index = 0; index < rows.length; index += INSERT_BATCH_SIZE) {
+			await writer.insert(documentChunks).values(rows.slice(index, index + INSERT_BATCH_SIZE));
+			onBatch?.(Math.min(index + INSERT_BATCH_SIZE, rows.length));
+		}
+	}
+
+	static forExport(documentId: string): Promise<ExportChunk[]> {
+		return db
+			.select({
+				id: documentChunks.id,
+				chunkIndex: documentChunks.chunkIndex,
+				pageIndex: documentChunks.pageIndex,
+				chunkType: documentChunks.chunkType,
+				content: documentChunks.content,
+				startMs: documentChunks.startMs,
+				endMs: documentChunks.endMs,
+				speaker: documentChunks.speaker,
+				embedding: documentChunks.embedding,
+				embeddingModel: documentChunks.embeddingModel
+			})
+			.from(documentChunks)
+			.where(eq(documentChunks.documentId, documentId))
+			.orderBy(asc(documentChunks.pageIndex), asc(documentChunks.chunkIndex));
+	}
+
+	static embeddingSummary(
+		documentIds: string[],
+		embeddingModel: string
+	): Promise<EmbeddingSummary[]> {
+		return db
+			.select({
+				documentId: documentChunks.documentId,
+				minBytes: sql<number>`min(length(${documentChunks.embedding}))`,
+				maxBytes: sql<number>`max(length(${documentChunks.embedding}))`
+			})
+			.from(documentChunks)
+			.where(
+				and(
+					inArray(documentChunks.documentId, documentIds),
+					eq(documentChunks.embeddingModel, embeddingModel),
+					isNotNull(documentChunks.embedding)
+				)
+			)
+			.groupBy(documentChunks.documentId);
+	}
+
 	static async window(
 		documentId: string,
 		start: number,

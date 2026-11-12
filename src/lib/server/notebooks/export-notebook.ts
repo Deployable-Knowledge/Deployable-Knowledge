@@ -1,18 +1,6 @@
 import AdmZip from 'adm-zip';
 import type { NotebookPage, NotebookWithPages } from '#lib/types';
-
-function filenameBase(title: string, fallback: string): string {
-	return (
-		title
-			.normalize('NFKD')
-			.replace(/[\u0300-\u036f]/g, '')
-			.toLowerCase()
-			.replace(/[^a-z0-9]+/g, '-')
-			.replace(/^-+|-+$/g, '')
-			.slice(0, 80)
-			.replace(/-+$/g, '') || fallback
-	);
-}
+import { filenameSlug } from '#lib/server/utils/filename';
 
 export function notebookPageMarkdown(page: Pick<NotebookPage, 'content' | 'title'>): string {
 	const content = page.content.trimEnd();
@@ -20,7 +8,7 @@ export function notebookPageMarkdown(page: Pick<NotebookPage, 'content' | 'title
 }
 
 export function notebookPageMarkdownFilename(title: string): string {
-	return `${filenameBase(title, 'notebook-page')}.md`;
+	return `${filenameSlug(title, 'notebook-page')}.md`;
 }
 
 export function notebookZip(notebook: NotebookWithPages): ArrayBuffer {
@@ -28,7 +16,7 @@ export function notebookZip(notebook: NotebookWithPages): ArrayBuffer {
 	const usedNames = new Set<string>();
 
 	notebook.pages.forEach((page, index) => {
-		const base = filenameBase(page.title, `page-${index + 1}`);
+		const base = filenameSlug(page.title, `page-${index + 1}`);
 		let filename = `${base}.md`;
 		let suffix = 2;
 
@@ -46,5 +34,5 @@ export function notebookZip(notebook: NotebookWithPages): ArrayBuffer {
 }
 
 export function notebookZipFilename(title: string): string {
-	return `${filenameBase(title, 'notebook')}.zip`;
+	return `${filenameSlug(title, 'notebook')}.zip`;
 }

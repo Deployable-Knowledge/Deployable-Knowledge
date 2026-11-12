@@ -19,7 +19,49 @@ import type {
 	DocumentSortMode
 } from '#lib/types';
 import { db } from '#lib/server/database/database';
-import { documentChunks, documentTags, documents, syncedFiles } from '#lib/server/database/schema';
+import {
+	documentChunks,
+	documentTags,
+	documents,
+	syncedFiles,
+	syncedFolders,
+	tags,
+	type Document,
+	type NewDocument,
+	type NewDocumentChunk
+} from '#lib/server/database/schema';
+import { ChunksRepository } from './chunks.repository';
+
+export interface SyncedFromFolder {
+	folderId: string;
+	folderName: string;
+	relativePath: string;
+	lastModified: number;
+	size: number;
+}
+
+export interface DocumentInsert {
+	document: NewDocument;
+	tags: string[];
+	chunks: NewDocumentChunk[];
+	syncedFrom: SyncedFromFolder | null;
+}
+
+export type DocumentExportRecord = Pick<
+	Document,
+	| 'id'
+	| 'title'
+	| 'sourcePath'
+	| 'sourceType'
+	| 'origin'
+	| 'active'
+	| 'localOnly'
+	| 'createdAt'
+	| 'updatedAt'
+> & {
+	tags: string[];
+	syncedFrom: SyncedFromFolder | null;
+};
 
 function likePattern(token: string): string {
 	return `%${token.replace(/[\\%_]/g, '\\$&')}%`;
@@ -214,6 +256,91 @@ export class DocumentsRepository {
 			.from(documents)
 			.where(scopedConditions(options))
 			.orderBy(asc(sql`${documents.title} COLLATE NOCASE`), asc(documents.id));
+	}
+
+	static async exportRecords(documentIds: string[]): Promise<DocumentExportRecord[]> {
+		const [rows, tagRows, folderRows] = await Promise.all([
+			db
+				.select({
+					id: documents.id,
+					title: documents.title,
+					sourcePath: documents.sourcePath,
+					sourceType: documents.sourceType,
+					origin: documents.origin,
+					active: documents.active,
+					localOnly: documents.localOnly,
+					createdAt: documents.createdAt,
+					updatedAt: documents.updatedAt
+				})
+				.from(documents)
+				.where(inArray(documents.id, documentIds))
+				.orderBy(asc(sql`${documents.title} COLLATE NOCASE`), asc(documents.id)),
+			db
+				.select({ documentId: documentTags.documentId, tag: documentTags.tag })
+				.from(documentTags)
+				.where(inArray(documentTags.documentId, documentIds))
+				.orderBy(asc(documentTags.tag)),
+			db
+				.select({
+					documentId: syncedFiles.documentId,
+					folderId: syncedFiles.folderId,
+					folderName: syncedFolders.name,
+					relativePath: syncedFiles.relativePath,
+					lastModified: syncedFiles.lastModified,
+					size: syncedFiles.size
+				})
+				.from(syncedFiles)
+				.innerJoin(syncedFolders, eq(syncedFolders.id, syncedFiles.folderId))
+				.where(inArray(syncedFiles.documentId, documentIds))
+		]);
+
+		const tagsByDocument = Map.groupBy(tagRows, ({ documentId }) => documentId);
+		const folderByDocument = new Map(
+			folderRows.map(({ documentId, ...syncedFrom }) => [documentId, syncedFrom])
+		);
+
+		return rows.map((row) => ({
+			...row,
+			tags: tagsByDocument.get(row.id)?.map(({ tag }) => tag) ?? [],
+			syncedFrom: folderByDocument.get(row.id) ?? null
+		}));
+	}
+
+	static async insertDocument({
+		document,
+		tags: tagNames,
+		chunks,
+		syncedFrom
+	}: DocumentInsert): Promise<void> {
+		const createdAt = new Date().toISOString();
+		await db.transaction(async (tx) => {
+			await tx.insert(documents).values(document);
+			if (tagNames.length) {
+				await tx
+					.insert(tags)
+					.values(tagNames.map((name) => ({ name, createdAt })))
+					.onConflictDoNothing();
+				await tx
+					.insert(documentTags)
+					.values(tagNames.map((tag) => ({ documentId: document.id, tag })));
+			}
+			await ChunksRepository.insertBatched(tx, chunks);
+			if (!syncedFrom) return;
+
+			await tx
+				.insert(syncedFolders)
+				.values({ id: syncedFrom.folderId, name: syncedFrom.folderName, createdAt })
+				.onConflictDoNothing();
+			await tx.insert(syncedFiles).values({
+				folderId: syncedFrom.folderId,
+				relativePath: syncedFrom.relativePath,
+				managedPath: document.sourcePath,
+				documentId: document.id,
+				lastModified: syncedFrom.lastModified,
+				size: syncedFrom.size,
+				state: 'synced'
+			});
+		});
 	}
 
 	static async hasLocalOnly(documentIds?: string[]): Promise<boolean> {

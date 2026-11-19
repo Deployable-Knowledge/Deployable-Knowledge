@@ -4,7 +4,7 @@ export interface CrossEncoder {
 	readonly id: string;
 	readonly name: string;
 
-	isInstalled(): Promise<boolean>;
+	isInstalled(): boolean;
 	prepare(onProgress: DownloadProgressHandler): Promise<void>;
 	predict(query: string, passages: readonly string[]): Promise<readonly number[]>;
 }

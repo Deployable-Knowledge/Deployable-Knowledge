@@ -1,13 +1,12 @@
 import {
 	AutoFeatureExtractor,
 	AutoModel,
-	ModelRegistry,
 	type ProgressCallback,
 	type Tensor
 } from '@huggingface/transformers';
 import type { TranscriptSegment } from './transcription-model';
 import { INFERENCE_THREADS } from '#lib/server/utils/inference-threads';
-import { TRANSFORMERS_CACHE_DIR } from '#lib/server/utils/transformers-env';
+import { cachedModel } from '#lib/server/utils/transformers-env';
 
 export const SPEAKER_EMBEDDING_MODEL = 'onnx-community/wespeaker-voxceleb-resnet34-LM';
 
@@ -18,6 +17,12 @@ const MIN_CLUSTER_MS = 1500;
 const MAX_CLUSTER_SEGMENTS = 500;
 const MIN_CLUSTER_SIMILARITY = 0.45;
 const MIN_SPEAKER_MS = 40_000;
+
+const SPEAKER_MODEL = cachedModel(SPEAKER_EMBEDDING_MODEL, [
+	'config.json',
+	'preprocessor_config.json',
+	'onnx/model.onnx'
+]);
 
 type FeatureExtractor = Awaited<ReturnType<typeof AutoFeatureExtractor.from_pretrained>>;
 
@@ -37,11 +42,12 @@ type SegmentEmbedding = {
 let runtimePromise: Promise<SpeakerRuntime> | undefined;
 
 async function loadRuntime(progress_callback?: ProgressCallback): Promise<SpeakerRuntime> {
-	const options = { cache_dir: TRANSFORMERS_CACHE_DIR, progress_callback };
+	const source = SPEAKER_MODEL.source();
+	const options = { ...source.options, progress_callback };
 
 	const [extractor, model] = await Promise.all([
-		AutoFeatureExtractor.from_pretrained(SPEAKER_EMBEDDING_MODEL, options),
-		AutoModel.from_pretrained(SPEAKER_EMBEDDING_MODEL, {
+		AutoFeatureExtractor.from_pretrained(source.nameOrPath, options),
+		AutoModel.from_pretrained(source.nameOrPath, {
 			...options,
 			session_options: { intraOpNumThreads: INFERENCE_THREADS, interOpNumThreads: 1 }
 		})
@@ -49,8 +55,8 @@ async function loadRuntime(progress_callback?: ProgressCallback): Promise<Speake
 	return { extractor, model };
 }
 
-export function isSpeakerModelInstalled(): Promise<boolean> {
-	return ModelRegistry.is_cached(SPEAKER_EMBEDDING_MODEL, { cache_dir: TRANSFORMERS_CACHE_DIR });
+export function isSpeakerModelInstalled(): boolean {
+	return SPEAKER_MODEL.isInstalled();
 }
 
 export async function installSpeakerModel(progress_callback: ProgressCallback): Promise<void> {

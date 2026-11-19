@@ -1,7 +1,6 @@
 import {
 	AutoModelForSequenceClassification,
 	AutoTokenizer,
-	ModelRegistry,
 	type Tensor
 } from '@huggingface/transformers';
 import { createLogger } from '#lib/server/logging';
@@ -11,12 +10,19 @@ import {
 	type DownloadProgressHandler
 } from '#lib/server/utils/download-progress';
 import { INFERENCE_THREADS } from '#lib/server/utils/inference-threads';
-import { TRANSFORMERS_CACHE_DIR } from '#lib/server/utils/transformers-env';
+import { cachedModel } from '#lib/server/utils/transformers-env';
 import { sigmoidScore, type CrossEncoder } from './cross-encoder';
 
 const MODEL_ID = 'Xenova/ms-marco-MiniLM-L-6-v2';
 const MAX_LENGTH = 512;
 const BATCH_SIZE = 32;
+
+const MODEL = cachedModel(MODEL_ID, [
+	'config.json',
+	'tokenizer.json',
+	'tokenizer_config.json',
+	'onnx/model.onnx'
+]);
 
 const log = createLogger('search');
 
@@ -37,8 +43,8 @@ export class MsMarco implements CrossEncoder {
 
 	private runtimePromise: Promise<MsMarcoRuntime> | undefined;
 
-	isInstalled(): Promise<boolean> {
-		return ModelRegistry.is_cached(MODEL_ID, { cache_dir: TRANSFORMERS_CACHE_DIR });
+	isInstalled(): boolean {
+		return MODEL.isInstalled();
 	}
 
 	async prepare(onProgress: DownloadProgressHandler): Promise<void> {
@@ -72,16 +78,14 @@ export class MsMarco implements CrossEncoder {
 		if (!this.runtimePromise) {
 			const started = Date.now();
 			const progress_callback = transformersProgress(combineFileProgress(onProgress));
+			const { nameOrPath, options } = MODEL.source();
 
 			log.info('Loading reranker', { model: this.name });
 
 			this.runtimePromise = Promise.all([
-				AutoTokenizer.from_pretrained(MODEL_ID, {
-					cache_dir: TRANSFORMERS_CACHE_DIR,
-					progress_callback
-				}),
-				AutoModelForSequenceClassification.from_pretrained(MODEL_ID, {
-					cache_dir: TRANSFORMERS_CACHE_DIR,
+				AutoTokenizer.from_pretrained(nameOrPath, { ...options, progress_callback }),
+				AutoModelForSequenceClassification.from_pretrained(nameOrPath, {
+					...options,
 					progress_callback,
 					session_options: {
 						intraOpNumThreads: INFERENCE_THREADS,

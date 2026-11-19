@@ -29,7 +29,6 @@
 		const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
 		try {
-			if (!navigator.onLine) throw new Error('Browser is offline');
 			const response = await fetch(resolve('/(app)/heartbeat'), {
 				cache: 'no-store',
 				headers: { Accept: 'application/json' },
@@ -49,12 +48,6 @@
 	}
 
 	onMount(() => {
-		const handleOnline = () => void checkHeartbeat();
-		// The browser reporting itself offline is authoritative, so skip the count
-		const handleOffline = () => {
-			failures = FAILURE_THRESHOLD;
-			lastCheckedAt = new Date().toISOString();
-		};
 		// Coming back from a hidden tab or a sleeping machine starts clean rather
 		// than showing a banner for polls that never really ran
 		const handleVisibility = () => {
@@ -65,14 +58,10 @@
 
 		void checkHeartbeat();
 		const interval = window.setInterval(() => void checkHeartbeat(), POLL_INTERVAL_MS);
-		window.addEventListener('online', handleOnline);
-		window.addEventListener('offline', handleOffline);
 		document.addEventListener('visibilitychange', handleVisibility);
 
 		return () => {
 			window.clearInterval(interval);
-			window.removeEventListener('online', handleOnline);
-			window.removeEventListener('offline', handleOffline);
 			document.removeEventListener('visibilitychange', handleVisibility);
 		};
 	});

@@ -1,10 +1,4 @@
-import {
-	AutoConfig,
-	AutoModel,
-	AutoTokenizer,
-	ModelRegistry,
-	type Tensor
-} from '@huggingface/transformers';
+import { AutoModel, AutoTokenizer, type Tensor } from '@huggingface/transformers';
 import { createLogger } from '#lib/server/logging';
 import {
 	combineFileProgress,
@@ -12,7 +6,7 @@ import {
 	type DownloadProgressHandler
 } from '#lib/server/utils/download-progress';
 import { INFERENCE_THREADS } from '#lib/server/utils/inference-threads';
-import { TRANSFORMERS_CACHE_DIR } from '#lib/server/utils/transformers-env';
+import { cachedModel } from '#lib/server/utils/transformers-env';
 import {
 	isEttinHeadInstalled,
 	loadEttinHeadWeights,
@@ -27,18 +21,11 @@ const MODEL_FILE_NAME = 'model_quint8_avx2';
 const MAX_LENGTH = 512;
 const BATCH_SIZE = 8;
 
-const HUB_OPTIONS = { revision: MODEL_REVISION, cache_dir: TRANSFORMERS_CACHE_DIR };
-
-const MODEL_OPTIONS = {
-	...HUB_OPTIONS,
-	model_file_name: MODEL_FILE_NAME,
-	dtype: 'fp32',
-	device: 'cpu'
-} as const;
-
-type CacheCheckOptions = NonNullable<Parameters<typeof ModelRegistry.is_cached>[1]> & {
-	model_file_name: string;
-};
+const MODEL = cachedModel(
+	MODEL_ID,
+	['config.json', 'tokenizer.json', 'tokenizer_config.json', `onnx/${MODEL_FILE_NAME}.onnx`],
+	MODEL_REVISION
+);
 
 const log = createLogger('search');
 
@@ -62,12 +49,8 @@ export class Ettin implements CrossEncoder {
 
 	private runtimePromise: Promise<EttinRuntime> | undefined;
 
-	async isInstalled(): Promise<boolean> {
-		if (!isEttinHeadInstalled()) return false;
-
-		const config = await AutoConfig.from_pretrained(MODEL_ID, HUB_OPTIONS);
-		const options: CacheCheckOptions = { ...MODEL_OPTIONS, config };
-		return ModelRegistry.is_cached(MODEL_ID, options);
+	isInstalled(): boolean {
+		return isEttinHeadInstalled() && MODEL.isInstalled();
 	}
 
 	async prepare(onProgress: DownloadProgressHandler): Promise<void> {
@@ -102,13 +85,17 @@ export class Ettin implements CrossEncoder {
 			const started = Date.now();
 			const onFileProgress = combineFileProgress(onProgress);
 			const progress_callback = transformersProgress(onFileProgress);
+			const { nameOrPath, options } = MODEL.source();
 
 			log.info('Loading reranker', { model: this.name });
 
 			this.runtimePromise = Promise.all([
-				AutoTokenizer.from_pretrained(MODEL_ID, { ...HUB_OPTIONS, progress_callback }),
-				AutoModel.from_pretrained(MODEL_ID, {
-					...MODEL_OPTIONS,
+				AutoTokenizer.from_pretrained(nameOrPath, { ...options, progress_callback }),
+				AutoModel.from_pretrained(nameOrPath, {
+					...options,
+					model_file_name: MODEL_FILE_NAME,
+					dtype: 'fp32',
+					device: 'cpu',
 					progress_callback,
 					session_options: {
 						intraOpNumThreads: INFERENCE_THREADS,

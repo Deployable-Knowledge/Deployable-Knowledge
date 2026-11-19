@@ -3,7 +3,6 @@ Xenova Whisper Tiny English model. While it handles English audio transcription 
 as accurately on complex/chaotic audio scenarios. Looking into using larger models*/
 
 import {
-	ModelRegistry,
 	pipeline,
 	type AutomaticSpeechRecognitionPipeline,
 	type ProgressCallback
@@ -13,30 +12,38 @@ import {
 	transformersProgress,
 	type DownloadProgressHandler
 } from '#lib/server/utils/download-progress';
-import { TRANSFORMERS_CACHE_DIR } from '#lib/server/utils/transformers-env';
+import { cachedModel } from '#lib/server/utils/transformers-env';
 import { installSpeakerModel, isSpeakerModelInstalled } from './speaker-diarization';
 
 export const TRANSCRIPTION_MODEL = 'Xenova/whisper-tiny.en';
 
 const TRANSCRIPTION_TASK = 'automatic-speech-recognition';
 
+const WHISPER = cachedModel(TRANSCRIPTION_MODEL, [
+	'config.json',
+	'generation_config.json',
+	'preprocessor_config.json',
+	'tokenizer.json',
+	'tokenizer_config.json',
+	'onnx/encoder_model.onnx',
+	'onnx/decoder_model_merged.onnx'
+]);
+
 let transcriptionPipeline: Promise<AutomaticSpeechRecognitionPipeline> | undefined;
 
-export async function isTranscriptionModelInstalled(): Promise<boolean> {
-	const [whisperInstalled, speakerInstalled] = await Promise.all([
-		ModelRegistry.is_pipeline_cached(TRANSCRIPTION_TASK, TRANSCRIPTION_MODEL, {
-			cache_dir: TRANSFORMERS_CACHE_DIR
-		}),
-		isSpeakerModelInstalled()
-	]);
-	return whisperInstalled && speakerInstalled;
+export function isTranscriptionModelInstalled(): boolean {
+	return WHISPER.isInstalled() && isSpeakerModelInstalled();
+}
+
+function loadWhisper(
+	progress_callback?: ProgressCallback
+): Promise<AutomaticSpeechRecognitionPipeline> {
+	const { nameOrPath, options } = WHISPER.source();
+	return pipeline(TRANSCRIPTION_TASK, nameOrPath, { ...options, progress_callback });
 }
 
 async function installWhisper(progress_callback: ProgressCallback): Promise<void> {
-	const transcriber = await pipeline(TRANSCRIPTION_TASK, TRANSCRIPTION_MODEL, {
-		cache_dir: TRANSFORMERS_CACHE_DIR,
-		progress_callback
-	});
+	const transcriber = await loadWhisper(progress_callback);
 	await transcriber.dispose();
 }
 
@@ -60,9 +67,7 @@ export type TranscriptionResult = {
 };
 
 export async function transcribeAudio(audioData: Float32Array): Promise<TranscriptionResult> {
-	transcriptionPipeline ??= pipeline(TRANSCRIPTION_TASK, TRANSCRIPTION_MODEL, {
-		cache_dir: TRANSFORMERS_CACHE_DIR
-	}).catch((error) => {
+	transcriptionPipeline ??= loadWhisper().catch((error) => {
 		transcriptionPipeline = undefined;
 		throw error;
 	});

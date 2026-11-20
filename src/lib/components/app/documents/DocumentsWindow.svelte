@@ -365,6 +365,16 @@
 		}
 	}
 
+	async function setTaggedActivation(active: boolean): Promise<void> {
+		const tags = documentsStore.tagFilters.map((tag) => `#${tag}`).join(', ');
+		try {
+			await documentsStore.setTagFilterActivation(active);
+			toast.success(`Documents tagged ${tags} ${active ? 'activated' : 'deactivated'}`);
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : String(error));
+		}
+	}
+
 	async function deactivateAll(): Promise<void> {
 		pendingDeactivateAll = false;
 		try {
@@ -457,7 +467,10 @@
 	<div class="flex h-full min-h-0 flex-col gap-3">
 		<DocumentFilterBar
 			bind:query={() => documentsStore.query, (value) => documentsStore.setQuery(value)}
+			{busy}
+			onActivateTagged={() => void setTaggedActivation(true)}
 			onCreateTag={createTag}
+			onDeactivateTagged={() => void setTaggedActivation(false)}
 			onDeleteTag={(tag) => (pendingDeleteTag = tag)}
 			onSortChange={(next) => documentsStore.setSort(next)}
 			onToggleTag={(tag) => documentsStore.toggleTagFilter(tag)}

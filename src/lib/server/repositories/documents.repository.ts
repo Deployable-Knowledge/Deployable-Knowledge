@@ -12,6 +12,7 @@ import {
 	type SQL
 } from 'drizzle-orm';
 import type {
+	ApiDocumentActivationRequest,
 	ApiDocumentListQuery,
 	ApiDocumentListResponse,
 	ApiTranscriptResponse,
@@ -345,6 +346,20 @@ export class DocumentsRepository {
 			.where(eq(documents.id, documentId))
 			.limit(1);
 		return row?.localOnly ?? false;
+	}
+
+	static async setActive({
+		active,
+		documentIds,
+		tags: tagFilter
+	}: ApiDocumentActivationRequest): Promise<void> {
+		const conditions: SQL[] = [];
+		if (documentIds) conditions.push(inArray(documents.id, documentIds));
+		if (tagFilter) conditions.push(hasTagIn(tagFilter));
+		await db
+			.update(documents)
+			.set({ active })
+			.where(and(...conditions));
 	}
 
 	static async setLocalOnly(documentIds: string[], localOnly: boolean): Promise<void> {

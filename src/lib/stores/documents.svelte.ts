@@ -294,6 +294,12 @@ class DocumentsStore {
 		await this.refresh();
 	}
 
+	async setTagFilterActivation(active: boolean): Promise<void> {
+		if (!this._tagFilters.length) return;
+		await DocumentsService.setActivation({ tags: [...this._tagFilters], active });
+		await this.refresh();
+	}
+
 	async setLocalOnly(documentIds: string[], localOnly: boolean): Promise<void> {
 		await DocumentsService.setLocalOnly({ documentIds, localOnly });
 		await this.refresh();

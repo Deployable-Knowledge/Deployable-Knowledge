@@ -55,6 +55,7 @@ export interface ApiDocumentTagAssignmentRequest extends ApiDocumentTagRequest {
 export interface ApiDocumentActivationRequest {
 	active: boolean;
 	documentIds?: string[];
+	tags?: string[];
 }
 
 export interface ApiDocumentLocalOnlyRequest {

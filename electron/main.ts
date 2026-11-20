@@ -1,29 +1,40 @@
-import { spawn, type ChildProcess } from 'node:child_process';
-import { createWriteStream } from 'node:fs';
-import { mkdir } from 'node:fs/promises';
-import { createServer, type AddressInfo } from 'node:net';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { app, BrowserWindow, dialog, ipcMain, Menu, session, shell } from 'electron';
-import type { ServerMessage } from './server.ts';
+import { stat } from 'node:fs/promises';
+import { join, sep } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import {
+	app,
+	BrowserWindow,
+	dialog,
+	ipcMain,
+	Menu,
+	net,
+	protocol,
+	session,
+	shell,
+	type BrowserWindowConstructorOptions,
+	type WebContents
+} from 'electron';
 
 const APP_ROOT = fileURLToPath(new URL('..', import.meta.url));
-const SERVER_ENTRY = join(APP_ROOT, 'electron', 'server.ts');
+const BUILD_ENTRY = join(APP_ROOT, 'build', 'adapter-node.js');
+const CLIENT_DIR = join(APP_ROOT, 'build', 'client');
 const PRELOAD_ENTRY = join(APP_ROOT, 'electron', 'preload.cjs');
-const SERVER_START_TIMEOUT_MS = 120_000;
 
-const RUNTIME_DIRECTORIES = [
-	'documents',
-	'models',
-	join('.cache', 'embeddings'),
-	join('.cache', 'tessdata'),
-	join('.cache', 'transformersjs'),
-	'logs'
-];
+const APP_ORIGIN = 'http://deployable-knowledge.localhost';
 
-let serverProcess: ChildProcess | null = null;
+const VIEWER_WINDOW_OPTIONS: BrowserWindowConstructorOptions = {
+	width: 1100,
+	height: 820,
+	backgroundColor: '#101014',
+	autoHideMenuBar: true
+};
+
+type AppServer = {
+	init(options: { env: NodeJS.ProcessEnv }): Promise<void>;
+	respond(request: Request, options: { getClientAddress: () => string }): Promise<Response>;
+};
+
 let mainWindow: BrowserWindow | null = null;
-let quitting = false;
 
 if (!app.requestSingleInstanceLock()) {
 	app.quit();
@@ -56,135 +67,36 @@ async function start(): Promise<void> {
 		callback(response === 0 ? 'tryAgain' : 'deny');
 	});
 
-	const url = app.isPackaged ? await startPackagedServer() : await startDevServer();
-
-	createWindow(url);
+	await serveApp();
+	createWindow();
 }
 
-async function prepareDataDirectory(dataDirectory: string): Promise<void> {
-	for (const directory of RUNTIME_DIRECTORIES) {
-		await mkdir(join(dataDirectory, directory), { recursive: true });
-	}
-}
+async function serveApp(): Promise<void> {
+	process.chdir(app.getPath('userData'));
+	process.env.DK_MIGRATIONS_DIR = join(APP_ROOT, 'drizzle');
 
-async function startPackagedServer(): Promise<string> {
-	const dataDirectory = app.getPath('userData');
-	await prepareDataDirectory(dataDirectory);
+	const { server }: { server: AppServer } = await import(pathToFileURL(BUILD_ENTRY).href);
+	await server.init({ env: process.env });
 
-	const log = createWriteStream(join(dataDirectory, 'logs', 'server.log'), { flags: 'a' });
-	const recentOutput: string[] = [];
+	protocol.handle('http', async (request) => {
+		if (!isAppPage(request.url)) return net.fetch(request, { bypassCustomProtocolHandlers: true });
 
-	const child = spawn(process.execPath, [SERVER_ENTRY], {
-		cwd: dataDirectory,
-		stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
-		env: {
-			...process.env,
-			ELECTRON_RUN_AS_NODE: '1',
-			DK_APP_ROOT: APP_ROOT,
-			DK_MIGRATIONS_DIR: join(APP_ROOT, 'drizzle'),
-			BODY_SIZE_LIMIT: 'Infinity',
-			// ffmpeg-static locates its binary through `__dirname`, which packaging breaks.
-			FFMPEG_PATH: join(
-				APP_ROOT,
-				'node_modules',
-				'ffmpeg-static',
-				process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg'
-			)
-		}
-	});
-	serverProcess = child;
+		const asset = await findClientAsset(new URL(request.url).pathname);
+		if (asset) return net.fetch(pathToFileURL(asset).href);
 
-	for (const stream of [child.stdout, child.stderr]) {
-		stream?.setEncoding('utf8');
-		stream?.on('data', (chunk: string) => {
-			recentOutput.push(chunk);
-			if (recentOutput.length > 100) recentOutput.shift();
-			log.write(chunk);
-			process.stdout.write(chunk);
-		});
-	}
-
-	let listening = false;
-
-	return new Promise((resolve, reject) => {
-		const timer = setTimeout(() => {
-			reject(new Error(`The local server did not start within ${SERVER_START_TIMEOUT_MS}ms.`));
-		}, SERVER_START_TIMEOUT_MS);
-
-		child.on('message', (message) => {
-			const { type, port } = message as ServerMessage;
-			if (type !== 'listening') return;
-			clearTimeout(timer);
-			listening = true;
-			resolve(`http://127.0.0.1:${port}`);
-		});
-
-		child.on('exit', (code) => {
-			clearTimeout(timer);
-			if (quitting) return;
-			const error = new Error(
-				`The local server exited with code ${code}.\n\n${recentOutput.join('')}`
-			);
-			if (listening) reportFatal(error, 'The local server stopped');
-			else reject(error);
-		});
-
-		child.on('error', (error) => {
-			clearTimeout(timer);
-			reject(error);
-		});
+		return server.respond(request, { getClientAddress: () => '127.0.0.1' });
 	});
 }
 
-async function startDevServer(): Promise<string> {
-	const existing = process.env.DK_DEV_SERVER_URL?.trim();
-	if (existing) {
-		await waitForServer(existing);
-		return existing;
-	}
+async function findClientAsset(pathname: string): Promise<string | null> {
+	const path = join(CLIENT_DIR, pathname);
+	if (!path.startsWith(CLIENT_DIR + sep)) return null;
 
-	const port = await findFreePort();
-	const url = `http://localhost:${port}`;
-
-	serverProcess = spawn(
-		process.platform === 'win32' ? 'npm.cmd' : 'npm',
-		['run', 'dev', '--', '--port', String(port), '--strictPort'],
-		{ cwd: APP_ROOT, stdio: 'inherit', shell: process.platform === 'win32' }
-	);
-
-	serverProcess.on('error', (error) => reportFatal(error, 'The dev server could not be started'));
-
-	await waitForServer(url);
-	return url;
+	const stats = await stat(path).catch(() => null);
+	return stats?.isFile() ? path : null;
 }
 
-function findFreePort(): Promise<number> {
-	return new Promise((resolve, reject) => {
-		const probe = createServer();
-		probe.on('error', reject);
-		probe.listen(0, '127.0.0.1', () => {
-			const { port } = probe.address() as AddressInfo;
-			probe.close(() => resolve(port));
-		});
-	});
-}
-
-async function waitForServer(url: string): Promise<void> {
-	const deadline = Date.now() + SERVER_START_TIMEOUT_MS;
-
-	while (Date.now() < deadline) {
-		try {
-			await fetch(url, { method: 'HEAD' });
-			return;
-		} catch {
-			await new Promise((resolve) => setTimeout(resolve, 250));
-		}
-	}
-
-	throw new Error(`The dev server at ${url} did not respond within ${SERVER_START_TIMEOUT_MS}ms.`);
-}
-
-function createWindow(url: string): void {
+function createWindow(): void {
 	const window = new BrowserWindow({
 		width: 1440,
 		height: 900,
@@ -204,22 +116,38 @@ function createWindow(url: string): void {
 	mainWindow = window;
 
 	window.once('ready-to-show', () => window.show());
-	window.on('closed', () => (mainWindow = null));
+	window.on('closed', () => {
+		mainWindow = null;
+		app.quit();
+	});
 	window.on('maximize', () => window.webContents.send('window:maximized-changed', true));
 	window.on('unmaximize', () => window.webContents.send('window:maximized-changed', false));
 
-	window.webContents.setWindowOpenHandler(({ url: target }) => {
-		void shell.openExternal(target);
+	routeLinks(window.webContents);
+
+	void window.loadURL(APP_ORIGIN);
+}
+
+function routeLinks(contents: WebContents): void {
+	contents.setWindowOpenHandler(({ url }) => {
+		if (isAppPage(url)) {
+			return { action: 'allow', overrideBrowserWindowOptions: VIEWER_WINDOW_OPTIONS };
+		}
+		void shell.openExternal(url);
 		return { action: 'deny' };
 	});
 
-	window.webContents.on('will-navigate', (event, target) => {
-		if (new URL(target).origin === new URL(url).origin) return;
+	contents.on('will-navigate', (event, url) => {
+		if (isAppPage(url)) return;
 		event.preventDefault();
-		void shell.openExternal(target);
+		void shell.openExternal(url);
 	});
 
-	void window.loadURL(url);
+	contents.on('did-create-window', (child) => routeLinks(child.webContents));
+}
+
+function isAppPage(url: string): boolean {
+	return url.startsWith(`${APP_ORIGIN}/`);
 }
 
 function registerWindowControls(): void {
@@ -254,18 +182,9 @@ function installMenu(): void {
 	);
 }
 
-app.on('window-all-closed', () => app.quit());
-
-app.on('before-quit', () => {
-	quitting = true;
-	serverProcess?.kill();
-});
-
-function reportFatal(error: unknown, title = 'Deployable Knowledge failed to start'): void {
-	quitting = true;
-	serverProcess?.kill();
+function reportFatal(error: unknown): void {
 	dialog.showErrorBox(
-		title,
+		'Deployable Knowledge failed to start',
 		error instanceof Error ? (error.stack ?? error.message) : String(error)
 	);
 	app.exit(1);

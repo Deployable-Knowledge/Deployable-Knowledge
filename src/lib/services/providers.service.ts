@@ -2,9 +2,7 @@ import { API_PROVIDERS } from '#lib/constants';
 import type {
 	ApiCustomProviderCreateRequest,
 	ApiCustomProviderRequest,
-	ApiProviderInfo,
-	ApiProviderModelCapabilities,
-	ApiProviderModelGroup
+	ApiProviderInfo
 } from '#lib/types';
 import { apiDelete, apiFetch, apiPatch, apiPost } from '#lib/utils';
 
@@ -13,23 +11,8 @@ export class ProvidersService {
 		return apiFetch<ApiProviderInfo[]>(API_PROVIDERS.BASE);
 	}
 
-	static listModels(id: string, availableOnly = false) {
-		const query = availableOnly ? '?available=true' : '';
-		return apiFetch<string[]>(`${API_PROVIDERS.byId(id)}${query}`);
-	}
-
-	static async listModelGroups(availableOnly = true): Promise<ApiProviderModelGroup[]> {
-		const providers = await this.list();
-		return Promise.all(
-			providers.map(async (provider) => ({
-				...provider,
-				models: await this.listModels(provider.id, availableOnly).catch(() => [])
-			}))
-		);
-	}
-
-	static getModelCapabilities(id: string, model: string) {
-		return apiFetch<ApiProviderModelCapabilities>(API_PROVIDERS.capabilities(id, model));
+	static listModels(id: string) {
+		return apiFetch<string[]>(API_PROVIDERS.byId(id));
 	}
 
 	static create(value: ApiCustomProviderCreateRequest) {

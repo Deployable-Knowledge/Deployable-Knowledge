@@ -48,6 +48,8 @@
 
 	function chooseType(value: CustomProviderType): void {
 		type = value;
+		name = '';
+		baseUrl = '';
 		step = 'details';
 	}
 
@@ -89,7 +91,7 @@
 							<span
 								class="flex size-9 shrink-0 items-center justify-center rounded-lg border bg-background"
 							>
-								<choice.icon class="size-4.5 text-muted-foreground" />
+								<choice.icon class="size-4.5" />
 							</span>
 							<span class="grid min-w-0 flex-1 gap-0.5">
 								<span class="text-sm font-semibold">{choice.label}</span>
@@ -133,9 +135,9 @@
 					/>
 					<p class="m-0 text-xs break-all text-muted-foreground">
 						{#if resolvedBaseUrl}
-							Chat requests go to {resolvedBaseUrl}/chat/completions.
+							Chat requests go to {resolvedBaseUrl}{option.requestPath}.
 						{:else}
-							Include the API version path, such as /v1.
+							Chat requests go to this address followed by {option.requestPath}.
 						{/if}
 					</p>
 				</div>

@@ -2,7 +2,10 @@ import { error } from '@sveltejs/kit';
 
 import type { ApiVulkanDeviceUpdate } from '#lib/types';
 import { setVulkanDevice } from '#lib/server/database/app-state';
-import { getVulkanDevicesStatus, listVulkanDevices } from '#lib/server/providers/vulkan-devices';
+import {
+	getVulkanDevicesStatus,
+	listVulkanDevices
+} from '#lib/server/providers/llamacpp/vulkan-devices';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async () => Response.json(await getVulkanDevicesStatus());

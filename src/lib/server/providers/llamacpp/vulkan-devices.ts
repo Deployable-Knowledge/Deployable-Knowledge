@@ -1,29 +1,17 @@
-import { spawn } from 'node:child_process';
+import { fork } from 'node:child_process';
 import { createRequire } from 'node:module';
-import { pathToFileURL } from 'node:url';
 
 import type { ApiVulkanDevice, ApiVulkanDevicesStatus } from '#lib/types';
 import { getVulkanDevice } from '#lib/server/database/app-state';
 import { createLogger } from '#lib/server/logging';
-import { getSupportedGpuTypes } from './llamacpp-runtime';
+import { getSupportedGpuTypes } from './runtime';
 
 const VISIBLE_DEVICES_ENV = 'GGML_VK_VISIBLE_DEVICES';
+const PROBE_SCRIPT = '#lib/server/providers/llamacpp/vulkan-probe.ts';
 const PROBE_TIMEOUT_MS = 60_000;
 const MAX_DEVICE_INDEX = 8;
 
 const log = createLogger('models');
-
-const PROBE_SOURCE = `
-import(process.argv[2]).then(async ({ getLlama, LlamaLogLevel }) => {
-	const llama = await getLlama({
-		gpu: 'vulkan',
-		build: 'never',
-		logLevel: LlamaLogLevel.disabled,
-		progressLogs: false
-	});
-	process.send(await llama.getGpuDeviceNames(), () => process.exit(0));
-});
-`;
 
 type VulkanDeviceState = {
 	active?: number | null;
@@ -45,16 +33,14 @@ export async function applyVulkanDevice(): Promise<void> {
 }
 
 function probeDeviceNames(visibleDevices: string | undefined): Promise<string[] | null> {
-	const moduleUrl = pathToFileURL(createRequire(import.meta.url).resolve('node-llama-cpp')).href;
+	const probeScript = createRequire(import.meta.url).resolve(PROBE_SCRIPT);
 
 	return new Promise((resolve) => {
-		const child = spawn(process.execPath, ['-', moduleUrl], {
+		const child = fork(probeScript, {
 			env: { ...process.env, [VISIBLE_DEVICES_ENV]: visibleDevices },
-			stdio: ['pipe', 'ignore', 'ignore', 'ipc'],
+			stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
 			timeout: PROBE_TIMEOUT_MS
 		});
-		child.stdin?.on('error', () => undefined);
-		child.stdin?.end(PROBE_SOURCE);
 
 		let names: string[] | null = null;
 		child.once('message', (message) => {

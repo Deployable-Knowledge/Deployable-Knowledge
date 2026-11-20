@@ -1,3 +1,4 @@
+import { reasoningEffortForBudget, type ReasoningEffort } from '#lib/constants';
 import type { LlamaGpuMode } from '#lib/types';
 
 export type ProviderChatOptions = {
@@ -37,45 +38,37 @@ export type ProviderChatMessage = {
 	name?: string;
 };
 
-export type ProviderToolCallDelta = {
-	index?: number;
-	id?: string;
-	function?: { name?: string; arguments?: string };
+export type ProviderProgress = {
+	kind: 'thinking' | 'text';
+	text: string;
 };
 
-export type ProviderChatChunk = {
-	content?: string | null;
-	reasoning_content?: string | null;
-	tool_calls?: ProviderToolCallDelta[];
+export type ProviderReply = {
+	content: string | null;
+	thinking: string | null;
+	toolCalls: ProviderToolCall[];
 };
+
+export type ProviderEffort = Exclude<ReasoningEffort, 'default'>;
 
 export abstract class Provider {
 	abstract id: string;
 	abstract name: string;
 
-	async *chat(
-		prompt: string,
+	abstract complete(
 		model: string,
-		options: ProviderChatOptions = {}
-	): AsyncGenerator<string> {
-		for await (const chunk of this.streamChat(
-			[{ role: 'user', content: prompt }],
-			model,
-			options
-		)) {
-			if (chunk.content) yield chunk.content;
-		}
-	}
-
-	abstract streamChat(
 		messages: ProviderChatMessage[],
-		model: string,
-		options?: ProviderChatOptions
-	): AsyncGenerator<ProviderChatChunk>;
+		options: ProviderChatOptions,
+		onProgress: (progress: ProviderProgress) => void
+	): Promise<ProviderReply>;
 
-	abstract listModels(): Promise<string[]>;
+	abstract models(): Promise<string[]>;
+}
 
-	async supportsTools(_model: string): Promise<boolean> {
-		return true;
-	}
+export function requestedEffort(options: ProviderChatOptions): ProviderEffort | undefined {
+	const budget = options.reasoningBudget;
+	if (budget === undefined || budget <= 0) return undefined;
+
+	const effort = reasoningEffortForBudget(budget);
+	return effort === 'default' ? undefined : effort;
 }

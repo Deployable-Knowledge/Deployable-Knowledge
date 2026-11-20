@@ -11,7 +11,7 @@ import {
 } from '#lib/constants';
 import type { EmbeddingBackend } from '#lib/types';
 import { createLogger } from '#lib/server/logging';
-import { AUTO_GPU, createGgufDownloader } from '#lib/server/providers/llamacpp-runtime';
+import { AUTO_GPU, createGgufDownloader } from '#lib/server/providers/llamacpp/runtime';
 import { INFERENCE_THREADS } from '#lib/server/utils/inference-threads';
 import { EmbeddingProvider, normalizeVector } from './provider';
 

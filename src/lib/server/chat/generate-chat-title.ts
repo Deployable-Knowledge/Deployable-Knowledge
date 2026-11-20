@@ -15,16 +15,18 @@ export async function generateChatTitle(
 	modelId: string,
 	options: ProviderChatOptions
 ): Promise<string> {
-	let title = '';
-	for await (const chunk of provider.chat(`${TITLE_GENERATION_PROMPT}\n\n${userMessage}`, modelId, {
-		temperature: options.temperature,
-		topK: options.topK,
-		signal: options.signal,
-		maxTokens: TITLE_MAX_TOKENS,
-		reasoningBudget: TITLE_REASONING_BUDGET
-	})) {
-		title += chunk;
-	}
+	const reply = await provider.complete(
+		modelId,
+		[{ role: 'user', content: `${TITLE_GENERATION_PROMPT}\n\n${userMessage}` }],
+		{
+			temperature: options.temperature,
+			topK: options.topK,
+			signal: options.signal,
+			maxTokens: TITLE_MAX_TOKENS,
+			reasoningBudget: TITLE_REASONING_BUDGET
+		},
+		() => undefined
+	);
 
-	return title.trim().split('\n')[0] || NEW_CHAT_TITLE;
+	return reply.content?.trim().split('\n')[0] || NEW_CHAT_TITLE;
 }

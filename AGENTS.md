@@ -75,16 +75,34 @@ These instructions apply to the entire repository. Preserve them when adding or 
 - Workspace windows must be declared in `window-registry.ts` and persisted through `workspaceStore`.
   Layouts live in the `workspace_layouts` table with the active tab in `app_state`; `workspaceStore`
   reaches them through `WorkspaceLayoutsService` and never touches browser storage.
+- Model providers live in `src/lib/server/providers/`, one file per kind of API. Each implements
+  `complete` and `models` from `provider.ts`; the API kinds share `endpoint.ts` for requests and
+  errors and `stream.ts` for reading events and collecting the reply. A provider that needs
+  several files gets its own subfolder, as `llamacpp/` does.
+- The model picker in the chat box (`ChatModelMenu`) sets both the model and the reasoning effort.
+  Keep the two in that one menu rather than adding another chat control.
 - Keep HTTP endpoint paths in `src/lib/constants/api-endpoints.ts` and browser I/O in services.
 - Keep reusable application rules aligned with `src/lib/components/app/SKILL.md`.
 
 ## Desktop Shell
 
-- `electron/` holds the desktop shell only. The main process spawns `electron/server.ts`, which
-  serves the adapter-node build; application code must not import from `electron/`.
-- The packaged app runs the server with the per-user data directory as its working directory.
+- `electron/` holds the desktop shell only. The main process runs the SvelteKit build itself: the
+  window loads `http://deployable-knowledge.localhost`, and `protocol.handle` passes each request
+  for that address straight to SvelteKit. There is no server process, no listening port, and no
+  dev-server mode, so `npm run electron` builds first. Application code must not import from
+  `electron/`.
+- Those requests carry no `Origin` header, so `vite.config.ts` turns off SvelteKit's cross-site
+  form check for the build. Do not add anything that needs that header, such as remote functions.
+- No browser can load the app's address. A link to one of the app's own pages that opens a new
+  window gets an app window; only external links go to the browser.
+- Server code shares a thread with the window in the desktop app. Keep long synchronous work off
+  it, and start helper scripts with `fork`, never `spawn(process.execPath)`, which is the app
+  itself there. A helper script is a real file resolved through `#lib`, and it must be listed
+  under `files` in `electron-builder.yml`, because `src/` is otherwise not shipped.
+- The desktop app runs the server with the per-user data directory as its working directory.
   Resolve runtime files (databases, documents, models, caches) relative to `process.cwd()`, never
-  relative to the repository or the module URL, and register new top-level ones in `main.ts`.
+  relative to the repository or the module URL. The shell prepares nothing there: server code
+  creates each directory where it writes to it and locates its own binaries.
 - Development syncs the schema with `drizzle-kit push`, but installed apps replay the committed
   migrations in `drizzle/`. Every schema change needs `npm run db:generate` and the resulting
   migration committed, or the installer ships an out-of-date database; the release workflow fails
@@ -106,6 +124,6 @@ These instructions apply to the entire repository. Preserve them when adding or 
 
 - `npm run check` must finish with zero errors and zero warnings.
 - Smoke-test affected routes and interactions when behavior or navigation changes. The workspace
-  must continue loading when Ollama is unavailable.
+  must continue loading when an added provider is unreachable.
 - Remove superseded components, exports, state, and imports completely; do not leave compatibility
   bridges or dead feature logic behind.

@@ -1,20 +1,21 @@
 import type { CustomProviderType } from '#lib/constants';
 import type { CustomProviderRecord } from '#lib/server/database/schema';
 import { CustomProvidersRepository } from '#lib/server/repositories';
-import { LlamaCpp } from './llamacpp';
-import { Ollama } from './ollama';
-import { OpenAiCompatible } from './openai-compatible';
+import { Anthropic } from './anthropic';
+import { ChatCompletions } from './chat-completions';
+import { LlamaCpp } from './llamacpp/llamacpp';
 import type { Provider } from './provider';
 
 const customProviderFactories: Record<
 	CustomProviderType,
 	(record: CustomProviderRecord) => Provider
 > = {
-	openai: (record) => new OpenAiCompatible(record)
+	openai: (record) => new ChatCompletions(record),
+	anthropic: (record) => new Anthropic(record)
 };
 
 export function listBuiltInProviders(): Provider[] {
-	return [new LlamaCpp(), new Ollama()];
+	return [new LlamaCpp()];
 }
 
 export async function findProvider(id: string): Promise<Provider | null> {

@@ -15,6 +15,7 @@ files:
   - build/**
   - drizzle/**
   - electron/*.{cjs,ts}
+  - src/lib/server/providers/llamacpp/vulkan-probe.ts
   - LICENSE
   - THIRD-PARTY-NOTICES.md
   # transformers.js inlines the ONNX Runtime Web code it needs and runs models on onnxruntime-node.

@@ -27,7 +27,7 @@ import { promptTemplates } from '#lib/server/database/schema';
 import { createLogger } from '#lib/server/logging';
 import { getActiveProfile } from '#lib/server/profiles/active-profile';
 import { findProvider } from '#lib/server/providers/registry';
-import type { Provider, ProviderChatOptions } from '#lib/server/providers/provider';
+import type { ProviderChatOptions } from '#lib/server/providers/provider';
 import {
 	DocumentsRepository,
 	SessionsRepository,
@@ -84,7 +84,7 @@ export const POST: RequestHandler = async ({ params, request }) => {
 	const invocableSkills = (await SkillsRepository.list()).filter(
 		(candidate) => candidate.modelInvocable && candidate.id !== skill?.id
 	);
-	const toolNames = (await resolveToolNames(body, provider, modelId, profile)).filter(
+	const toolNames = resolveToolNames(body, profile).filter(
 		(name) => name !== 'use_skill' || invocableSkills.length > 0
 	);
 	const skillCatalog = toolNames.includes('use_skill') ? invocableSkills : [];
@@ -252,13 +252,8 @@ export const POST: RequestHandler = async ({ params, request }) => {
 	);
 };
 
-async function resolveToolNames(
-	body: ApiChatMessageRequest,
-	provider: Provider,
-	modelId: string,
-	profile: AssistantProfile | null
-): Promise<string[]> {
-	if (body.tools_enabled === false || !(await provider.supportsTools(modelId))) return [];
+function resolveToolNames(body: ApiChatMessageRequest, profile: AssistantProfile | null): string[] {
+	if (body.tools_enabled === false) return [];
 	const enabled = toolRegistry.filterIds(body.enabled_tools ?? profile?.enabledTools);
 	return toolRegistry
 		.idsForMode(body.conversational ? 'notebook' : 'document')

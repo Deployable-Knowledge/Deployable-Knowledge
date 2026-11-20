@@ -1,4 +1,5 @@
 export const REASONING_PRESETS = {
+	default: { label: 'Default', budget: -1 },
 	low: { label: 'Low', budget: 512 },
 	medium: { label: 'Medium', budget: 2_048 },
 	high: { label: 'High', budget: 8_192 },
@@ -8,7 +9,7 @@ export const REASONING_PRESETS = {
 export type ReasoningEffort = keyof typeof REASONING_PRESETS;
 
 export function reasoningEffortForBudget(budget: number): ReasoningEffort {
-	if (budget < 0) return 'xhigh';
+	if (budget < 0) return 'default';
 	for (const effort of Object.keys(REASONING_PRESETS) as ReasoningEffort[]) {
 		if (budget <= REASONING_PRESETS[effort].budget) return effort;
 	}

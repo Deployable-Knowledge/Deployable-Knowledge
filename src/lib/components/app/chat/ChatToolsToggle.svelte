@@ -8,16 +8,13 @@
 		disabled?: boolean;
 		enabled: boolean;
 		onToggle: (enabled: boolean) => void;
-		supported: boolean;
 	}
 
-	let { available, disabled = false, enabled, onToggle, supported }: Props = $props();
+	let { available, disabled = false, enabled, onToggle }: Props = $props();
 
-	let label = $derived.by(() => {
-		if (!supported) return 'Tools: not supported by this model';
-		if (!available) return 'Choose Notebook or Search in Chat modes to use tools';
-		return 'Let the model call tools';
-	});
+	let label = $derived(
+		available ? 'Let the model call tools' : 'Choose Notebook or Search in Chat modes to use tools'
+	);
 </script>
 
 <ActionIcon

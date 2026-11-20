@@ -66,8 +66,8 @@ flowchart LR
 | **WeSpeaker**                   | Tells speakers apart in audio             | `.cache/transformersjs/` |
 | **Tesseract (English)**         | Reads text in images and scanned pages    | `.cache/tessdata/`       |
 
-Instead of Gemma, chat can use any model in Ollama or an OpenAI-compatible API. Embeddings can
-come from an OpenAI-compatible API too.
+Instead of Gemma, chat can use any model from an OpenAI-compatible or Anthropic API. Embeddings
+can come from an OpenAI-compatible API too.
 
 ## What an embedding is
 

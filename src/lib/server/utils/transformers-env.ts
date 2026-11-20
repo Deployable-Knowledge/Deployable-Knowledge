@@ -18,9 +18,6 @@ export type CachedModel = {
 	source: () => ModelSource;
 };
 
-// Loading by hub id asks huggingface.co which optional files a model has, even when every file is
-// already cached, so it fails without a connection. A model whose files are all on disk is loaded
-// from its cache directory instead, which never touches the network.
 export function cachedModel(
 	modelId: string,
 	files: readonly string[],

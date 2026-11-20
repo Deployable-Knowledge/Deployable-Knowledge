@@ -11,19 +11,16 @@ import { CustomProvidersRepository } from '#lib/server/repositories';
 
 import type { RequestHandler } from './$types';
 
-export const GET: RequestHandler = async ({ params, url }) => {
+export const GET: RequestHandler = async ({ params }) => {
 	const provider = await findProvider(params.id);
-	const availableOnly = url.searchParams.get('available') === 'true';
 
 	if (!provider) {
 		throw error(404, 'Provider not found');
 	}
 
 	try {
-		return Response.json(await provider.listModels());
+		return Response.json(await provider.models());
 	} catch (cause) {
-		if (availableOnly) return Response.json([]);
-
 		const message = cause instanceof Error ? cause.message : String(cause);
 		throw error(502, message);
 	}

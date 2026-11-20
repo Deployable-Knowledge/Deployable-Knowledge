@@ -37,8 +37,6 @@ class SettingsStore {
 	ready = $state(false);
 	error = $state<string | null>(null);
 	lastQuery = $state('');
-	modelToolSupport = $state<'unknown' | 'supported' | 'unsupported'>('unknown');
-	private capabilityRequestId = 0;
 	private autosaveTimer: ReturnType<typeof setTimeout> | null = null;
 
 	get config(): AssistantConfig {
@@ -61,9 +59,6 @@ class SettingsStore {
 
 	updateConfig(values: Partial<AssistantConfig>): void {
 		this._config = { ...this._config, ...values };
-		if ('provider' in values || 'model' in values) {
-			void this.refreshModelCapability();
-		}
 		this.queueAutosave();
 	}
 
@@ -90,20 +85,6 @@ class SettingsStore {
 		}
 	}
 
-	async refreshModelCapability(): Promise<void> {
-		const { provider, model } = this._config;
-		const requestId = ++this.capabilityRequestId;
-		this.modelToolSupport = 'unknown';
-		if (!provider || !model) return;
-		try {
-			const result = await ProvidersService.getModelCapabilities(provider, model);
-			if (requestId !== this.capabilityRequestId) return;
-			this.modelToolSupport = result.tools ? 'supported' : 'unsupported';
-		} catch {
-			if (requestId === this.capabilityRequestId) this.modelToolSupport = 'supported';
-		}
-	}
-
 	async init(): Promise<void> {
 		if (this.initialized || this.loading) return;
 		this.loading = true;
@@ -114,7 +95,6 @@ class SettingsStore {
 			await this.loadActiveProfile();
 			await Promise.all([this.loadProfiles(), this.loadPromptTemplates(), this.loadProviders()]);
 			this.initialized = true;
-			void this.refreshModelCapability();
 		} catch (error) {
 			this.error = message(error);
 		} finally {
@@ -206,9 +186,36 @@ class SettingsStore {
 	}
 
 	async loadProviders(): Promise<void> {
-		this.providerModelGroups = await ProvidersService.listModelGroups();
-		const selected = this.providerModelGroups.find(({ id }) => id === this._config.provider);
-		if (selected?.models.includes(this._config.model)) return;
+		const providers = await ProvidersService.list();
+		this.providerModelGroups = providers.map((provider) => {
+			const known = this.providerModelGroups.find(({ id }) => id === provider.id);
+			return {
+				...provider,
+				models: known?.models ?? [],
+				failure: known?.failure ?? null,
+				loading: !known
+			};
+		});
+		await Promise.all(providers.map(({ id }) => this.loadModels(id)));
+		this.keepModelSelectable();
+	}
+
+	private async loadModels(providerId: string): Promise<void> {
+		let models: string[] = [];
+		let failure: string | null = null;
+		try {
+			models = await ProvidersService.listModels(providerId);
+		} catch (error) {
+			failure = message(error);
+		}
+		const group = this.providerModelGroups.find(({ id }) => id === providerId);
+		if (group) Object.assign(group, { models, failure, loading: false });
+	}
+
+	private keepModelSelectable(): void {
+		const { provider, model } = this._config;
+		const selected = this.providerModelGroups.find(({ id }) => id === provider);
+		if (selected && model && (selected.custom || selected.models.includes(model))) return;
 		const first = this.providerModelGroups.find(({ models }) => models.length);
 		if (first) this.updateConfig({ provider: first.id, model: first.models[0] });
 	}
@@ -232,8 +239,6 @@ class SettingsStore {
 		this.clearAutosave();
 		this.activeProfileId = profile?.id ?? null;
 		if (!profile) return;
-		const modelChanged =
-			profile.provider !== this._config.provider || profile.model !== this._config.model;
 		this._config = {
 			provider: profile.provider,
 			model: profile.model,
@@ -249,9 +254,6 @@ class SettingsStore {
 			persona: profile.persona ?? '',
 			enabledTools: this.knownToolIds(profile.enabledTools)
 		};
-		if (modelChanged || this.modelToolSupport === 'unknown') {
-			void this.refreshModelCapability();
-		}
 	}
 
 	private profileValues(): AssistantProfileValues {

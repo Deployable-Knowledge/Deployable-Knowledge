@@ -12,7 +12,7 @@ listed in `src/lib/constants/api-endpoints.ts`.
 | `/profiles`          | Saved model, prompt and retrieval settings                    |
 | `/prompt-templates`  | System prompts                                                |
 | `/skills`            | Your skills                                                   |
-| `/providers`         | Ollama and OpenAI-compatible providers                        |
+| `/providers`         | Local models and the API providers you add                    |
 | `/local-models`      | Download and delete local chat models                         |
 | `/embedding`         | The embedding model                                           |
 | `/tools`             | The list of agent tools                                       |

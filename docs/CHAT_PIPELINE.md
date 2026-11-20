@@ -17,7 +17,7 @@ flowchart TD
     Mode -->|"Notebook"| NB["Open notebook pages<br/>and saved sources"]
     Mode -->|"Model"| Plain["Just the conversation"]
 
-    Agentic --> LLM["Model writes the answer<br/>Local, Ollama or OpenAI-compatible"]
+    Agentic --> LLM["Model writes the answer<br/>Local or an API provider"]
     Auto --> LLM
     NB --> LLM
     Plain --> LLM

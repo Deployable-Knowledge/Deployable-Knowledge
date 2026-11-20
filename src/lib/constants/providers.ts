@@ -1,4 +1,4 @@
-export const CUSTOM_PROVIDER_TYPES = ['openai'] as const;
+export const CUSTOM_PROVIDER_TYPES = ['openai', 'anthropic'] as const;
 
 export type CustomProviderType = (typeof CUSTOM_PROVIDER_TYPES)[number];
 

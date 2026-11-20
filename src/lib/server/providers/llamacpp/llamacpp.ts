@@ -1,25 +1,28 @@
 import { existsSync } from 'node:fs';
-import { PassThrough } from 'node:stream';
 
 import type { ChatHistoryItem, ChatModelFunctions } from 'node-llama-cpp';
 
+import { generateToolCallId } from '../endpoint';
 import {
 	Provider,
-	type ProviderChatChunk,
 	type ProviderChatMessage,
-	type ProviderChatOptions
-} from './provider';
-import { listLocalModelFiles, resolveLocalModelPath, withChat } from './llamacpp-runtime';
+	type ProviderChatOptions,
+	type ProviderProgress,
+	type ProviderReply
+} from '../provider';
+import { Collector } from '../stream';
+import { listLocalModelFiles, resolveLocalModelPath, withChat } from './runtime';
 
 export class LlamaCpp extends Provider {
 	override id = 'llamacpp';
 	override name = 'Local (llama.cpp)';
 
-	override async *streamChat(
-		messages: ProviderChatMessage[],
+	override async complete(
 		model: string,
-		options: ProviderChatOptions = {}
-	): AsyncGenerator<ProviderChatChunk> {
+		messages: ProviderChatMessage[],
+		options: ProviderChatOptions,
+		onProgress: (progress: ProviderProgress) => void
+	): Promise<ProviderReply> {
 		const modelPath = resolveLocalModelPath(model);
 
 		if (!existsSync(modelPath)) {
@@ -36,40 +39,39 @@ export class LlamaCpp extends Provider {
 					{ description: fn.description, params: fn.parameters }
 				])
 			) as ChatModelFunctions);
-		const chunks = new PassThrough({ objectMode: true });
+		const collector = new Collector(onProgress);
 
-		withChat(modelPath, options.gpuMode ?? 'auto', options.signal, (chat) =>
-			chat.generateResponse(toChatHistory(messages), {
-				functions,
-				budgets: thoughtTokens === undefined ? undefined : { thoughtTokens },
-				maxTokens:
-					options.maxTokens === undefined
-						? undefined
-						: options.maxTokens + Math.max(0, budget ?? 0),
-				temperature: options.temperature,
-				topK: options.topK,
-				signal: options.signal,
-				onResponseChunk(chunk) {
-					if (chunk.type === 'segment') chunks.write({ reasoning_content: chunk.text });
-					else if (chunk.type == null) chunks.write({ content: chunk.text });
-				}
-			})
-		).then(
-			({ functionCalls = [] }) => {
-				chunks.end({
-					tool_calls: functionCalls.map((call, index) => ({
-						index,
-						function: { name: call.functionName, arguments: JSON.stringify(call.params ?? {}) }
-					}))
-				});
-			},
-			(error) => chunks.destroy(error)
+		const { functionCalls = [] } = await withChat(
+			modelPath,
+			options.gpuMode ?? 'auto',
+			options.signal,
+			(chat) =>
+				chat.generateResponse(toChatHistory(messages), {
+					functions,
+					budgets: thoughtTokens === undefined ? undefined : { thoughtTokens },
+					maxTokens:
+						options.maxTokens === undefined
+							? undefined
+							: options.maxTokens + Math.max(0, budget ?? 0),
+					temperature: options.temperature,
+					topK: options.topK,
+					signal: options.signal,
+					onResponseChunk(chunk) {
+						if (chunk.type === 'segment') collector.thinking(chunk.text);
+						else if (chunk.type == null) collector.text(chunk.text);
+					}
+				})
 		);
 
-		yield* chunks;
+		functionCalls.forEach((call, index) => {
+			collector.toolCall(index, generateToolCallId(), call.functionName);
+			collector.toolArguments(index, JSON.stringify(call.params ?? {}));
+		});
+
+		return collector.finish();
 	}
 
-	override async listModels(): Promise<string[]> {
+	override async models(): Promise<string[]> {
 		return listLocalModelFiles();
 	}
 }

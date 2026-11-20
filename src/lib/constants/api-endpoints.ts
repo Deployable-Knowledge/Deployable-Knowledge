@@ -100,9 +100,7 @@ export const API_SKILLS = {
 
 export const API_PROVIDERS = {
 	BASE: '/providers',
-	byId: (id: string) => `/providers/${segment(id)}`,
-	capabilities: (id: string, model: string) =>
-		`/providers/${segment(id)}/capabilities?model=${segment(model)}`
+	byId: (id: string) => `/providers/${segment(id)}`
 };
 
 export const API_DIAGNOSTICS = {

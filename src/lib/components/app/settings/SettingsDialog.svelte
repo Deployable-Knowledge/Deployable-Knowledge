@@ -94,7 +94,7 @@
 		{
 			id: 'models',
 			label: 'Models',
-			description: 'Local models, the llama.cpp runtime, and OpenAI-compatible providers.',
+			description: 'Local models, the llama.cpp runtime, and API providers.',
 			icon: HardDrive,
 			keywords: [
 				'local models',

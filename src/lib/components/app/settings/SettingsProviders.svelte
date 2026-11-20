@@ -8,13 +8,18 @@
 	import {
 		CUSTOM_PROVIDER_TYPE_OPTIONS,
 		DialogConfirmation,
-		DialogProvider
+		DialogProvider,
+		providerIcon
 	} from '#lib/components/app/dialogs';
 	import { Badge } from '#lib/components/ui/badge';
 	import { Button } from '#lib/components/ui/button';
 	import type { CustomProviderType } from '#lib/constants';
 	import { settingsStore } from '#lib/stores';
-	import type { ApiCustomProviderInfo, ApiCustomProviderRequest } from '#lib/types';
+	import type {
+		ApiCustomProviderInfo,
+		ApiCustomProviderRequest,
+		ApiProviderModelGroup
+	} from '#lib/types';
 	import SettingsFieldGroup from './SettingsFieldGroup.svelte';
 
 	let editorOpen = $state(false);
@@ -32,9 +37,11 @@
 		editorOpen = true;
 	}
 
-	function modelSummary(count: number): string {
-		if (!count) return 'No models found';
-		return count === 1 ? '1 model' : `${count} models`;
+	function modelSummary({ failure, loading, models }: ApiProviderModelGroup): string {
+		if (loading) return 'Loading models';
+		if (failure) return 'Could not list models';
+		if (!models.length) return 'No models found';
+		return models.length === 1 ? '1 model' : `${models.length} models`;
 	}
 
 	async function save(type: CustomProviderType, value: ApiCustomProviderRequest): Promise<void> {
@@ -68,17 +75,18 @@
 <SettingsFieldGroup
 	icon={Plug}
 	title="Providers"
-	hint="Connect OpenAI-compatible APIs to use their models in the agent model picker."
+	hint="Connect OpenAI, Anthropic, or compatible APIs to use their models in the model picker."
 >
 	{#if providers.length}
 		<ul class="m-0 grid list-none gap-2 p-0">
 			{#each providers as provider (provider.id)}
 				{@const kind = CUSTOM_PROVIDER_TYPE_OPTIONS[provider.custom.type]}
+				{@const Icon = providerIcon(provider)}
 				<li class="flex items-center gap-3 rounded-xl border bg-card/50 p-3">
 					<span
 						class="flex size-10 shrink-0 items-center justify-center rounded-lg border bg-background"
 					>
-						<kind.icon class="size-5 text-muted-foreground" />
+						<Icon class="size-5 text-muted-foreground" />
 					</span>
 					<div class="grid min-w-0 flex-1 gap-0.5">
 						<span class="flex min-w-0 items-center gap-2 text-sm font-semibold">
@@ -88,10 +96,10 @@
 							{/if}
 						</span>
 						<span class="truncate text-xs text-muted-foreground">{provider.custom.baseUrl}</span>
-						<span class="text-xs text-muted-foreground">
-							{kind.label} · {provider.custom.hasApiKey ? 'API key saved' : 'No API key'} · {modelSummary(
-								provider.models.length
-							)}
+						<span class="flex flex-wrap gap-x-3 text-xs text-muted-foreground">
+							<span>{kind.label}</span>
+							<span>{provider.custom.hasApiKey ? 'API key saved' : 'No API key'}</span>
+							<span>{modelSummary(provider)}</span>
 						</span>
 					</div>
 					<ActionIcon label={`Edit ${provider.name}`} onclick={() => openEditor(provider)}>

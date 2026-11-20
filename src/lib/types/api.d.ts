@@ -363,11 +363,8 @@ export interface ApiCustomProviderCreateRequest extends ApiCustomProviderRequest
 
 export interface ApiProviderModelGroup extends ApiProviderInfo {
 	models: string[];
-}
-
-export interface ApiProviderModelCapabilities {
-	model: string;
-	tools: boolean;
+	failure: string | null;
+	loading: boolean;
 }
 
 export interface ApiSessionTitleRequest {

@@ -49,8 +49,7 @@
 		void notebooksStore.load();
 	});
 
-	let toolsSupported = $derived(settingsStore.modelToolSupport !== 'unsupported');
-	let toolsAvailable = $derived(toolsSupported && chatStore.mode !== ChatContextMode.MODEL);
+	let toolsAvailable = $derived(chatStore.mode !== ChatContextMode.MODEL);
 	let effectiveToolsEnabled = $derived(chatStore.toolsEnabled && toolsAvailable);
 	let searchToolActive = $derived(
 		chatStore.mode === ChatContextMode.SEARCH &&
@@ -195,16 +194,13 @@
 			mode={chatStore.mode}
 			onModeChange={(mode) => (chatStore.mode = mode)}
 			onNewChat={() => void startNewChat()}
-			onReasoningEffortChange={(effort) => settingsStore.setReasoningEffort(effort)}
 			onStop={() => chatStore.current.stopGeneration()}
 			onSubmit={() => void send()}
 			onToolsChange={(enabled) => (chatStore.toolsEnabled = enabled)}
-			reasoningEffort={settingsStore.reasoningEffort}
 			{searchToolActive}
 			skills={skillsStore.skills}
 			{toolsAvailable}
 			toolsEnabled={effectiveToolsEnabled}
-			{toolsSupported}
 		/>
 	</div>
 </WorkspaceWindow>

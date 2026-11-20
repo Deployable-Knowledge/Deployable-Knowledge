@@ -1,16 +1,11 @@
 <script lang="ts">
 	import ArrowUp from '@lucide/svelte/icons/arrow-up';
-	import Brain from '@lucide/svelte/icons/brain';
-	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import MessageSquarePlus from '@lucide/svelte/icons/message-square-plus';
 	import Square from '@lucide/svelte/icons/square';
 	import SquareSlash from '@lucide/svelte/icons/square-slash';
 	import { ActionIcon } from '#lib/components/app/actions';
 	import { Badge } from '#lib/components/ui/badge';
-	import { Button } from '#lib/components/ui/button';
-	import * as DropdownMenu from '#lib/components/ui/dropdown-menu';
 	import { Textarea } from '#lib/components/ui/textarea';
-	import { REASONING_PRESETS, type ReasoningEffort } from '#lib/constants';
 	import type { ChatContextMode } from '#lib/enums';
 	import type { Skill } from '#lib/types';
 	import ChatModeMenu from './ChatModeMenu.svelte';
@@ -25,16 +20,13 @@
 		mode: ChatContextMode;
 		onModeChange: (mode: ChatContextMode) => void;
 		onNewChat: () => void;
-		onReasoningEffortChange: (effort: ReasoningEffort) => void;
 		onStop: () => void;
 		onSubmit: () => void;
 		onToolsChange: (enabled: boolean) => void;
-		reasoningEffort: ReasoningEffort;
 		searchToolActive?: boolean;
 		skills: readonly Skill[];
 		toolsAvailable?: boolean;
 		toolsEnabled?: boolean;
-		toolsSupported?: boolean;
 	}
 
 	let {
@@ -43,16 +35,13 @@
 		mode,
 		onModeChange,
 		onNewChat,
-		onReasoningEffortChange,
 		onStop,
 		onSubmit,
 		onToolsChange,
-		reasoningEffort,
 		searchToolActive = false,
 		skills,
 		toolsAvailable = true,
-		toolsEnabled = false,
-		toolsSupported = true
+		toolsEnabled = false
 	}: Props = $props();
 
 	const listId = $props.id();
@@ -151,7 +140,6 @@
 					disabled={busy}
 					enabled={toolsEnabled}
 					onToggle={onToolsChange}
-					supported={toolsSupported}
 				/>
 				<ActionIcon
 					class="size-8 rounded-full bg-transparent text-foreground/40 shadow-none hover:bg-transparent hover:text-foreground active:translate-y-0 active:text-foreground dark:text-muted-foreground dark:hover:text-foreground"
@@ -161,35 +149,6 @@
 				>
 					<MessageSquarePlus />
 				</ActionIcon>
-				<DropdownMenu.Root>
-					<DropdownMenu.Trigger disabled={busy}>
-						{#snippet child({ props })}
-							<Button
-								{...props}
-								aria-label={`Reasoning effort: ${REASONING_PRESETS[reasoningEffort].label}`}
-								class="h-8 rounded-full text-muted-foreground hover:text-foreground aria-expanded:text-foreground"
-								disabled={busy}
-								size="sm"
-								variant="ghost"
-							>
-								<Brain aria-hidden="true" class="size-3.5" />
-								{REASONING_PRESETS[reasoningEffort].label}
-								<ChevronDown class="size-3" />
-							</Button>
-						{/snippet}
-					</DropdownMenu.Trigger>
-					<DropdownMenu.Content align="start" class="w-40" side="top" sideOffset={8}>
-						<DropdownMenu.Label>Reasoning effort</DropdownMenu.Label>
-						<DropdownMenu.RadioGroup
-							onValueChange={(value) => onReasoningEffortChange(value as ReasoningEffort)}
-							value={reasoningEffort}
-						>
-							{#each Object.entries(REASONING_PRESETS) as [value, preset] (value)}
-								<DropdownMenu.RadioItem {value}>{preset.label}</DropdownMenu.RadioItem>
-							{/each}
-						</DropdownMenu.RadioGroup>
-					</DropdownMenu.Content>
-				</DropdownMenu.Root>
 			</div>
 			<div class="flex min-w-0 items-center gap-2">
 				<ChatModelMenu disabled={busy} />

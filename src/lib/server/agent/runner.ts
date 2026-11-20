@@ -239,39 +239,26 @@ async function streamTurn(
 	onText: (text: string) => void,
 	onReasoning: (accumulated: string) => void
 ) {
-	let content = '';
 	let reasoning = '';
-	// Indexed by the provider's tool-call index; deltas for one call arrive in pieces.
-	const toolCalls: ProviderToolCall[] = [];
 
 	logStreamStart(modelTurn);
-	for await (const chunk of provider.streamChat(messages, model, options)) {
-		if (chunk.content) {
-			content += chunk.content;
-			logStreamContent(chunk.content);
-			onText(chunk.content);
+	const reply = await provider.complete(model, messages, options, (progress) => {
+		if (progress.kind === 'text') {
+			logStreamContent(progress.text);
+			onText(progress.text);
+			return;
 		}
-		if (chunk.reasoning_content) {
-			reasoning += chunk.reasoning_content;
-			logStreamReasoning(chunk.reasoning_content);
-			onReasoning(reasoning);
-		}
-		chunk.tool_calls?.forEach((delta, position) => {
-			const index = delta.index ?? position;
-			const call = (toolCalls[index] ??= {
-				id: `call_${modelTurn}_${index + 1}`,
-				type: 'function',
-				function: { name: '', arguments: '' }
-			});
-			if (delta.id) call.id = delta.id;
-			call.function.name += delta.function?.name ?? '';
-			call.function.arguments += delta.function?.arguments ?? '';
-		});
-	}
+		reasoning += progress.text;
+		logStreamReasoning(progress.text);
+		onReasoning(reasoning);
+	});
 
-	const calls = toolCalls.filter(Boolean);
-	logStreamEnd(calls.map((call) => call.function.name));
-	return { content, reasoning, toolCalls: calls };
+	logStreamEnd(reply.toolCalls.map((call) => call.function.name));
+	return {
+		content: reply.content ?? '',
+		reasoning: reply.thinking ?? '',
+		toolCalls: reply.toolCalls
+	};
 }
 
 function withSystemNote(messages: ProviderChatMessage[], note: string): ProviderChatMessage[] {

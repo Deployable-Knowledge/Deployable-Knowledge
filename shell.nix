@@ -17,6 +17,11 @@ pkgs.mkShell {
 
   shellHook = ''
     export PATH="$PWD/node_modules/.bin:$PATH"
-    export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath [ pkgs.vulkan-loader ]}''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+    export LD_LIBRARY_PATH="${
+      pkgs.lib.makeLibraryPath [
+        pkgs.vulkan-loader
+        pkgs.stdenv.cc.cc.lib
+      ]
+    }''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
   '';
 }

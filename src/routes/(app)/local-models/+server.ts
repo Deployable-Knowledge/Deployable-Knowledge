@@ -5,7 +5,7 @@ import {
 	getActiveDownloadFile,
 	getSupportedGpuTypes,
 	listLocalModelFiles
-} from '#lib/server/providers/llamacpp-runtime';
+} from '#lib/server/providers/llamacpp/runtime';
 import { modelDownloadResponse } from '#lib/server/utils/model-download-response';
 import type { ApiLocalModelInfo, ApiLocalModelsStatus } from '#lib/types';
 import type { RequestHandler } from './$types';

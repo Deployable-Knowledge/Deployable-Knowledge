@@ -43,6 +43,13 @@
       "when": 1793822279052,
       "tag": "0005_parallel_screwball",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1795138435362,
+      "tag": "0006_perfect_the_executioner",
+      "breakpoints": true
     }
   ]
 }

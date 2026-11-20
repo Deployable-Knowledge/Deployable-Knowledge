@@ -2,8 +2,8 @@
 
 Deployable Knowledge is a local-first retrieval-augmented generation workbench built with SvelteKit
 and Svelte 5. Documents, search, notebooks, and chat all live in one windowed workspace. Chat runs
-on bundled local models, or on Ollama or any OpenAI-compatible API if you'd rather. There is a web
-version and a packaged desktop app, and it is single-user, so there is no login.
+on bundled local models, or on an OpenAI-compatible or Anthropic API if you'd rather. There is a
+web version and a packaged desktop app, and it is single-user, so there is no login.
 
 ## Features
 
@@ -35,8 +35,8 @@ same way, no matter what it started as.
 
 ### Chat
 
-- Streams from a bundled local model, Ollama, or any OpenAI-compatible Chat Completions API. Local
-  models are downloaded from settings, and OpenAI-compatible providers are added there too.
+- Streams from a bundled local model, or an API that speaks OpenAI Chat Completions or Anthropic
+  Messages. Local models are downloaded from settings, and API providers are added there too.
 - Ask against the active documents, or against the sources collected in a notebook.
 - The assistant can call tools over several turns: document search, reading a range of chunks,
   corpus details, goal tracking, and the current date and time.
@@ -61,8 +61,8 @@ same way, no matter what it started as.
 
 - Node.js matching [`.nvmrc`](.nvmrc)
 - npm
-- Ollama or an OpenAI-compatible API, if you want them. Neither is required, since the bundled local
-  runtime can serve chat on its own.
+- An OpenAI-compatible or Anthropic API, if you want one. It is not required, since the bundled
+  local runtime can serve chat on its own.
 
 ### Install and run
 
@@ -80,7 +80,7 @@ More chat models can be downloaded later from settings.
 ### Desktop app
 
 ```bash
-npm run electron         # Run the desktop shell against the Vite dev server
+npm run electron         # Build and run the desktop app
 npm run electron:pack    # Build and package without an installer
 npm run electron:win     # Build the Windows installer
 npm run electron:linux   # Build the Ubuntu .deb package
@@ -120,7 +120,7 @@ through whatever you touched.
 | Retrieval           | llama.cpp embeddings, SQLite FTS5 BM25, reranked hybrid   |
 | Document processing | pdf-parse, Tesseract.js, Sharp, LibreOffice               |
 | Audio               | FFmpeg, Whisper, WeSpeaker                                |
-| Model providers     | llama.cpp, Ollama, OpenAI-compatible APIs                 |
+| Model providers     | llama.cpp, OpenAI and Anthropic APIs                      |
 | Agent tools         | Search, chunk reading, skills, goals                      |
 
 ## Architecture

@@ -9,7 +9,7 @@ const MAX_ERR_LENGTH = 16_000;
 const DECODE_TIMEOUT_MS = 10 * 60 * 1000;
 
 export function decodeAudioFile(audioPath: string): Promise<Float32Array> {
-	const executablePath = process.env.FFMPEG_PATH?.trim() || ffmpegStaticPath;
+	const executablePath = ffmpegStaticPath;
 	if (!executablePath) throw new Error('FFmpeg unavailable.');
 
 	return new Promise((resolve, reject) => {

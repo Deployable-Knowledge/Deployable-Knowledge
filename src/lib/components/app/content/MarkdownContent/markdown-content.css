@@ -180,6 +180,16 @@
 	color: var(--color-find-foreground);
 }
 
+::highlight(dk-guide-match) {
+	background-color: var(--color-find-match);
+	color: var(--color-find-foreground);
+}
+
+::highlight(dk-guide-current) {
+	background-color: var(--color-find-current);
+	color: var(--color-find-foreground);
+}
+
 /* Prose wraps inline code in literal backticks, which reads as unrendered
    Markdown; a chip like the notebook editor's marks it as code instead. */
 .markdown-content:not(.ProseMirror) code::before,

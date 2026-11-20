@@ -7,7 +7,6 @@
 	import { AppStartupOverlay } from '#lib/components/app/navigation';
 	import { SettingsDialog } from '#lib/components/app/settings';
 	import { UserGuideDialog } from '#lib/components/app/user-guide';
-	import EngineHeartbeat from '#lib/components/app/navigation/EngineHeartbeat.svelte';
 	import * as Tooltip from '#lib/components/ui/tooltip';
 	import {
 		chatStore,
@@ -55,7 +54,6 @@
 	</div>
 
 	<Toaster richColors />
-	<EngineHeartbeat />
 	<SettingsDialog />
 	<UserGuideDialog />
 

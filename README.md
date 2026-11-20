@@ -155,7 +155,7 @@ src/
 │   │   │   ├── dialogs/  Confirmation, progress, provider, and picker dialogs
 │   │   │   ├── documents/, notebook/, search/, settings/, transcript/
 │   │   │   ├── setup/    First-run component and local model setup
-│   │   │   ├── navigation/  Workspace toolbar, engine heartbeat, and startup overlay
+│   │   │   ├── navigation/  Workspace toolbar and startup overlay
 │   │   │   └── workspace/   Layout tabs, window registry, columns, frames, and resizers
 │   │   └── ui/           Reusable shadcn-svelte primitives
 │   ├── constants/        Endpoints, defaults, and shared limits

@@ -39,6 +39,7 @@ import {
 	apiStream,
 	parseNdjsonStream
 } from '#lib/utils';
+import { DesktopWindowService } from './desktop-window.service';
 
 function searchString(entries: [string, string | number | string[] | undefined][]): string {
 	const params = new URLSearchParams();
@@ -131,11 +132,14 @@ export class DocumentsService {
 		signal?: AbortSignal
 	): Promise<ApiDocumentImportResult> {
 		const search = searchString([['localOnly', localOnly ? 'true' : undefined]]);
+		const upload = DesktopWindowService.available
+			? ({ body: file.stream(), duplex: 'half' } as const)
+			: { body: file };
 		const response = await apiStream(`${API_DOCUMENTS.IMPORT}${search}`, {
 			method: 'POST',
-			body: file,
 			headers: { 'Content-Type': 'application/zip' },
-			signal
+			signal,
+			...upload
 		});
 		return this.readTaskStream<ApiDocumentImportResult>(
 			response,

@@ -12,6 +12,7 @@ export class ApiError extends Error {
 
 export interface ApiFetchOptions extends Omit<RequestInit, 'headers'> {
 	headers?: HeadersInit;
+	duplex?: 'half';
 }
 
 export async function parseErrorMessage(response: Response): Promise<string> {

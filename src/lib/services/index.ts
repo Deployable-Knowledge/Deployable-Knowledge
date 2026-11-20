@@ -5,6 +5,7 @@
  * consume services, own business behavior and errors, and expose state to components.
  */
 export { ChatService } from './chat.service';
+export { ChatPreferencesService } from './chat-preferences.service';
 export { DocumentsService } from './documents.service';
 export { EmbeddingService } from './embedding.service';
 export { LocalModelsService } from './local-models.service';

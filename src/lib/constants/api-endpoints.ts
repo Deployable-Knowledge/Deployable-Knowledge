@@ -103,6 +103,8 @@ export const API_PROVIDERS = {
 	byId: (id: string) => `/providers/${segment(id)}`
 };
 
+export const API_CHAT_PREFERENCES = '/chat-preferences';
+
 export const API_DIAGNOSTICS = {
 	BASE: '/diagnostics',
 	LOGS: '/diagnostics/logs',

@@ -50,6 +50,13 @@
       "when": 1795138435362,
       "tag": "0006_perfect_the_executioner",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1795189268287,
+      "tag": "0007_groovy_puppet_master",
+      "breakpoints": true
     }
   ]
 }

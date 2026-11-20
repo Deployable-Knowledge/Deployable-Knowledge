@@ -1,7 +1,12 @@
 import { eq } from 'drizzle-orm';
 
-import { DEFAULT_EMBEDDING_SETTINGS, parseThemeColor, parseThemeMode } from '#lib/constants';
-import type { EmbeddingSettings, ThemeSettings } from '#lib/types';
+import {
+	DEFAULT_CHAT_PREFERENCES,
+	DEFAULT_EMBEDDING_SETTINGS,
+	parseThemeColor,
+	parseThemeMode
+} from '#lib/constants';
+import type { ChatPreferences, EmbeddingSettings, ThemeSettings } from '#lib/types';
 import { db } from '#lib/server/database/database';
 import { appState } from '#lib/server/database/schema';
 
@@ -55,6 +60,26 @@ export async function setThemeSettings({ color, mode }: ThemeSettings): Promise<
 			set: { themeColor: color, themeMode: mode }
 		});
 	return { color, mode };
+}
+
+export async function getChatPreferences(): Promise<ChatPreferences> {
+	const state = await db.select().from(appState).where(eq(appState.id, APP_STATE_ID)).get();
+	return {
+		mode: state?.chatMode ?? DEFAULT_CHAT_PREFERENCES.mode,
+		toolsEnabled: state?.chatToolsEnabled ?? DEFAULT_CHAT_PREFERENCES.toolsEnabled
+	};
+}
+
+export async function setChatPreferences({
+	mode,
+	toolsEnabled
+}: ChatPreferences): Promise<ChatPreferences> {
+	const values = { chatMode: mode, chatToolsEnabled: toolsEnabled };
+	await db
+		.insert(appState)
+		.values({ id: APP_STATE_ID, ...values })
+		.onConflictDoUpdate({ target: appState.id, set: values });
+	return { mode, toolsEnabled };
 }
 
 export async function getEmbeddingSettings(): Promise<EmbeddingSettings> {

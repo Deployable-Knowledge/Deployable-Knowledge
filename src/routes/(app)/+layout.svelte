@@ -10,6 +10,7 @@
 	import EngineHeartbeat from '#lib/components/app/navigation/EngineHeartbeat.svelte';
 	import * as Tooltip from '#lib/components/ui/tooltip';
 	import {
+		chatStore,
 		desktopWindowStore,
 		settingsStore,
 		skillsStore,
@@ -20,14 +21,15 @@
 	let { children } = $props();
 	let framesPainted = $state(false);
 
-	// The workspace layout arrives from the database, so the overlay has to cover
-	// that fetch or the tab strip renders empty first.
-	const layoutReady = $derived(framesPainted && workspaceStore.ready);
+	// The workspace layout and the chat controls arrive from the database, so the
+	// overlay has to cover those fetches or the page shows their defaults first.
+	const ready = $derived(framesPainted && workspaceStore.ready && chatStore.ready);
 
 	onMount(() => {
 		themeStore.init();
 		void desktopWindowStore.init();
 		void workspaceStore.init();
+		void chatStore.init();
 		void settingsStore.init();
 		void skillsStore.load();
 
@@ -57,5 +59,5 @@
 	<SettingsDialog />
 	<UserGuideDialog />
 
-	<AppStartupOverlay ready={layoutReady} version={packageMetadata.version} />
+	<AppStartupOverlay {ready} version={packageMetadata.version} />
 </Tooltip.Provider>

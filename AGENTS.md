@@ -67,8 +67,8 @@ These instructions apply to the entire repository. Preserve them when adding or 
 - Do not add a persistent application sidebar. The main workspace toolbar places the left-column
   toggle before the layout tabs and the User Guide, Tools and Settings controls at the far right.
 - The app is single-user and local: there is no authentication, no users table, and no per-user
-  scoping. App-wide state (like the active profile, active layout, and theme) lives in the
-  `app_state` table.
+  scoping. App-wide state (like the active profile, active layout, theme, and the chat box's mode
+  and tools toggle) lives in the `app_state` table.
 - The theme is stored in the database, not `localStorage`. `handle` in `hooks.server.ts` stamps it
   onto `<html>` so the first paint is already correct; the boot script in `app.html` only resolves
   `system` mode. Keep new appearance state on that path rather than adding a pre-paint storage read.

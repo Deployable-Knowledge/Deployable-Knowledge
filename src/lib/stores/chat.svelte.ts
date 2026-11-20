@@ -1,14 +1,16 @@
-import { STORAGE_KEYS } from '#lib/constants';
-import { ChatContextMode } from '#lib/enums';
+import { browser } from '$app/env';
+import { toast } from 'svelte-sonner';
+import { DEFAULT_CHAT_PREFERENCES } from '#lib/constants';
+import type { ChatContextMode } from '#lib/enums';
 import { SvelteMap } from 'svelte/reactivity';
-import { ChatService } from '#lib/services';
-import { persisted } from './persisted.svelte';
+import { ChatPreferencesService, ChatService } from '#lib/services';
 import type {
 	AgentGoal,
 	AgentProgressEvent,
 	AgentTraceItem,
 	ApiChatMessageRequest,
 	ApiChatStreamEvent,
+	ChatPreferences,
 	Session,
 	SessionMessage,
 	UserMessageMetadata
@@ -160,8 +162,22 @@ class ChatConversation {
 class ChatStore {
 	private conversations = new SvelteMap<string, ChatConversation>();
 	current = $state(new ChatConversation());
-	private _toolsEnabled = persisted(STORAGE_KEYS.CHAT_TOOLS_ENABLED, false);
-	private _mode = persisted(STORAGE_KEYS.CHAT_MODE, ChatContextMode.SEARCH);
+	private preferences = $state<ChatPreferences>({ ...DEFAULT_CHAT_PREFERENCES });
+	private loading = false;
+	ready = $state(false);
+
+	async init(): Promise<void> {
+		if (!browser || this.ready || this.loading) return;
+		this.loading = true;
+		try {
+			this.preferences = await ChatPreferencesService.get();
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : String(error));
+		} finally {
+			this.loading = false;
+			this.ready = true;
+		}
+	}
 
 	get session(): Session | undefined {
 		return this.current.session;
@@ -182,21 +198,31 @@ class ChatStore {
 	}
 
 	get toolsEnabled(): boolean {
-		return this._toolsEnabled.value;
+		return this.preferences.toolsEnabled;
 	}
 
 	set toolsEnabled(value: boolean) {
-		this._toolsEnabled.value = value;
+		if (this.preferences.toolsEnabled === value) return;
+		this.preferences.toolsEnabled = value;
+		void this.savePreferences();
 	}
 
 	get mode(): ChatContextMode {
-		const stored = this._mode.value;
-		return Object.values(ChatContextMode).includes(stored) ? stored : ChatContextMode.SEARCH;
+		return this.preferences.mode;
 	}
 
 	set mode(value: ChatContextMode) {
-		if (this._mode.value === value) return;
-		this._mode.value = value;
+		if (this.preferences.mode === value) return;
+		this.preferences.mode = value;
+		void this.savePreferences();
+	}
+
+	private async savePreferences(): Promise<void> {
+		try {
+			await ChatPreferencesService.update($state.snapshot(this.preferences));
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : String(error));
+		}
 	}
 
 	async loadMessages(): Promise<void> {

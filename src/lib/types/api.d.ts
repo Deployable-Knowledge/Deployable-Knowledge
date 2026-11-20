@@ -2,7 +2,7 @@ import type { EmbeddingDevice } from '#lib/constants/embedding';
 import type { CustomProviderType } from '#lib/constants/providers';
 import type { SetupComponentId } from '#lib/constants/setup';
 import type { ThemeColor, ThemeMode } from '#lib/constants/theme-defaults';
-import type { RetrievalMode } from '#lib/enums';
+import type { ChatContextMode, RetrievalMode } from '#lib/enums';
 import type { AgentGoal, AgentProgressEvent } from './agent';
 import type {
 	AssistantProfile,
@@ -289,6 +289,11 @@ export interface ApiReorderResponse {
 
 export interface ApiNotebookSourcesRequest {
 	chunk_ids: string[];
+}
+
+export interface ChatPreferences {
+	mode: ChatContextMode;
+	toolsEnabled: boolean;
 }
 
 export interface ThemeSettings {

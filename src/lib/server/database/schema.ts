@@ -10,6 +10,7 @@ import {
 	uniqueIndex
 } from 'drizzle-orm/sqlite-core';
 import {
+	CHAT_MODES,
 	CUSTOM_PROVIDER_TYPES,
 	DEFAULT_ASSISTANT_CONFIG,
 	DEFAULT_EMBEDDING_SETTINGS,
@@ -39,6 +40,8 @@ export const appState = sqliteTable('app_state', {
 		.notNull()
 		.default(DEFAULT_EMBEDDING_SETTINGS.device),
 	vulkanDevice: integer('vulkan_device'),
+	chatMode: text('chat_mode', { enum: CHAT_MODES }),
+	chatToolsEnabled: integer('chat_tools_enabled', { mode: 'boolean' }),
 	setupCompletedAt: integer('setup_completed_at', { mode: 'timestamp' })
 });
 

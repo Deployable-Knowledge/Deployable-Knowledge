@@ -83,7 +83,8 @@
 
 <ScrollArea
 	class="min-h-0 flex-1 rounded-xl"
-	scrollbarYClasses="hidden"
+	scrollbarYClasses="data-[state=hidden]:animate-out data-[state=hidden]:fade-out-0 data-[state=visible]:animate-in data-[state=visible]:fade-in-0"
+	type="scroll"
 	bind:viewportRef={ref}
 	aria-live="polite"
 >
